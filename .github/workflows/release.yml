@@ -2,8 +2,8 @@ name: release-tag
 
 on:
   push:
-    branches:
-      - 'ci'
+    tags:
+      - '*'
 
 jobs:
   release:
@@ -33,7 +33,7 @@ jobs:
           echo ZIP_FILE=$(kimai-linux-x64-${REPO_VERSION}.zip) >> $GITHUB_OUTPUT
 
       - name: "Build"
-        run: ./gradlew --no-daemon -PprojServer="https://time.progeek.de" -PprojVersion="${{ steps.meta.outputs.REPO_VERSION }}" -Pbuildkonfig.flavor=release :kimai-desktop:packageReleaseUberJarForCurrentOS
+        run: ./gradlew --no-daemon -PprojServer="https://kimai.cloud" -PprojVersion="${{ steps.meta.outputs.REPO_VERSION }}" -Pbuildkonfig.flavor=release :kimai-desktop:packageReleaseUberJarForCurrentOS
 
       - name: "Zip"
         uses: montudor/action-zip@v1.0.0
