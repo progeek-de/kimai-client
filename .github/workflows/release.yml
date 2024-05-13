@@ -2,11 +2,8 @@ name: release-tag
 
 on:
   push:
-    tags:
-      - '*'
-
-env:
-  GITHUB_CONTEXT: ${{ toJson(github) }}
+    branches:
+      - 'main'
 
 jobs:
   release:
