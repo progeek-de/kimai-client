@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS customerEntity (
+    id INTEGER PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL
+);
+
+getAllCustomers:
+SELECT * FROM customerEntity;
+
+getCustomerByID:
+SELECT * FROM customerEntity WHERE id = :id;
+
+insertCustomer:
+INSERT OR REPLACE INTO customerEntity VALUES (?, ?);
+
+deleteAll:
+DELETE FROM customerEntity;
+
+deleteById:
+DELETE FROM customerEntity WHERE id = :id;
+
+

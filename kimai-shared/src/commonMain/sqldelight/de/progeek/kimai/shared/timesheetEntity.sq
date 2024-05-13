@@ -1,0 +1,75 @@
+CREATE TABLE IF NOT EXISTS timesheetEntity (
+    id INTEGER PRIMARY KEY NOT NULL,
+    begin INTEGER NOT NULL ,
+    end INTEGER,
+    duration INTEGER,
+    description TEXT,
+    project INTEGER NOT NULL,
+    activity INTEGER NOT NULL,
+    exported INTEGER NOT NULL
+);
+
+getAll:
+SELECT ts.*,
+    ac.id AS ac_id,
+    ac.name AS ac_name,
+    pr.id AS pr_id,
+    pr.name AS pr_name,
+    pr.parent AS pr_parent,
+    pr.globalActivities AS pr_globalActivities,
+    cu.id AS cu_id,
+    cu.name AS cu_name
+FROM timesheetEntity ts
+JOIN activityEntity ac ON ts.activity = ac.id
+JOIN projectEntity pr ON ts.project = pr.id
+JOIN customerEntity cu ON pr.customer = cu.id
+ORDER BY ts.id DESC
+LIMIT 200;
+
+getById:
+SELECT ts.*,
+    ac.id AS ac_id,
+    ac.name AS ac_name,
+    pr.id AS pr_id,
+    pr.name AS pr_name,
+    pr.parent AS pr_parent,
+    pr.globalActivities AS pr_globalActivities,
+    cu.id AS cu_id,
+    cu.name AS cu_name
+FROM timesheetEntity ts
+JOIN activityEntity ac ON ts.activity = ac.id
+JOIN projectEntity pr ON ts.project = pr.id
+JOIN customerEntity cu ON pr.customer = cu.id
+WHERE ts.id = :id;
+
+getActive:
+SELECT ts.*,
+    ac.id AS ac_id,
+    ac.name AS ac_name,
+    pr.id AS pr_id,
+    pr.name AS pr_name,
+    pr.parent AS pr_parent,
+    pr.globalActivities AS pr_globalActivities,
+    cu.id AS cu_id,
+    cu.name AS cu_name
+FROM timesheetEntity ts
+JOIN activityEntity ac ON ts.activity = ac.id
+JOIN projectEntity pr ON ts.project = pr.id
+JOIN customerEntity cu ON pr.customer = cu.id
+WHERE ts.end IS NULL
+ORDER BY ts.id DESC
+LIMIT 1;
+
+insert:
+INSERT OR REPLACE INTO timesheetEntity VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE timesheetEntity
+SET begin = :begin, end = :end, description = :description, duration = :duration, project = :project, activity = :activity, exported = :exported
+WHERE id = :id;
+
+deleteAll:
+DELETE FROM timesheetEntity;
+
+deleteById:
+DELETE FROM timesheetEntity WHERE id = :id;

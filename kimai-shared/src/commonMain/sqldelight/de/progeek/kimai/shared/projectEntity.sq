@@ -1,0 +1,24 @@
+CREATE TABLE IF NOT EXISTS projectEntity (
+    id INTEGER PRIMARY KEY NOT NULL,
+    parent TEXT NOT NULL,
+    name TEXT NOT NULL,
+    globalActivities INTEGER NOT NULL,
+    customer INTEGER NOT NULL
+);
+
+getAllProjects:
+SELECT * FROM projectEntity;
+
+getProjectById:
+SELECT * FROM projectEntity WHERE id = :id;
+
+insertProject:
+INSERT OR REPLACE INTO projectEntity VALUES (?, ?, ?, ?, ?);
+
+deleteAll:
+DELETE FROM projectEntity;
+
+deleteById:
+DELETE FROM projectEntity WHERE id = :id;
+
+

@@ -1,0 +1,67 @@
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### IntelliJ IDEA ###
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+.env
+
+*.iml
+.gradle
+/local.properties
+.idea
+**/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+.DS_Store
+/node_modules
+/npm-debug.log*
+__pycache__
+venv
+/MANIFEST
+/manifest.json
+/site
+/dist
+/mkdocs_material.egg-info
+.vscode
+
+/kimai-desktop/.env
+
+./src
+./pkg
+./kimai-1.*
