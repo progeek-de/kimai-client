@@ -1,0 +1,61 @@
+name: release-tag
+
+on:
+  push:
+    tags:
+      - '*'
+
+env:
+  GITHUB_CONTEXT: ${{ toJson(github) }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Setup Java"
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: "Setup Gradle"
+        uses: gradle/gradle-build-action@v2
+
+      - name: "Setup GO"
+        uses: https://github.com/actions/setup-go@v4
+        with:
+          go-version: '>=1.20.1'
+
+      - name: "Checkout project sources"
+        uses: actions/checkout@v3
+
+      - name: "Get Metadata - Version"
+        id: meta
+        run: |
+          echo REPO_VERSION=$(git describe --tags --always | sed 's/^v//') >> $GITHUB_OUTPUT
+          echo ZIP_FILE=$(kimai-linux-x64-${REPO_VERSION}.zip) >> $GITHUB_OUTPUT
+
+      - name: "Build"
+        run: ./gradlew --no-daemon -PprojServer="https://time.progeek.de" -PprojVersion="${{ steps.meta.outputs.REPO_VERSION }}" -Pbuildkonfig.flavor=release :kimai-desktop:packageReleaseUberJarForCurrentOS
+
+      - name: "Zip"
+        uses: montudor/action-zip@v1.0.0
+        with:
+          args: zip -qq -r -j kimai-linux-x64-${{ steps.meta.outputs.REPO_VERSION }}.zip ./kimai-desktop/build/compose/jars
+
+      - name: "Create Release"
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.meta.outputs.REPO_VERSION }}
+          tag_name: ${{ github.ref }}
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Upload artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          path: kimai-linux-x64-${{ steps.meta.outputs.REPO_VERSION }}.zip
