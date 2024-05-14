@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - '*'
+permissions:
+  contents: write
 
 jobs:
   release:
@@ -32,14 +34,6 @@ jobs:
           echo REPO_VERSION=$(git describe --tags --always | sed 's/^v//') >> $GITHUB_OUTPUT
           echo ZIP_FILE=$(kimai-linux-x64-${REPO_VERSION}.zip) >> $GITHUB_OUTPUT
 
-      - name: "Build"
-        run: ./gradlew --no-daemon -PprojServer="https://kimai.cloud" -PprojVersion="${{ steps.meta.outputs.REPO_VERSION }}" -Pbuildkonfig.flavor=release :kimai-desktop:packageReleaseUberJarForCurrentOS
-
-      - name: "Zip"
-        uses: montudor/action-zip@v1.0.0
-        with:
-          args: zip -qq -r -j kimai-linux-x64-${{ steps.meta.outputs.REPO_VERSION }}.zip ./kimai-desktop/build/compose/jars
-
       - name: "Create Release"
         uses: actions/create-release@v1
         id: create_release
@@ -50,6 +44,14 @@ jobs:
           tag_name: ${{ github.ref }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Build"
+        run: ./gradlew --no-daemon -PprojServer="https://kimai.cloud" -PprojVersion="${{ steps.meta.outputs.REPO_VERSION }}" -Pbuildkonfig.flavor=release :kimai-desktop:packageReleaseUberJarForCurrentOS
+
+      - name: "Zip"
+        uses: montudor/action-zip@v1.0.0
+        with:
+          args: zip -qq -r -j kimai-linux-x64-${{ steps.meta.outputs.REPO_VERSION }}.zip ./kimai-desktop/build/compose/jars
 
       - name: "Upload artifact"
         uses: actions/upload-release-asset@v1
