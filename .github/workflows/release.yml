@@ -53,6 +53,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "Upload artifact"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          path: kimai-linux-x64-${{ steps.meta.outputs.REPO_VERSION }}.zip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./kimai-linux-x64-${{ steps.meta.outputs.REPO_VERSION }}.zip
+          asset_name: kimai-linux-x64-${{ steps.meta.outputs.REPO_VERSION }}.zip
+          asset_content_type: application/zip
