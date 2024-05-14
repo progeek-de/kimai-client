@@ -4,12 +4,13 @@ on:
   push:
     tags:
       - '*'
-permissions:
-  contents: write
+
+permissions: write-all
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions: write-all
     steps:
       - name: "Setup Java"
         uses: actions/setup-java@v3
