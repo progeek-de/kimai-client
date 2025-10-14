@@ -100,7 +100,7 @@ compose.desktop {
         }
 
         nativeDistributions {
-            targetFormats(TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.AppImage)
+            targetFormats(TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.AppImage, TargetFormat.Msi, TargetFormat.Exe)
             packageName = "kimai"
             packageVersion = projectVersion
             description = "Kimai Time Tracking Desktop Client"
@@ -117,6 +117,18 @@ compose.desktop {
                 "java.naming",
                 "jdk.crypto.ec"
             )
+
+            linux {
+                iconFile.set(project.file("src/jvmMain/resources/kimai_logo.png"))
+            }
+
+            windows {
+                iconFile.set(project.file("src/jvmMain/resources/kimai_logo.ico"))
+                menuGroup = "Kimai"
+                perUserInstall = true
+                dirChooser = true
+                upgradeUuid = "a4e8c89b-14f3-4657-9fe3-a9c6e8a38893"
+            }
         }
     }
 }
