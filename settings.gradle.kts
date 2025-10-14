@@ -30,8 +30,5 @@ gradleEnterprise {
 
 rootProject.name = "kimai-ui"
 include(":kimai-shared")
-include(":kimai-android")
 include(":kimai-desktop")
-include(":kimai-ios")
 include(":kimai-swagger-client")
-include("kimai-timetravel-server")
