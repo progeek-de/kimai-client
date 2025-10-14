@@ -22,7 +22,13 @@ dependencies {
 kotlin {
     targetHierarchy.default()
 
-    jvm()
+    jvm {
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
+    }
 
     androidTarget {
         compilations.all {

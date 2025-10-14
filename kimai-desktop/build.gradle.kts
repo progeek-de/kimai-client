@@ -12,6 +12,13 @@ kotlin {
     jvm {
         jvmToolchain(17)
         withJava()
+
+        // Compile with Java 17 for ProGuard compatibility
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
     }
 
     sourceSets {
@@ -32,6 +39,33 @@ kotlin {
 tasks {
     withType<org.gradle.jvm.tasks.Jar> {
         exclude("META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA")
+        exclude("META-INF/DEPENDENCIES")
+        exclude("META-INF/LICENSE*")
+        exclude("META-INF/NOTICE*")
+        exclude("**/*.kotlin_metadata")
+        exclude("**/*.kotlin_builtins")
+
+        // Minimize JAR size
+        isPreserveFileTimestamps = false
+        isReproducibleFileOrder = true
+
+        // Compress resources
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+
+    // Optimize compilation
+    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions {
+            jvmTarget = "17"
+            freeCompilerArgs += listOf(
+                "-opt-in=kotlin.RequiresOptIn",
+                "-Xjsr305=strict",
+                "-Xjvm-default=all",
+                "-Xno-param-assertions",
+                "-Xno-call-assertions",
+                "-Xno-receiver-assertions"
+            )
+        }
     }
 }
 
@@ -60,13 +94,29 @@ compose.desktop {
 
         buildTypes.release.proguard {
             configurationFiles.from("rules.pro")
+            isEnabled.set(true)
+            optimize.set(true)
+            obfuscate.set(false)
         }
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Pkg)
+            targetFormats(TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.AppImage)
             packageName = "kimai"
             packageVersion = projectVersion
-            modules("java.sql")
+            description = "Kimai Time Tracking Desktop Client"
+            copyright = "© 2025 Progeek"
+            vendor = "Progeek"
+
+            // Minimize JVM modules for smaller size
+            modules(
+                "java.base",
+                "java.desktop",
+                "java.logging",
+                "java.net.http",
+                "java.sql",
+                "java.naming",
+                "jdk.crypto.ec"
+            )
         }
     }
 }

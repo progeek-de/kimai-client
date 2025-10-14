@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Kimai Desktop
+Comment=Time tracking desktop application
+Exec=kimai-desktop
+Icon=kimai-desktop
+Terminal=false
+Categories=Office;ProjectManagement;
+StartupWMClass=kimai-desktop
+MimeType=application/x-kimai;
+Keywords=time;tracking;timesheet;project;management;

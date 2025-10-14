@@ -52,11 +52,11 @@
 
 # Keep Serializers
 
--keep,includedescriptorclasses class com.company.package.**$$serializer { *; }  # <-- Change com.company.package
--keepclassmembers class com.company.package.** {  # <-- Change com.company.package to yours
+-keep,includedescriptorclasses class de.progeek.kimai.**$$serializer { *; }
+-keepclassmembers class de.progeek.kimai.** {
     *** Companion;
 }
--keepclasseswithmembers class com.company.package.** { # <-- Change com.company.package to yours
+-keepclasseswithmembers class de.progeek.kimai.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 
@@ -89,6 +89,19 @@
 # Prevent runtime crashes from use of class.java.getName()
 -dontwarn javax.naming.**
 
-# Ignore warnings and Don't obfuscate for now
+# Simplified ProGuard rules for Java 21 compatibility
 -dontobfuscate
+-dontoptimize
+-dontshrink
+
+# Keep main class
+-keep public class de.progeek.kimai.desktop.MainKt {
+    public static void main(java.lang.String[]);
+}
+
+# Keep all classes to avoid issues
+-keep class ** { *; }
+
+# Ignore all warnings for compatibility
+-dontwarn **
 -ignorewarnings
