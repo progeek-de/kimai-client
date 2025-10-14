@@ -100,7 +100,7 @@ compose.desktop {
         }
 
         nativeDistributions {
-            targetFormats(TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.AppImage, TargetFormat.Msi, TargetFormat.Exe)
+            targetFormats(TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.AppImage, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Dmg, TargetFormat.Pkg)
             packageName = "kimai"
             packageVersion = projectVersion
             description = "Kimai Time Tracking Desktop Client"
@@ -128,6 +128,29 @@ compose.desktop {
                 perUserInstall = true
                 dirChooser = true
                 upgradeUuid = "a4e8c89b-14f3-4657-9fe3-a9c6e8a38893"
+            }
+
+            macOS {
+                iconFile.set(project.file("src/jvmMain/resources/kimai_logo.icns"))
+                bundleID = "de.progeek.kimai.desktop"
+                packageName = "Kimai"
+                dockName = "Kimai"
+                packageBuildVersion = projectVersion
+                packageVersion = projectVersion
+                dmgPackageVersion = projectVersion
+                pkgPackageVersion = projectVersion
+                infoPlist {
+                    extraKeysRawXml = """
+                        <key>CFBundleName</key>
+                        <string>Kimai</string>
+                        <key>CFBundleDisplayName</key>
+                        <string>Kimai Time Tracking</string>
+                        <key>LSMinimumSystemVersion</key>
+                        <string>10.15</string>
+                        <key>NSHighResolutionCapable</key>
+                        <true/>
+                    """.trimIndent()
+                }
             }
         }
     }
