@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.jlleitschuh.gradle.ktlint)
     id("kotlin-parcelize")
     id("com.codingfeline.buildkonfig")
+    jacoco
 }
 
 dependencies {
@@ -252,4 +253,67 @@ configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
         reporter(ReporterType.HTML)
         reporter(ReporterType.PLAIN)
     }
+}
+// JaCoCo test coverage configuration
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn(tasks.named("jvmTest"))
+    group = "verification"
+    description = "Generate JaCoCo coverage reports for JVM tests"
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+
+    classDirectories.setFrom(
+        files(
+            fileTree("${layout.buildDirectory.get()}/classes/kotlin/jvm/main") {
+                exclude(
+                    "**/database/**",  // Exclude SQLDelight generated code
+                    "**/buildkonfig/**",  // Exclude BuildKonfig generated code
+                    "**/*\$*",  // Exclude inner classes
+                )
+            }
+        )
+    )
+
+    sourceDirectories.setFrom(files("src/commonMain/kotlin"))
+    executionData.setFrom(files("${layout.buildDirectory.get()}/jacoco/jvmTest.exec"))
+
+    doLast {
+        println("JaCoCo report generated: ${reports.html.outputLocation.get()}/index.html")
+    }
+}
+
+tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    dependsOn(tasks.named("jacocoTestReport"))
+    group = "verification"
+    description = "Verify JaCoCo coverage meets minimum threshold"
+
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.60".toBigDecimal()  // 60% minimum coverage
+            }
+        }
+    }
+
+    classDirectories.setFrom(
+        files(
+            fileTree("${layout.buildDirectory.get()}/classes/kotlin/jvm/main") {
+                exclude(
+                    "**/database/**",
+                    "**/buildkonfig/**",
+                    "**/*\$*",
+                )
+            }
+        )
+    )
+
+    executionData.setFrom(files("${layout.buildDirectory.get()}/jacoco/jvmTest.exec"))
 }
