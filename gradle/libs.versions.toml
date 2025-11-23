@@ -36,6 +36,10 @@ systemTray = "4.4"
 dorkboxOs = "1.11"
 napier = "2.7.1"
 
+# testing
+mockk = "1.13.8"
+turbine = "1.0.0"
+
 [plugins]
 
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
@@ -123,6 +127,11 @@ twitter-compose-rules = { module = "com.twitter.compose.rules:ktlint", version =
 
 # napier
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
+
+# testing
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 
 [bundles]
 ktor-client = ["ktor-client-core", "ktor-client-cio", "ktor-client-content-negotiation", "ktor-serialization-kotlinx-json", "ktor-client-logging"]

@@ -120,6 +120,22 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.moko.resources.test)
+
+                // testing framework
+                implementation(libs.mockk)
+                implementation(libs.turbine)
+                implementation(libs.kotlinx.coroutines.test)
+
+                // sqldelight in-memory driver for testing
+                implementation(libs.sqldelight.sqlite.driver)
+
+                // settings for test mocks
+                implementation(libs.settings.core)
+                implementation(libs.settings.noarg)
+
+                // koin for testing
+                implementation(libs.koin.core)
+                implementation("io.insert-koin:koin-test:3.5.2-RC1")
             }
         }
 

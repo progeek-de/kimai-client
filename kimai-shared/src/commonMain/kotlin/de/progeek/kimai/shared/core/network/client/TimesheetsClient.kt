@@ -98,12 +98,12 @@ class TimesheetsClient(
         }
     }
 
-    suspend fun getActiveTimesheets(): Result<List<TimesheetCollectionExpanded>> {
+    suspend fun getActiveTimesheets(): Result<List<TimesheetCollectionExpanded>> = kotlin.runCatching {
         val response = client.getActiveTimesheet()
 
-        return when(response.success) {
-            true -> Result.success(response.body())
-            false -> Result.failure(Throwable("Error while getting active timesheets"))
+        when(response.success) {
+            true -> response.body()
+            false -> throw Throwable("Error while getting active timesheets")
         }
     }
 }
