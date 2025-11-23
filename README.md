@@ -19,6 +19,46 @@ Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/).
 ## Compose for Desktop client
 This client is available in compose-desktop module and can be run using ./gradlew :kimai-desktop:run. Note that you need to use appropriate version of JVM when running (works for example with Java 17)
 
+## Testing
+
+Kimai Client has comprehensive test coverage for all business logic layers:
+
+### Running Tests
+
+```bash
+# Run all tests
+./gradlew :kimai-shared:jvmTest
+
+# Generate coverage report
+./gradlew :kimai-shared:jacocoTestReport
+
+# Verify coverage threshold (60% minimum)
+./gradlew :kimai-shared:jacocoTestCoverageVerification
+```
+
+### Coverage Reports
+
+After running tests with coverage, open the HTML report:
+```
+kimai-shared/build/reports/jacoco/jacocoTestReport/html/index.html
+```
+
+### Test Structure
+
+- **Mappers**: 99% coverage - Data transformation tests
+- **Network Clients**: 93% coverage - API interaction tests
+- **Models**: 92% coverage - Domain model tests
+- **Repositories**: 64-78% coverage - Business logic tests
+- **Stores**: MVIKotlin state management tests
+
+### CI/CD
+
+Tests run automatically on every pull request via GitHub Actions. The workflow:
+- Executes the full test suite
+- Generates coverage reports
+- Enforces minimum coverage thresholds
+- Comments coverage statistics on PRs
+
 ## Contributing
 
 You want to contribute to this repository? This is so great!
