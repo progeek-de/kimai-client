@@ -34,7 +34,7 @@ class SettingsStoreFactory(
             name = "SettingsStore",
             initialState = SettingsStore.State(
                 email = "",
-                theme = ThemeEnum.LIGHT,
+                theme = ThemeEnum.SYSTEM,
                 defaultProject = null,
                 projects = emptyList(),
                 language = getLanguages().first()
@@ -172,4 +172,3 @@ class SettingsStoreFactory(
             }
     }
 }
-

@@ -86,11 +86,10 @@ fun KimaiTheme(
 ) {
     val isSystemInDarkTheme = isSystemInDarkTheme()
 
-    val colorScheme = when {
-        theme == ThemeEnum.DARK -> DarkColors
-        theme == ThemeEnum.LIGHT -> LightColors
-        isSystemInDarkTheme -> DarkColors
-        else -> LightColors
+    val colorScheme = when (theme) {
+        ThemeEnum.DARK -> DarkColors
+        ThemeEnum.LIGHT -> LightColors
+        ThemeEnum.SYSTEM -> if (isSystemInDarkTheme) DarkColors else LightColors
     }
 
     CompositionLocalProvider(ThemeLocal provides theme) {

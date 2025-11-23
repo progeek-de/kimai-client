@@ -17,6 +17,7 @@ fun KimaiLogo(
     val resource = when(theme) {
         ThemeEnum.LIGHT -> SharedRes.images.kimai_logo
         ThemeEnum.DARK -> SharedRes.images.kimai_logo
+        ThemeEnum.SYSTEM -> SharedRes.images.kimai_logo
     }
 
     Image(

@@ -7,13 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidthIn
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
@@ -127,8 +121,7 @@ private fun InputButton(
             modifier = Modifier
                 .padding(end = 4.dp)
                 .requiredWidthIn(min = 96.dp)
-                .focusProperties { canFocus = false }, // crashes without this
-            shape = MaterialTheme.shapes.extraSmall,
+                .focusProperties { canFocus = false },
         ) {
             Text(if (isHovered) stringResource(SharedRes.strings.stop) else text, color =  MaterialTheme.colorScheme.error)
         }
@@ -144,7 +137,7 @@ private fun InputButton(
                 .padding(end = 4.dp)
                 .requiredWidthIn(min = 96.dp)
                 .focusProperties { canFocus = false }, // crashes without this
-            shape = MaterialTheme.shapes.extraLarge,
+            shape = MaterialTheme.shapes.extraSmall,
         ) {
             Text(text, color = Color.White)
         }
