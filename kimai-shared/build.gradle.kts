@@ -114,6 +114,9 @@ kotlin {
 
                 //napier logging
                 implementation(libs.napier)
+
+                // jira integration
+                implementation(libs.kotlin.jira.api)
             }
         }
 

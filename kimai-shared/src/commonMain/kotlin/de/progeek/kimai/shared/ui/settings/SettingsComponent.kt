@@ -5,6 +5,7 @@ import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import de.progeek.kimai.shared.KimaiDispatchers
+import de.progeek.kimai.shared.core.jira.models.JiraCredentials
 import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.ui.settings.store.SettingsStore
 import de.progeek.kimai.shared.ui.settings.store.SettingsStoreFactory
@@ -40,6 +41,38 @@ class SettingsComponent(
 
     fun onLanguageChange(language: Language) {
         store.accept(SettingsStore.Intent.ChangeLanguage(language))
+    }
+
+    // Jira Integration Methods
+
+    fun onSaveJiraConfig(
+        baseUrl: String,
+        credentials: JiraCredentials,
+        enabled: Boolean,
+        defaultProject: String?,
+        syncInterval: Int
+    ) {
+        store.accept(
+            SettingsStore.Intent.SaveJiraConfig(
+                baseUrl = baseUrl,
+                credentials = credentials,
+                enabled = enabled,
+                defaultProject = defaultProject,
+                syncInterval = syncInterval
+            )
+        )
+    }
+
+    fun onToggleJiraEnabled(enabled: Boolean) {
+        store.accept(SettingsStore.Intent.ToggleJiraEnabled(enabled))
+    }
+
+    fun onTestJiraConnection() {
+        store.accept(SettingsStore.Intent.TestJiraConnection)
+    }
+
+    fun onClearJiraCredentials() {
+        store.accept(SettingsStore.Intent.ClearJiraCredentials)
     }
 
     fun onOutput() {

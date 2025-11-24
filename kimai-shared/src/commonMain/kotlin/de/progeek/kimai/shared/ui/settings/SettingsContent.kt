@@ -23,6 +23,7 @@ fun SettingsContent(component: SettingsComponent) {
         })
         UserProfileSection(component)
         DefaultProjectSection(component)
+        JiraIntegrationSection(component)
         ThemeSection(component)
         LanguageSection(component)
     }

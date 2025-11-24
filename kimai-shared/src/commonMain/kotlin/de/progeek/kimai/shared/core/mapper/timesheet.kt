@@ -46,7 +46,19 @@ fun TimesheetForm.toTimesheet(): Timesheet {
         throw Throwable("ID, Project and Activity can't be null")
     }
 
-    return Timesheet(id, project, activity, begin, end, duration, description, exported = false)
+    return Timesheet(
+        id = id,
+        project = project,
+        activity = activity,
+        begin = begin,
+        end = end,
+        duration = duration,
+        description = description,
+        exported = false,
+        jiraIssueKey = null,
+        jiraIssueSummary = null,
+        jiraIssueStatus = null
+    )
 }
 
 fun TimesheetCollectionExpanded.toTimesheetForm(): TimesheetForm {

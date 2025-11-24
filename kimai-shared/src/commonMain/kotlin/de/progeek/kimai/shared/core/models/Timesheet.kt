@@ -11,7 +11,10 @@ data class Timesheet(
     val end: LocalDateTime?,
     val duration: Duration?,
     val description: String?,
-    val exported: Boolean
+    val exported: Boolean,
+    val jiraIssueKey: String? = null,
+    val jiraIssueSummary: String? = null,
+    val jiraIssueStatus: String? = null
 ) {
     val descriptionOrActivityName: String get() = description ?: activity.name
 }

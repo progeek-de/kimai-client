@@ -5,6 +5,7 @@ import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import de.progeek.kimai.shared.core.database.KimaiDatabase
 import de.progeek.kimai.shared.core.database.datasource.activity.ActivityDatasource
 import de.progeek.kimai.shared.core.database.datasource.customer.CustomerDatasource
+import de.progeek.kimai.shared.core.database.datasource.jira.JiraDatasource
 import de.progeek.kimai.shared.core.database.datasource.project.ProjectDatasource
 import de.progeek.kimai.shared.core.database.datasource.timesheet.TimesheetDatasource
 
@@ -41,6 +42,7 @@ fun clearDatabase(database: KimaiDatabase) {
     database.projectEntityQueries.deleteAll()
     database.activityEntityQueries.deleteAll()
     database.customerEntityQueries.deleteAll()
+    database.jiraIssueEntityQueries.deleteAll()
 }
 
 /**
@@ -58,7 +60,8 @@ data class TestDatasources(
     val timesheetDatasource: TimesheetDatasource,
     val projectDatasource: ProjectDatasource,
     val activityDatasource: ActivityDatasource,
-    val customerDatasource: CustomerDatasource
+    val customerDatasource: CustomerDatasource,
+    val jiraDatasource: JiraDatasource
 )
 
 /**
@@ -72,7 +75,8 @@ fun createTestDatasources(): TestDatasources {
         timesheetDatasource = TimesheetDatasource(database),
         projectDatasource = ProjectDatasource(database),
         activityDatasource = ActivityDatasource(database),
-        customerDatasource = CustomerDatasource(database)
+        customerDatasource = CustomerDatasource(database),
+        jiraDatasource = JiraDatasource(database)
     )
 }
 

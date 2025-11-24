@@ -39,6 +39,9 @@ internal inline fun toTimesheet(
         activity = Activity(
             id = ac_id, name = ac_name, project = pr_id
         ),
-        exported = exported == 1L
+        exported = exported == 1L,
+        jiraIssueKey = null,
+        jiraIssueSummary = null,
+        jiraIssueStatus = null
     )
 }

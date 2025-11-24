@@ -36,6 +36,9 @@ systemTray = "4.4"
 dorkboxOs = "1.11"
 napier = "2.7.1"
 
+# jira
+jiraApi = "0.0.1"
+
 # testing
 mockk = "1.13.8"
 turbine = "1.0.0"
@@ -127,6 +130,9 @@ twitter-compose-rules = { module = "com.twitter.compose.rules:ktlint", version =
 
 # napier
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
+
+# jira
+kotlin-jira-api = { module = "uk.co.andrewreed:kotlin-jira-api", version.ref = "jiraApi" }
 
 # testing
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }

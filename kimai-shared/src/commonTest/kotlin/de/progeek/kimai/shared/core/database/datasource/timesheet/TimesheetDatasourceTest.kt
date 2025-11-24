@@ -77,7 +77,10 @@ class TimesheetDatasourceTest {
         description: String? = "Test timesheet",
         project: Long = 1L,
         activity: Long = 1L,
-        exported: Long = 0L
+        exported: Long = 0L,
+        jiraIssueKey: String? = null,
+        jiraIssueSummary: String? = null,
+        jiraIssueStatus: String? = null
     ) = TimesheetEntity(
         id = id,
         begin = begin,
