@@ -5,9 +5,8 @@ import de.progeek.kimai.shared.ui.form.time.store.TimeFieldStore.*
 import kotlinx.datetime.LocalDateTime
 import kotlin.coroutines.CoroutineContext
 
-class TimeFieldExecutor(mainContext: CoroutineContext, ioContext: CoroutineContext)
-    : CoroutineExecutor<Intent, Unit, State, Message, Label>(mainContext)
-{
+class TimeFieldExecutor(mainContext: CoroutineContext, ioContext: CoroutineContext) :
+    CoroutineExecutor<Intent, Unit, State, Message, Label>(mainContext) {
     override fun executeIntent(intent: Intent, getState: () -> State) {
         when (intent) {
             is Intent.BeginChanged -> beginChanged(intent.begin)

@@ -38,7 +38,7 @@ kotlin {
             }
         }
     }
-    
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -112,7 +112,7 @@ kotlin {
                 implementation(libs.store.core)
                 implementation(libs.jetbrains.kotlinx.atomicfu)
 
-                //napier logging
+                // napier logging
                 implementation(libs.napier)
 
                 // jira integration
@@ -182,12 +182,12 @@ kotlin {
 buildkonfig {
     packageName = "de.progeek.kimai.shared"
 
-    val projectVersion = when(project.hasProperty("projVersion")) {
+    val projectVersion = when (project.hasProperty("projVersion")) {
         true -> project.properties["projVersion"]?.toString()
         false -> libs.versions.project.orNull
     }
 
-    val server = when(project.hasProperty("projServer")) {
+    val server = when (project.hasProperty("projServer")) {
         true -> project.properties["projServer"]?.toString()
         false -> "https://kimai.cloud"
     }
@@ -204,7 +204,6 @@ buildkonfig {
 
     targetConfigs("dev") {
         create("jvm") {
-
         }
     }
 }
@@ -277,9 +276,9 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         files(
             fileTree("${layout.buildDirectory.get()}/classes/kotlin/jvm/main") {
                 exclude(
-                    "**/database/**",  // Exclude SQLDelight generated code
-                    "**/buildkonfig/**",  // Exclude BuildKonfig generated code
-                    "**/*\$*",  // Exclude inner classes
+                    "**/database/**", // Exclude SQLDelight generated code
+                    "**/buildkonfig/**", // Exclude BuildKonfig generated code
+                    "**/*\$*" // Exclude inner classes
                 )
             }
         )
@@ -301,7 +300,7 @@ tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
     violationRules {
         rule {
             limit {
-                minimum = "0.60".toBigDecimal()  // 60% minimum coverage
+                minimum = "0.60".toBigDecimal() // 60% minimum coverage
             }
         }
     }
@@ -312,7 +311,7 @@ tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
                 exclude(
                     "**/database/**",
                     "**/buildkonfig/**",
-                    "**/*\$*",
+                    "**/*\$*"
                 )
             }
         )

@@ -24,21 +24,23 @@ internal class LoginStoreFactory(
     private val settingsRepository by inject<SettingsRepository>()
 
     fun create(mainContext: CoroutineContext, ioContext: CoroutineContext): LoginStore =
-        object : LoginStore, Store<Intent, State, Nothing> by storeFactory.create(
-            name = "LoginStore",
-            initialState = State(
-                isLoggedIn = false,
-                isLoading = false,
-                isError = false,
-                baseUrl = BuildKonfig.KIMAI_SERVER,
-                version = BuildKonfig.KIMAI_VER
-            ),
-            bootstrapper = SimpleBootstrapper(Unit),
-            executorFactory = {
-                ExecutorImpl(mainContext, ioContext)
-            },
-            reducer = ReducerImpl
-        ) {}
+        object :
+            LoginStore,
+            Store<Intent, State, Nothing> by storeFactory.create(
+                name = "LoginStore",
+                initialState = State(
+                    isLoggedIn = false,
+                    isLoading = false,
+                    isError = false,
+                    baseUrl = BuildKonfig.KIMAI_SERVER,
+                    version = BuildKonfig.KIMAI_VER
+                ),
+                bootstrapper = SimpleBootstrapper(Unit),
+                executorFactory = {
+                    ExecutorImpl(mainContext, ioContext)
+                },
+                reducer = ReducerImpl
+            ) {}
 
     private sealed class Msg {
         data object LoginSuccess : Msg()
@@ -49,7 +51,7 @@ internal class LoginStoreFactory(
 
     private inner class ExecutorImpl(
         mainContext: CoroutineContext,
-        private val ioContext: CoroutineContext,
+        private val ioContext: CoroutineContext
     ) : CoroutineExecutor<Intent, Unit, State, Msg, Nothing>(mainContext) {
 
         override fun executeAction(action: Unit, getState: () -> State) {
@@ -70,7 +72,7 @@ internal class LoginStoreFactory(
                     authRepository.login(email, password, baseUrl)
                 }
 
-                when(credentials != null) {
+                when (credentials != null) {
                     true -> dispatch(Msg.LoginSuccess)
                     false -> dispatch(Msg.LoginFailed)
                 }

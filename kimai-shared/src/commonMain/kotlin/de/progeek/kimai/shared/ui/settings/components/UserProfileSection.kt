@@ -41,4 +41,3 @@ fun UserProfileSection(component: SettingsComponent) {
         )
     }
 }
-

@@ -34,7 +34,7 @@ class TimesheetListComponent(
         bind(lifecycle, BinderLifecycleMode.CREATE_DESTROY) {
             scope.launch {
                 input.collectLatest {
-                    when(it) {
+                    when (it) {
                         Input.Reload -> store.accept(TimesheetListStore.Intent.Refresh)
                     }
                 }
@@ -58,6 +58,6 @@ class TimesheetListComponent(
     }
 
     sealed class Output {
-        data class Edit(val timesheet: Timesheet): Output()
+        data class Edit(val timesheet: Timesheet) : Output()
     }
 }

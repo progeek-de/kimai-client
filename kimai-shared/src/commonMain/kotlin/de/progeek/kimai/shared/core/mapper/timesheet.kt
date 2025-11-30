@@ -19,7 +19,7 @@ fun TimesheetCollection.toTimesheetEntity(): TimesheetEntity {
         description = this.description,
         project = this.project?.toLong() ?: -1,
         activity = this.activity?.toLong() ?: -1,
-        exported = if(this.exported) 1L else 0L
+        exported = if (this.exported) 1L else 0L
     )
 }
 
@@ -32,17 +32,23 @@ fun de.progeek.kimai.openapi.models.TimesheetEntity.toTimesheetEntity(): Timeshe
         description = this.description,
         project = this.project?.toLong() ?: -1,
         activity = this.activity?.toLong() ?: -1,
-        exported = if(this.exported) 1L else 0L
+        exported = if (this.exported) 1L else 0L
     )
 }
 
 fun Timesheet.toTimesheetForm(): TimesheetForm {
     return TimesheetForm(
-        id, project, activity, begin, end, duration, description
+        id,
+        project,
+        activity,
+        begin,
+        end,
+        duration,
+        description
     )
 }
 fun TimesheetForm.toTimesheet(): Timesheet {
-    if(id == null || project == null || activity == null) {
+    if (id == null || project == null || activity == null) {
         throw Throwable("ID, Project and Activity can't be null")
     }
 

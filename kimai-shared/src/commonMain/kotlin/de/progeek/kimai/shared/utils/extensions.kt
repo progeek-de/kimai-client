@@ -31,7 +31,7 @@ inline fun <T> T?.notNull(block: (T) -> Unit): T? {
     return this@notNull
 }
 
-inline fun <E: Any, T: Collection<E>> T.withEmpty(func: () -> T): T {
+inline fun <E : Any, T : Collection<E>> T.withEmpty(func: () -> T): T {
     if (this.isEmpty()) {
         return func()
     }

@@ -12,7 +12,7 @@ import androidx.core.view.WindowInsetsCompat
 
 @Composable
 actual fun rememberImeState(): State<Boolean?> {
-    val imeState = remember { mutableStateOf(false)}
+    val imeState = remember { mutableStateOf(false) }
 
     val view = LocalView.current
     DisposableEffect(view) {

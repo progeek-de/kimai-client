@@ -40,7 +40,7 @@ private fun Button() {
         Text(stringResource(SharedRes.strings.delete), color = MaterialTheme.colorScheme.error)
     }
 
-    if(deleteDialogOpen) {
+    if (deleteDialogOpen) {
         DeleteDialog(onDismiss = {
             deleteDialogOpen = false
         }) {

@@ -35,16 +35,17 @@ class TimesheetListStoreFactory(
     private val customerRepository by inject<CustomerRepository>()
 
     fun create(mainContext: CoroutineContext, ioContext: CoroutineContext): TimesheetListStore =
-        object : TimesheetListStore, Store<Intent, State, Label> by storeFactory.create(
-            name = "TimesheetListStore",
-            initialState = State(),
-            bootstrapper = SimpleBootstrapper(Unit),
-            executorFactory = { ExecutorImpl(mainContext, ioContext) },
-            reducer = ReducerImpl
-        ) {}
+        object :
+            TimesheetListStore,
+            Store<Intent, State, Label> by storeFactory.create(
+                name = "TimesheetListStore",
+                initialState = State(),
+                bootstrapper = SimpleBootstrapper(Unit),
+                executorFactory = { ExecutorImpl(mainContext, ioContext) },
+                reducer = ReducerImpl
+            ) {}
 
-    private sealed interface Action {
-    }
+    private sealed interface Action
 
     private sealed class Msg {
         data class LoadedTimesheets(val timesheets: List<GroupedTimesheet>) : Msg()
@@ -55,10 +56,10 @@ class TimesheetListStoreFactory(
 
     private inner class ExecutorImpl(
         mainContext: CoroutineContext,
-        private val ioContext: CoroutineContext,
+        private val ioContext: CoroutineContext
     ) : CoroutineExecutor<Intent, Unit, State, Msg, Label>(mainContext) {
         override fun executeIntent(intent: Intent, getState: () -> State) {
-            when(intent) {
+            when (intent) {
                 is Intent.LoadNextItems -> {
                     loadTimesheets(getState().page)
                 }
@@ -71,7 +72,6 @@ class TimesheetListStoreFactory(
             loadTimesheetsStream()
             loadTimesheets(getState().page)
         }
-
 
         private fun loadTimesheetsStream() {
             scope.launch {
@@ -136,7 +136,8 @@ class TimesheetListStoreFactory(
                     isLoading = false
                 )
                 is Msg.LoadedTimesheets -> copy(
-                    timesheets = msg.timesheets, isLoading = msg.timesheets.isEmpty()
+                    timesheets = msg.timesheets,
+                    isLoading = msg.timesheets.isEmpty()
                 )
                 is Msg.LoadedRunning -> copy(running = msg.form)
             }

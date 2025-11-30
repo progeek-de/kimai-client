@@ -30,7 +30,7 @@ class TimesheetInputComponent(
     init {
         bind(lifecycle, BinderLifecycleMode.CREATE_DESTROY) {
             store.labels.bindTo {
-                when(it) {
+                when (it) {
                     is TimesheetInputStore.Label.AddTimesheet -> output(
                         Output.ShowForm(TimesheetFormParams.AddTimesheet(it.description))
                     )

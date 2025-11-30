@@ -5,18 +5,18 @@ import de.progeek.kimai.shared.core.models.Timesheet
 sealed class TimesheetFormParams {
 
     data class EditTimesheet(
-        val timesheet: Timesheet,
+        val timesheet: Timesheet
     ) : TimesheetFormParams()
 
     data class EditRunningTimesheet(
-        val timesheet: Timesheet,
+        val timesheet: Timesheet
     ) : TimesheetFormParams()
 
     data class AddTimesheet(
-        val description: String?,
+        val description: String?
     ) : TimesheetFormParams()
 
     data class StartTimesheet(
-        val description: String?,
+        val description: String?
     ) : TimesheetFormParams()
 }

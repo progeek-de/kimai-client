@@ -40,7 +40,6 @@ interface TimesheetTopBarStore : Store<Intent, State, Label> {
     }
 }
 
-
 class TimesheetTopBarStoreFactory(
     private val storeFactory: StoreFactory
 ) : KoinComponent {
@@ -50,23 +49,25 @@ class TimesheetTopBarStoreFactory(
     private val timesheetRepository by inject<TimesheetRepository>()
 
     fun create(mainContext: CoroutineContext, ioContext: CoroutineContext): TimesheetTopBarStore =
-        object : TimesheetTopBarStore, Store<Intent, State, Label> by storeFactory.create(
-            name = "TimesheetTopBarStore",
-            initialState = State(),
-            bootstrapper = SimpleBootstrapper(Unit),
-            executorFactory = { ExecutorImpl(mainContext, ioContext) },
-            reducer = ReducerImpl
-        ) {}
+        object :
+            TimesheetTopBarStore,
+            Store<Intent, State, Label> by storeFactory.create(
+                name = "TimesheetTopBarStore",
+                initialState = State(),
+                bootstrapper = SimpleBootstrapper(Unit),
+                executorFactory = { ExecutorImpl(mainContext, ioContext) },
+                reducer = ReducerImpl
+            ) {}
 
     private sealed class Msg {
         data class BaseUrl(val baseUrl: String) : Msg()
         data class LoadedEntryMode(val mode: EntryMode) : Msg()
-        data class RunningTimesheet(val value: Boolean): Msg()
+        data class RunningTimesheet(val value: Boolean) : Msg()
     }
 
     private inner class ExecutorImpl(mainContext: CoroutineContext, private val ioContext: CoroutineContext) : CoroutineExecutor<Intent, Unit, State, Msg, Label>(mainContext) {
         override fun executeIntent(intent: Intent, getState: () -> State) {
-            when(intent) {
+            when (intent) {
                 is Intent.Logout -> logout()
                 is Intent.Reload -> publish(Label.Reload)
                 is Intent.SetMode -> saveEntryMode(intent.mode)
@@ -94,8 +95,9 @@ class TimesheetTopBarStoreFactory(
                 timesheetRepository.getRunningTimesheetStream().flowOn(ioContext).collectLatest {
                     dispatch(Msg.RunningTimesheet(value = it != null))
 
-                    if(it != null)
+                    if (it != null) {
                         saveEntryMode(EntryMode.TIMER)
+                    }
                 }
             }
 

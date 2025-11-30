@@ -32,4 +32,3 @@ fun LanguageSection(component: SettingsComponent) {
         }
     }
 }
-

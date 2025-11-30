@@ -12,7 +12,6 @@ import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.models.Timesheet
 import de.progeek.kimai.shared.core.models.TimesheetForm
 import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.test.Test

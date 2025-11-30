@@ -24,7 +24,7 @@ class CustomerDatasource(val database: KimaiDatabase) {
                     list.forEach { item ->
                         query.insertCustomer(
                             id = item.id,
-                            name = item.name,
+                            name = item.name
                         )
                     }
                 }

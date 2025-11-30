@@ -58,7 +58,6 @@ fun TimesheetTopBar(component: TimesheetTopBarComponent) {
 
 @Composable
 private fun TopAppBarActions() {
-
     var menuExpanded by remember { mutableStateOf(false) }
 
     IconButton(onClick = { menuExpanded = true }) {
@@ -81,9 +80,10 @@ private fun TopAppBarDropdownMenu(expanded: Boolean, onDismissRequest: () -> Uni
         DropdownMenuItem(
             leadingIcon = {
                 Icon(
-                imageVector = Icons.Filled.Refresh,
-                contentDescription = stringResource(SharedRes.strings.refresh)
-            )},
+                    imageVector = Icons.Filled.Refresh,
+                    contentDescription = stringResource(SharedRes.strings.refresh)
+                )
+            },
             text = {
                 Text(
                     stringResource(SharedRes.strings.refresh).uppercase(),
@@ -91,7 +91,7 @@ private fun TopAppBarDropdownMenu(expanded: Boolean, onDismissRequest: () -> Uni
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             },
-            onClick = {component.onIntent(Intent.Reload) }
+            onClick = { component.onIntent(Intent.Reload) }
         )
 
         DropdownMenuItem(
@@ -139,7 +139,8 @@ private fun TopAppBarDropdownMenu(expanded: Boolean, onDismissRequest: () -> Uni
         DropdownMenuItem(
             text = {
                 Text(
-                    stringResource(SharedRes.strings.settings), fontSize = 12.sp,
+                    stringResource(SharedRes.strings.settings),
+                    fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             },
@@ -159,7 +160,8 @@ private fun TopAppBarDropdownMenu(expanded: Boolean, onDismissRequest: () -> Uni
             },
             text = {
                 Text(
-                   stringResource(SharedRes.strings.dashboard), fontSize = 12.sp,
+                    stringResource(SharedRes.strings.dashboard),
+                    fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             },
@@ -171,7 +173,8 @@ private fun TopAppBarDropdownMenu(expanded: Boolean, onDismissRequest: () -> Uni
         DropdownMenuItem(
             text = {
                 Text(
-                    stringResource(SharedRes.strings.logout), fontSize = 12.sp,
+                    stringResource(SharedRes.strings.logout),
+                    fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             },

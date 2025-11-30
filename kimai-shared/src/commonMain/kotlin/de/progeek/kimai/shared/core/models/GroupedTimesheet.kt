@@ -6,5 +6,5 @@ import kotlin.time.Duration
 data class GroupedTimesheet(
     val date: LocalDateTime,
     val list: List<Timesheet>,
-    val total: Duration?,
+    val total: Duration?
 )

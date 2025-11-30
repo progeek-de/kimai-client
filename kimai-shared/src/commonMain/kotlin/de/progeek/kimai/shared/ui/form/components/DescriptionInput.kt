@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import de.progeek.kimai.shared.SharedRes
 import dev.icerock.moko.resources.compose.stringResource
 
-
 @Composable
 fun DescriptionInput(description: String, onDescriptionChange: (String) -> Unit) {
     DescriptionLabel()
@@ -30,7 +29,7 @@ private fun DescriptionLabel() {
     Column(
         horizontalAlignment = Alignment.Start,
         modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 12.dp)
-    ){
+    ) {
         Text(
             stringResource(SharedRes.strings.description),
             style = MaterialTheme.typography.labelLarge,
@@ -74,7 +73,7 @@ private fun Input(description: String, onDescriptionChange: (String) -> Unit) {
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                         focusedContainerColor = MaterialTheme.colorScheme.onSecondary,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.onSecondary
                     )
                 )
             }

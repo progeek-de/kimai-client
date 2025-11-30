@@ -36,7 +36,9 @@ class ActivityDatasource(val database: KimaiDatabase) {
                 query.transaction {
                     list.forEach { item ->
                         query.insertActivity(
-                            id = item.id, name = item.name, project = item.project
+                            id = item.id,
+                            name = item.name,
+                            project = item.project
                         )
                     }
                 }

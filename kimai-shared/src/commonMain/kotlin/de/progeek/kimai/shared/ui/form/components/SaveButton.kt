@@ -25,7 +25,8 @@ fun SaveButton() {
         enabled = ((state.project != null && state.activity != null)),
         onClick = {
             component.onIntent(FormStore.Intent.Save)
-        }) {
+        }
+    ) {
         Text(stringResource(SharedRes.strings.ok), color = Color.White)
     }
 }

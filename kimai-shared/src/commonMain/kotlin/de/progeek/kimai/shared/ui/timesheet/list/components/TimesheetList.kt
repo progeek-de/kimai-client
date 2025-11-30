@@ -34,10 +34,11 @@ fun TimesheetList(component: TimesheetListComponent) {
     val snackbarHostState = remember { SnackbarHostState() }
 
     val shouldStartPaginate = remember {
-        derivedStateOf { !state.isLoading
-                && !state.endReached
-                && lazyColumnListState.layoutInfo.totalItemsCount > 0
-                && (lazyColumnListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -9) >= (lazyColumnListState.layoutInfo.totalItemsCount - 6)
+        derivedStateOf {
+            !state.isLoading &&
+                !state.endReached &&
+                lazyColumnListState.layoutInfo.totalItemsCount > 0 &&
+                (lazyColumnListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -9) >= (lazyColumnListState.layoutInfo.totalItemsCount - 6)
         }
     }
     /*
@@ -48,54 +49,55 @@ fun TimesheetList(component: TimesheetListComponent) {
 
      */
     Scaffold(
-        snackbarHost =  {
+        snackbarHost = {
             SnackbarHost(
                 hostState = snackbarHostState,
                 modifier = Modifier
                     .fillMaxSize()
                     .wrapContentSize(Alignment.BottomCenter)
             )
-        },
+        }
     ) {
         Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp, horizontal = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        LazyColumn(Modifier.fillMaxWidth(), state = lazyColumnListState) {
-            items(state.timesheets) { timesheet ->
-                Column (modifier = Modifier.padding(bottom = 16.dp).shadow(4.dp)) {
-                    TimesheetHeader(timesheet)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp, horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            LazyColumn(Modifier.fillMaxWidth(), state = lazyColumnListState) {
+                items(state.timesheets) { timesheet ->
+                    Column(modifier = Modifier.padding(bottom = 16.dp).shadow(4.dp)) {
+                        TimesheetHeader(timesheet)
 
-                    timesheet.list.forEach { item ->
-                        TimesheetItem(
-                            timesheet = item,
-                            running = state.running,
-                            onTimesheetClick = {
-                                component.onOutput(TimesheetListComponent.Output.Edit(item))
-                            },
-                            onRestart = {
-                                component.onIntent(TimesheetListStore.Intent.Restart(item.id))
-                            },
-                            snackbarHostState = snackbarHostState
-                        )
-                        Divider(modifier = Modifier.fillMaxWidth())
+                        timesheet.list.forEach { item ->
+                            TimesheetItem(
+                                timesheet = item,
+                                running = state.running,
+                                onTimesheetClick = {
+                                    component.onOutput(TimesheetListComponent.Output.Edit(item))
+                                },
+                                onRestart = {
+                                    component.onIntent(TimesheetListStore.Intent.Restart(item.id))
+                                },
+                                snackbarHostState = snackbarHostState
+                            )
+                            Divider(modifier = Modifier.fillMaxWidth())
+                        }
                     }
                 }
-            }
 
-            item {
-                if (state.isLoading) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(8.dp),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        CircularProgressIndicator()
+                item {
+                    if (state.isLoading) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(8.dp),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
                 }
-            }
-        }}
+            } 
+        }
     }
 }
 
@@ -104,15 +106,14 @@ private fun TimesheetHeader(timesheet: GroupedTimesheet) {
     Row(
         modifier = Modifier.fillMaxWidth()
             .background(color = MaterialTheme.colorScheme.onSecondary)
-            .padding(16.dp)
-        ,
+            .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = timesheet.date.format("EEE d. MMM"),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
         )
 
         Row(
@@ -123,11 +124,15 @@ private fun TimesheetHeader(timesheet: GroupedTimesheet) {
             val hours = duration?.div(60)
             val minutes = duration?.rem(60)
 
-            Text( stringResource(
-                SharedRes.strings.total), color = MaterialTheme.colorScheme.onPrimaryContainer,
-                style = MaterialTheme.typography.bodyMedium,)
             Text(
-                "${hours}.${minutes} h",
+                stringResource(
+                    SharedRes.strings.total
+                ),
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                "$hours.$minutes h",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.surfaceTint
@@ -183,12 +188,12 @@ private fun TimesheetItem(
                 Text(
                     text = if (timesheet.exported) "⬆️ " else "\uD83C\uDF11 ",
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (timesheet.exported) Color.Green else MaterialTheme.colorScheme.primary,
+                    color = if (timesheet.exported) Color.Green else MaterialTheme.colorScheme.primary
                 )
                 Text(
                     text = timesheet.project.name,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     text = " - ${timesheet.project.parent}",
@@ -216,7 +221,7 @@ private fun TimesheetItem(
                 val minutes = duration?.rem(60)
 
                 Text(
-                    "${hours}.${minutes} h",
+                    "$hours.$minutes h",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.surfaceTint
                 )

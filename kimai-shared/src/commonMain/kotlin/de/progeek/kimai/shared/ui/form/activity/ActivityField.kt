@@ -24,7 +24,7 @@ fun ActivityField(component: ActivityFieldComponent) {
     Column(
         horizontalAlignment = Alignment.Start,
         modifier = Modifier.fillMaxWidth().padding(start = 8.dp, bottom = 6.dp)
-    ){
+    ) {
         Text(
             stringResource(SharedRes.strings.customer),
             style = MaterialTheme.typography.labelLarge,
@@ -32,8 +32,9 @@ fun ActivityField(component: ActivityFieldComponent) {
         )
     }
 
-    Row(modifier = Modifier.fillMaxWidth()
-        .padding(bottom = 12.dp)
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .padding(bottom = 12.dp)
     ) {
         ItemDropDown(
             state.filteredActivities.toTypedArray(),

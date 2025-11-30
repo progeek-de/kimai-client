@@ -11,7 +11,7 @@ import org.mobilenativefoundation.store.store5.impl.extensions.fresh
 class ProjectRepository(
     private val projectDataSource: ProjectDatasource,
     private val projectClient: ProjectClient
-)   {
+) {
 
     private val store = StoreBuilder
         .from(
@@ -19,10 +19,10 @@ class ProjectRepository(
                 projectClient.getProjects().getOrThrow()
             },
             sourceOfTruth = SourceOfTruth.of(
-                reader = {_ -> projectDataSource.getAll()},
-                writer = { _, list -> projectDataSource.insert(list)},
-                deleteAll = {projectDataSource.deleteAll()}
-            ),
+                reader = { _ -> projectDataSource.getAll() },
+                writer = { _, list -> projectDataSource.insert(list) },
+                deleteAll = { projectDataSource.deleteAll() }
+            )
         ).build()
 
     fun getProjects(): Flow<List<Project>> = store.stream(

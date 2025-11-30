@@ -1,6 +1,5 @@
 package de.progeek.kimai.shared.ui.form.components
 
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.*
@@ -13,7 +12,6 @@ import de.progeek.kimai.shared.ui.form.activity.ActivityField
 import de.progeek.kimai.shared.ui.form.customer.CustomerField
 import de.progeek.kimai.shared.ui.form.project.ProjectSelectionField
 import de.progeek.kimai.shared.ui.form.time.TimeField
-
 
 @Composable
 fun Form(snackbarHostState: SnackbarHostState) {
@@ -30,7 +28,6 @@ fun Form(snackbarHostState: SnackbarHostState) {
         modifier = Modifier.fillMaxWidth().padding(12.dp).padding(top = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         TimeField(component.timeFieldComponent, snackbarHostState)
         CustomerField(component.customerFieldComponent)
         ProjectSelectionField(component.projectFieldComponent)

@@ -12,7 +12,6 @@ import de.progeek.kimai.shared.ui.login.store.LoginStoreFactory
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
 
-
 class LoginComponent(
     componentContext: ComponentContext,
     storeFactory: StoreFactory,

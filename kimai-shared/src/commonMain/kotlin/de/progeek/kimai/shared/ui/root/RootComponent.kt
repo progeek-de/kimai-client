@@ -27,11 +27,11 @@ import kotlinx.coroutines.flow.StateFlow
 class RootComponent(
     componentContext: ComponentContext,
     val storeFactory: StoreFactory,
-    val dispatchers: KimaiDispatchers,
-): ComponentContext by componentContext {
+    val dispatchers: KimaiDispatchers
+) : ComponentContext by componentContext {
 
     private val store = instanceKeeper.getStore {
-        RootStoreFactory(storeFactory).create(dispatchers.main, dispatchers.io)
+        RootStoreFactory(storeFactory).create(dispatchers.main, dispatchers.io, dispatchers)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -40,7 +40,7 @@ class RootComponent(
     init {
         bind(lifecycle, BinderLifecycleMode.CREATE_DESTROY) {
             state.bindTo {
-                if(!it.isLoading) {
+                if (!it.isLoading) {
                     it.credentials.notNull { navigation.replaceAll(Configuration.Home) }
                         .isNull { navigation.replaceAll(Configuration.Login) }
                 }

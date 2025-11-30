@@ -30,7 +30,7 @@ fun VersionInfo() {
         ) {
             Text(
                 text = stringResource(SharedRes.strings.version, projectVersion),
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodySmall
             )
         }
     }

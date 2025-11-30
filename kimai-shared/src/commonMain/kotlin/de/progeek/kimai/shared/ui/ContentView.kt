@@ -15,7 +15,7 @@ import de.progeek.kimai.shared.ui.theme.KimaiTheme
 fun ContentView(component: RootComponent) {
     val state by component.state.collectAsState()
 
-    KimaiTheme (state.theme) {
+    KimaiTheme(state.theme) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background

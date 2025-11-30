@@ -41,22 +41,22 @@ fun LoginCard() {
 
     ) {
         Column(modifier = Modifier.width(400.dp).padding(30.dp, 50.dp)) {
-
             OutlinedTextField(
                 value = email,
                 onValueChange = {
                     if (it.contains('\t')) {
                         passwordFocusRequester.requestFocus()
                     } else if (it.contains('\n')) {
-                        if (isEmailValid && email.isNotEmpty() && password.isNotEmpty())
+                        if (isEmailValid && email.isNotEmpty() && password.isNotEmpty()) {
                             component.onLoginClick(email, password)
+                        }
                     } else {
                         email = it
                         isEmailValid = isValidEmail(it)
                     }
                 },
                 label = { Text(stringResource(SharedRes.strings.email)) },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).focusRequester(emailFocusRequester),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).focusRequester(emailFocusRequester)
             )
 
             OutlinedTextField(
@@ -65,15 +65,16 @@ fun LoginCard() {
                     if (it.contains('\t')) {
                         emailFocusRequester.requestFocus()
                     } else if (it.contains('\n')) {
-                        if (isEmailValid && email.isNotEmpty() && password.isNotEmpty())
+                        if (isEmailValid && email.isNotEmpty() && password.isNotEmpty()) {
                             component.onLoginClick(email, password)
+                        }
                     } else {
                         password = it
                     }
                 },
                 label = { Text(stringResource(SharedRes.strings.password)) },
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).focusRequester(passwordFocusRequester),
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = PasswordVisualTransformation()
             )
 
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -82,7 +83,7 @@ fun LoginCard() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 20.dp),
-                    enabled = isEmailValid && email.isNotBlank() && password.isNotBlank(),
+                    enabled = isEmailValid && email.isNotBlank() && password.isNotBlank()
                 ) {
                     Text(stringResource(SharedRes.strings.login).uppercase())
                 }
@@ -130,7 +131,7 @@ fun Footer() {
             ServerInfo()
             Text(
                 text = stringResource(SharedRes.strings.version, state.version),
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodySmall
             )
         }
     }
@@ -151,7 +152,7 @@ fun ServerInfo() {
             ) {
                 Text(
                     text = "Server:",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium
                 )
                 HostButton()
             }
@@ -168,9 +169,10 @@ fun HostButton() {
     TextButton(
         onClick = { dialogOpen = true }
     ) {
-        Text(state.baseUrl
-            .replace("https://", "")
-            .replace("http://", "")
+        Text(
+            state.baseUrl
+                .replace("https://", "")
+                .replace("http://", "")
         )
         Icon(
             imageVector = Icons.Rounded.ExpandMore,
@@ -179,7 +181,7 @@ fun HostButton() {
         )
     }
 
-    if(dialogOpen) {
+    if (dialogOpen) {
         ChangeBaseUrlDialog(
             baseUrl = state.baseUrl,
             onDismiss = { dialogOpen = false }
@@ -194,7 +196,7 @@ fun HostButton() {
 fun ChangeBaseUrlDialog(
     baseUrl: String,
     onDismiss: () -> Unit,
-    onChange: (baseUrl: String) -> Unit,
+    onChange: (baseUrl: String) -> Unit
 ) {
     var host by remember { mutableStateOf(baseUrl) }
 
@@ -228,10 +230,12 @@ fun ChangeBaseUrlDialog(
                         modifier = Modifier.padding(start = 8.dp),
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
                         onClick = { onChange(host) }
-                    ) { Text(
-                        stringResource(SharedRes.strings.ok),
-                        color = Color.White
-                    )}
+                    ) {
+                        Text(
+                            stringResource(SharedRes.strings.ok),
+                            color = Color.White
+                        )
+                    }
                 }
             }
         }

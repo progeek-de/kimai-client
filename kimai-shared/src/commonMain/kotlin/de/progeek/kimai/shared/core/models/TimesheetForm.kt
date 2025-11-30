@@ -13,5 +13,5 @@ data class TimesheetForm(
     val begin: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
     val end: LocalDateTime? = null,
     val duration: Duration? = null,
-    val description: String? = null,
+    val description: String? = null
 )

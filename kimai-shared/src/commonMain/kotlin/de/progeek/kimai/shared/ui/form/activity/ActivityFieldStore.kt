@@ -27,7 +27,7 @@ interface ActivityFieldStore : Store<Intent, State, Label> {
         internal val project: Project?,
         internal val activities: List<Activity> = emptyList(),
         val filteredActivities: List<Activity> = emptyList(),
-        val selectedActivity: Activity? = null,
+        val selectedActivity: Activity? = null
     )
 
     sealed interface Label {
@@ -41,16 +41,18 @@ class ActivityFieldStoreFactory(
     private val activityRepository by inject<ActivityRepository>()
 
     fun create(timesheet: Timesheet? = null, mainContext: CoroutineContext, ioContext: CoroutineContext): ActivityFieldStore =
-        object : ActivityFieldStore, Store<Intent, State, Label> by storeFactory.create(
-            name = "ActivityFieldStore",
-            initialState = State(
-                project = timesheet?.project,
-                selectedActivity = timesheet?.activity
-            ),
-            bootstrapper = SimpleBootstrapper(Unit),
-            executorFactory = { ExecutorImpl(mainContext, ioContext) },
-            reducer = ReducerImpl
-        ) {}
+        object :
+            ActivityFieldStore,
+            Store<Intent, State, Label> by storeFactory.create(
+                name = "ActivityFieldStore",
+                initialState = State(
+                    project = timesheet?.project,
+                    selectedActivity = timesheet?.activity
+                ),
+                bootstrapper = SimpleBootstrapper(Unit),
+                executorFactory = { ExecutorImpl(mainContext, ioContext) },
+                reducer = ReducerImpl
+            ) {}
 
     private sealed class Msg {
         data class LoadedActivities(val activities: List<Activity>) : Msg()
@@ -60,7 +62,7 @@ class ActivityFieldStoreFactory(
 
     private inner class ExecutorImpl(
         mainContext: CoroutineContext,
-        private val ioContext: CoroutineContext,
+        private val ioContext: CoroutineContext
     ) : CoroutineExecutor<Intent, Unit, State, Msg, Label>(mainContext) {
 
         override fun executeIntent(intent: Intent, getState: () -> State) {
@@ -94,7 +96,7 @@ class ActivityFieldStoreFactory(
                     }
                 )
                 is Msg.SelectedActivity -> copy(
-                    selectedActivity = msg.activity,
+                    selectedActivity = msg.activity
                 )
                 is Msg.UpdatedProject -> copy(
                     selectedActivity = null,
@@ -105,4 +107,3 @@ class ActivityFieldStoreFactory(
             }
     }
 }
-

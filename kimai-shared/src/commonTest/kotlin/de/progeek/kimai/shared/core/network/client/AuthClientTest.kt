@@ -22,11 +22,13 @@ class AuthClientTest {
     fun setup() {
         // Setup Koin for dependency injection testing
         startKoin {
-            modules(module {
-                factory { (baseUrl: String) ->
-                    mockk<DefaultApi>(relaxed = true)
+            modules(
+                module {
+                    factory { (baseUrl: String) ->
+                        mockk<DefaultApi>(relaxed = true)
+                    }
                 }
-            })
+            )
         }
         client = AuthClient()
     }
@@ -56,9 +58,11 @@ class AuthClientTest {
         // Replace the Koin module with our mocked API
         stopKoin()
         startKoin {
-            modules(module {
-                factory { (_: String) -> mockApi }
-            })
+            modules(
+                module {
+                    factory { (_: String) -> mockApi }
+                }
+            )
         }
 
         // Recreate client with new Koin context
@@ -92,9 +96,11 @@ class AuthClientTest {
 
         stopKoin()
         startKoin {
-            modules(module {
-                factory { (_: String) -> mockApi }
-            })
+            modules(
+                module {
+                    factory { (_: String) -> mockApi }
+                }
+            )
         }
 
         client = AuthClient()
@@ -124,9 +130,11 @@ class AuthClientTest {
 
         stopKoin()
         startKoin {
-            modules(module {
-                factory { (_: String) -> mockApi }
-            })
+            modules(
+                module {
+                    factory { (_: String) -> mockApi }
+                }
+            )
         }
 
         client = AuthClient()
@@ -156,9 +164,11 @@ class AuthClientTest {
 
         stopKoin()
         startKoin {
-            modules(module {
-                factory { (_: String) -> mockApi }
-            })
+            modules(
+                module {
+                    factory { (_: String) -> mockApi }
+                }
+            )
         }
 
         client = AuthClient()
@@ -183,9 +193,11 @@ class AuthClientTest {
 
         stopKoin()
         startKoin {
-            modules(module {
-                factory { (_: String) -> mockApi }
-            })
+            modules(
+                module {
+                    factory { (_: String) -> mockApi }
+                }
+            )
         }
 
         client = AuthClient()
@@ -211,9 +223,11 @@ class AuthClientTest {
 
         stopKoin()
         startKoin {
-            modules(module {
-                factory { (_: String) -> mockApi }
-            })
+            modules(
+                module {
+                    factory { (_: String) -> mockApi }
+                }
+            )
         }
 
         client = AuthClient()
@@ -239,9 +253,11 @@ class AuthClientTest {
 
         stopKoin()
         startKoin {
-            modules(module {
-                factory { (_: String) -> mockApi }
-            })
+            modules(
+                module {
+                    factory { (_: String) -> mockApi }
+                }
+            )
         }
 
         client = AuthClient()
@@ -272,9 +288,11 @@ class AuthClientTest {
 
         stopKoin()
         startKoin {
-            modules(module {
-                factory { (_: String) -> mockApi }
-            })
+            modules(
+                module {
+                    factory { (_: String) -> mockApi }
+                }
+            )
         }
 
         client = AuthClient()

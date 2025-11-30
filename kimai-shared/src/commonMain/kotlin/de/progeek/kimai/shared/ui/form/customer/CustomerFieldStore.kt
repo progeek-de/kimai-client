@@ -23,7 +23,7 @@ interface CustomerFieldStore : Store<Intent, State, Label> {
 
     data class State(
         internal val customers: List<Customer> = emptyList(),
-        val selectedCustomer: Customer? = null,
+        val selectedCustomer: Customer? = null
     )
 
     sealed interface Label {
@@ -37,14 +37,15 @@ class CustomerFieldStoreFactory(
     private val customerRepository by inject<CustomerRepository>()
 
     fun create(timesheet: Timesheet? = null, mainContext: CoroutineContext, ioContext: CoroutineContext): CustomerFieldStore =
-        object : CustomerFieldStore, Store<Intent, State, Label> by storeFactory.create(
-            name = "CustomerFieldStore",
-            initialState = State(selectedCustomer = timesheet?.project?.customer),
-            bootstrapper = SimpleBootstrapper(Unit),
-            executorFactory = { ExecutorImpl(mainContext, ioContext) },
-            reducer = ReducerImpl
-        ) {}
-
+        object :
+            CustomerFieldStore,
+            Store<Intent, State, Label> by storeFactory.create(
+                name = "CustomerFieldStore",
+                initialState = State(selectedCustomer = timesheet?.project?.customer),
+                bootstrapper = SimpleBootstrapper(Unit),
+                executorFactory = { ExecutorImpl(mainContext, ioContext) },
+                reducer = ReducerImpl
+            ) {}
 
     private sealed class Msg {
         data class LoadedCustomers(val projects: List<Customer>) : Msg()
@@ -53,7 +54,7 @@ class CustomerFieldStoreFactory(
 
     private inner class ExecutorImpl(
         mainContext: CoroutineContext,
-        private val ioContext: CoroutineContext,
+        private val ioContext: CoroutineContext
     ) : CoroutineExecutor<Intent, Unit, State, Msg, Label>(mainContext) {
         override fun executeIntent(intent: Intent, getState: () -> State) {
             when (intent) {
@@ -84,9 +85,8 @@ class CustomerFieldStoreFactory(
             when (msg) {
                 is Msg.LoadedCustomers -> copy(customers = msg.projects)
                 is Msg.SelectedCustomer -> copy(
-                    selectedCustomer = msg.customer,
+                    selectedCustomer = msg.customer
                 )
             }
     }
 }
-

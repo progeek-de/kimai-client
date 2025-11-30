@@ -15,7 +15,6 @@ import de.progeek.kimai.shared.ui.timesheet.models.TimesheetFormParams
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
 
-
 class CustomerFieldComponent(
     componentContext: FormComponentContext,
     val storeFactory: StoreFactory,
@@ -37,7 +36,7 @@ class CustomerFieldComponent(
     init {
         bind(lifecycle, BinderLifecycleMode.CREATE_DESTROY) {
             store.labels.bindTo {
-                when(it) {
+                when (it) {
                     is CustomerChanged -> it.customer?.apply {
                         output(Output.UpdatedCustomer(this))
                     }
@@ -56,7 +55,7 @@ class CustomerFieldComponent(
 
     companion object {
         private fun getTimesheet(params: TimesheetFormParams): Timesheet? {
-            return when(params) {
+            return when (params) {
                 is TimesheetFormParams.AddTimesheet -> null
                 is TimesheetFormParams.EditTimesheet -> params.timesheet
                 is TimesheetFormParams.EditRunningTimesheet -> params.timesheet

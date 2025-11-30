@@ -53,6 +53,5 @@ fun DeleteDialog(onDismiss: () -> Unit, onDelete: () -> Unit) {
                 }
             }
         }
-
     }
 }

@@ -12,10 +12,11 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDateTime
 
 @Composable
-internal fun EndTimeField(begin: LocalDateTime,
-                          end: LocalDateTime,
-                          snackbarHostState: SnackbarHostState,
-                          onEndChange: (LocalDateTime) -> Unit
+internal fun EndTimeField(
+    begin: LocalDateTime,
+    end: LocalDateTime,
+    snackbarHostState: SnackbarHostState,
+    onEndChange: (LocalDateTime) -> Unit
 ) {
     val endBeforeStartText = stringResource(SharedRes.strings.end_before_start)
     val closeText = stringResource(SharedRes.strings.close)
@@ -36,8 +37,9 @@ internal fun EndTimeField(begin: LocalDateTime,
                     }
 
                     begin
-                } else
+                } else {
                     it
+                }
             )
         }
     )

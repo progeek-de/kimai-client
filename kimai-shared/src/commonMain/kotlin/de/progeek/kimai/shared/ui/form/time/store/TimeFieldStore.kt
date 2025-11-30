@@ -16,7 +16,7 @@ interface TimeFieldStore : Store<Intent, State, Label> {
     data class State(
         val mode: TimeFieldMode,
         val begin: LocalDateTime,
-        val end: LocalDateTime?,
+        val end: LocalDateTime?
     )
 
     sealed class Intent {
@@ -33,14 +33,13 @@ interface TimeFieldStore : Store<Intent, State, Label> {
         data class BeginChanged(val begin: LocalDateTime) : Label()
         data class EndChanged(val end: LocalDateTime) : Label()
     }
-
 }
 
-internal class TimeFieldStoreFactory(private val storeFactory: StoreFactory): KoinComponent {
+internal class TimeFieldStoreFactory(private val storeFactory: StoreFactory) : KoinComponent {
 
     fun create(params: TimesheetFormParams, mainContext: CoroutineContext, ioContext: CoroutineContext): TimeFieldStore {
         fun getState(params: TimesheetFormParams): State {
-            return when(params) {
+            return when (params) {
                 is TimesheetFormParams.AddTimesheet -> {
                     val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                     State(TimeFieldMode.ADD, now, now)
@@ -53,12 +52,13 @@ internal class TimeFieldStoreFactory(private val storeFactory: StoreFactory): Ko
                 }
                 is TimesheetFormParams.StartTimesheet -> {
                     val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-                    State(TimeFieldMode.START,  now, null)
+                    State(TimeFieldMode.START, now, null)
                 }
             }
         }
 
-        return object : TimeFieldStore,
+        return object :
+            TimeFieldStore,
             Store<Intent, State, Label> by storeFactory.create(
                 name = "TimeFieldStore",
                 initialState = getState(params),

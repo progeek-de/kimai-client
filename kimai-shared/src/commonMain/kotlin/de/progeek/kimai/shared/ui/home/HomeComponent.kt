@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 class HomeComponent(
     componentContext: ComponentContext,
     val storeFactory: StoreFactory,
-    val dispatchers: KimaiDispatchers,
+    val dispatchers: KimaiDispatchers
 ) : ComponentContext by componentContext {
 
     private val store = instanceKeeper.getStore {
@@ -49,7 +49,8 @@ class HomeComponent(
     ): Child =
         when (configuration) {
             is Configuration.Form -> Child.Form(
-                FormComponent(DefaultFormComponentContext(componentContext, configuration.data),
+                FormComponent(
+                    DefaultFormComponentContext(componentContext, configuration.data),
                     storeFactory,
                     dispatchers,
                     ::onEditOutput
@@ -79,7 +80,7 @@ class HomeComponent(
             is FormComponent.Output.Close -> navigation.pop()
         }
 
-    private fun onSettingsOutput(output: SettingsComponent.Output) : Unit = when (output) {
+    private fun onSettingsOutput(output: SettingsComponent.Output): Unit = when (output) {
         is SettingsComponent.Output.Close -> navigation.pop()
     }
 

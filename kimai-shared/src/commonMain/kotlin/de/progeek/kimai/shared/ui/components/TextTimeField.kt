@@ -23,7 +23,6 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.atTime
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextTimeField(
@@ -34,7 +33,7 @@ fun TextTimeField(
     var focused by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
-    fun handleFocusChanged(state: FocusState)  {
+    fun handleFocusChanged(state: FocusState) {
         if (state.isFocused) {
             focused = true
         } else {
@@ -53,13 +52,13 @@ fun TextTimeField(
     }
 
     fun handleValueChanged(value: TextFieldValue) {
-        when(focused) {
+        when (focused) {
             false ->
 //                text = value
-            {
-                val digitValue = value.text.take(5)
-                text = text.copy(text = digitValue, selection = TextRange(digitValue.length))
-            }
+                {
+                    val digitValue = value.text.take(5)
+                    text = text.copy(text = digitValue, selection = TextRange(digitValue.length))
+                }
             true -> {
                 focused = false
                 text = text.copy(selection = TextRange(0, text.text.length))
@@ -68,7 +67,7 @@ fun TextTimeField(
     }
 
     BasicTextField(
-        modifier = Modifier.onFocusChanged{ handleFocusChanged(it) },
+        modifier = Modifier.onFocusChanged { handleFocusChanged(it) },
         value = text,
         onValueChange = { handleValueChanged(it) },
         textStyle = LocalTextStyle.current.copy(
@@ -81,10 +80,9 @@ fun TextTimeField(
         keyboardActions = KeyboardActions(onSearch = {
             focusManager.clearFocus()
         }),
-        cursorBrush = SolidColor(MaterialTheme.colorScheme.onPrimaryContainer),
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.onPrimaryContainer)
     )
 }
-
 
 private fun validateTimeString(time: String): String {
     var newTime = time.filter { char -> char.isDigit() || char == ':' }

@@ -25,7 +25,7 @@ class TimesheetTopBarComponent(
     init {
         bind(lifecycle, BinderLifecycleMode.CREATE_DESTROY) {
             store.labels.bindTo {
-                when(it) {
+                when (it) {
                     TimesheetTopBarStore.Label.Reload -> output(Output.Reload)
                 }
             }

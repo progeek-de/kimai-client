@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-
 class ProjectFieldComponent(
     componentContext: FormComponentContext,
     storeFactory: StoreFactory,
@@ -46,7 +45,7 @@ class ProjectFieldComponent(
         bind(lifecycle, BinderLifecycleMode.CREATE_DESTROY) {
             scope.launch {
                 input.collectLatest {
-                    when(it) {
+                    when (it) {
                         is Input.CustomerUpdated -> store.accept(
                             ProjectFieldStore.Intent.CustomerUpdated(it.customer)
                         )
@@ -55,7 +54,7 @@ class ProjectFieldComponent(
             }
 
             store.labels.bindTo {
-                when(it) {
+                when (it) {
                     is ProjectFieldStore.Label.ProjectChanged -> output(Output.UpdatedProject(it.project))
                 }
             }
@@ -76,7 +75,7 @@ class ProjectFieldComponent(
 
     companion object {
         private fun getTimesheet(params: TimesheetFormParams): Timesheet? {
-            return when(params) {
+            return when (params) {
                 is TimesheetFormParams.AddTimesheet -> null
                 is TimesheetFormParams.EditTimesheet -> params.timesheet
                 is TimesheetFormParams.EditRunningTimesheet -> params.timesheet

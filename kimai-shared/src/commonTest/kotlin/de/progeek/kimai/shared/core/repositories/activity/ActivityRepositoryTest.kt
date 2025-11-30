@@ -3,7 +3,6 @@ package de.progeek.kimai.shared.core.repositories.activity
 import app.cash.turbine.test
 import de.progeek.kimai.shared.core.database.datasource.activity.ActivityDatasource
 import de.progeek.kimai.shared.core.models.Activity
-import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.network.client.ActivityClient
 import de.progeek.kimai.shared.utils.clearDatabase
 import de.progeek.kimai.shared.utils.createTestDatasources

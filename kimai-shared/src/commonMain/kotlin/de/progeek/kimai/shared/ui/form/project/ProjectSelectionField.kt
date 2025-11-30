@@ -24,7 +24,7 @@ fun ProjectSelectionField(component: ProjectFieldComponent) {
     Column(
         horizontalAlignment = Alignment.Start,
         modifier = Modifier.fillMaxWidth().padding(start = 8.dp, bottom = 6.dp)
-    ){
+    ) {
         Text(
             stringResource(SharedRes.strings.project),
             style = MaterialTheme.typography.labelLarge,

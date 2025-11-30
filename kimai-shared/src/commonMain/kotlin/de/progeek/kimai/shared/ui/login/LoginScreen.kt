@@ -22,7 +22,7 @@ val LoginComponentLocal = compositionLocalOf<LoginComponent> {
 
 @Composable
 fun LoginScreen(component: LoginComponent) {
-    CompositionLocalProvider( LoginComponentLocal provides component) {
+    CompositionLocalProvider(LoginComponentLocal provides component) {
         LoginContent()
     }
 }
@@ -33,7 +33,7 @@ private fun LoginContent() {
     val scrollState = rememberScrollState()
 
     LaunchedEffect(key1 = imeState.value) {
-        if (imeState.value == true){
+        if (imeState.value == true) {
             scrollState.scrollTo(scrollState.maxValue)
         }
     }

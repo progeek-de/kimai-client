@@ -88,8 +88,9 @@ fun RunningTimeField(
                                 }
 
                                 currentLocalTime
-                            } else
+                            } else {
                                 it
+                            }
                         )
                     }
                 )
@@ -113,7 +114,7 @@ fun RunningTimeField(
                 Text(
                     duration.toComponents { hours, minutes, seconds, _ ->
                         "${hours.toString().padStart(2, '0')}:${
-                            minutes.toString().padStart(2, '0')
+                        minutes.toString().padStart(2, '0')
                         }:${seconds.toString().padStart(2, '0')}"
                     },
                     color = MaterialTheme.colorScheme.surfaceTint,
@@ -122,6 +123,4 @@ fun RunningTimeField(
             }
         }
     }
-
-
 }

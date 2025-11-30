@@ -17,27 +17,29 @@ import kotlin.coroutines.CoroutineContext
 
 class HomeStoreFactory(
     private val storeFactory: StoreFactory
-): KoinComponent {
+) : KoinComponent {
 
     private val activityRepository by inject<ActivityRepository>()
     private val projectRepository by inject<ProjectRepository>()
     private val customerRepository by inject<CustomerRepository>()
 
     fun create(mainContext: CoroutineContext, ioContext: CoroutineContext): HomeStore =
-        object : HomeStore, Store<Unit, State, Unit> by storeFactory.create(
-            name = "HomeStore",
-            initialState = State(),
-            bootstrapper = BootstrapperImpl(),
-            executorFactory = { ExecutorImpl(mainContext, ioContext) },
-            reducer = ReducerImpl
-        ) {}
+        object :
+            HomeStore,
+            Store<Unit, State, Unit> by storeFactory.create(
+                name = "HomeStore",
+                initialState = State(),
+                bootstrapper = BootstrapperImpl(),
+                executorFactory = { ExecutorImpl(mainContext, ioContext) },
+                reducer = ReducerImpl
+            ) {}
 
     private sealed interface Action {
         data object Sync : Action
     }
 
     private sealed interface Msg {
-        data class Loading(val isLoading: Boolean): Msg
+        data class Loading(val isLoading: Boolean) : Msg
     }
 
     private class BootstrapperImpl : CoroutineBootstrapper<Action>() {
@@ -48,12 +50,12 @@ class HomeStoreFactory(
 
     private inner class ExecutorImpl(
         mainContext: CoroutineContext,
-        private val ioContext: CoroutineContext,
+        private val ioContext: CoroutineContext
     ) : CoroutineExecutor<Unit, Action, State, Msg, Unit>(mainContext) {
 
         override fun executeAction(action: Action, getState: () -> State) {
             dispatch(Msg.Loading(true))
-            when(action) {
+            when (action) {
                 Action.Sync -> sync()
             }
         }

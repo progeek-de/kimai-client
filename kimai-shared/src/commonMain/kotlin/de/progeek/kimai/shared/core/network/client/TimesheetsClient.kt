@@ -15,14 +15,14 @@ import kotlin.time.toDuration
 class TimesheetsClient(
     settings: ObservableSettings,
     aesCipher: AesGCMCipher,
-    private val client: TimesheetApi,
-): CredentialsListener(settings, aesCipher, client) {
+    private val client: TimesheetApi
+) : CredentialsListener(settings, aesCipher, client) {
 
     suspend fun getTimeSheets(beforeDate: Instant, pageSize: Int): Result<List<TimesheetCollection>> =
         kotlin.runCatching {
             val end = beforeDate.minus(1L.toDuration(DurationUnit.SECONDS)).format(datetimeFormat)
             val response = client.getGetTimesheets(end = end, size = "$pageSize")
-            when(response.success) {
+            when (response.success) {
                 true -> response.body()
                 false -> throw Throwable("Error while getting timesheets")
             }
@@ -38,17 +38,18 @@ class TimesheetsClient(
 
     suspend fun updateTimesheet(newTimesheet: TimesheetForm): Result<TimesheetEntity> =
         kotlin.runCatching {
-            val response = client.patchPatchTimesheet(newTimesheet.id.toString(),
+            val response = client.patchPatchTimesheet(
+                newTimesheet.id.toString(),
                 TimesheetEditForm(
                     begin = newTimesheet.begin.format(datetimeFormat),
                     end = newTimesheet.end?.format(datetimeFormat),
                     project = newTimesheet.project!!.id.toInt(),
                     activity = newTimesheet.activity!!.id.toInt(),
-                    description = newTimesheet.description,
+                    description = newTimesheet.description
                 )
             )
 
-            when(response.success) {
+            when (response.success) {
                 true -> response.body()
                 false -> throw Throwable("Error while updating timesheet")
             }
@@ -63,7 +64,7 @@ class TimesheetsClient(
 
     suspend fun restartTimesheet(id: Long): Result<TimesheetEntity> = kotlin.runCatching {
         val response = client.patchRestartTimesheet("$id", GetRestartTimesheetGetRequest(copy = "all"))
-        when(response.success) {
+        when (response.success) {
             true -> response.body()
             false -> throw Throwable("Error while restarting timesheet")
         }
@@ -71,14 +72,14 @@ class TimesheetsClient(
 
     suspend fun stopTimesheet(id: Long): Result<TimesheetEntity> = kotlin.runCatching {
         val response = client.patchStopTimesheet("$id")
-        when(response.success) {
+        when (response.success) {
             true -> response.body()
             false -> throw Throwable("Error while stopping timesheet")
         }
     }
 
     suspend fun createTimesheet(timesheet: TimesheetForm): Result<TimesheetEntity> = kotlin.runCatching {
-        if(timesheet.activity == null || timesheet.project == null) {
+        if (timesheet.activity == null || timesheet.project == null) {
             throw Throwable("Activity and Project can't be null")
         }
 
@@ -88,11 +89,11 @@ class TimesheetsClient(
                 end = timesheet.end?.format(datetimeFormat),
                 project = timesheet.project.id.toInt(),
                 activity = timesheet.activity.id.toInt(),
-                description = timesheet.description,
+                description = timesheet.description
             )
         )
 
-        return when(response.success) {
+        return when (response.success) {
             true -> Result.success(response.body())
             false -> Result.failure(Throwable("Error while updating timesheet"))
         }
@@ -101,7 +102,7 @@ class TimesheetsClient(
     suspend fun getActiveTimesheets(): Result<List<TimesheetCollectionExpanded>> = kotlin.runCatching {
         val response = client.getActiveTimesheet()
 
-        when(response.success) {
+        when (response.success) {
             true -> response.body()
             false -> throw Throwable("Error while getting active timesheets")
         }
