@@ -58,8 +58,3 @@ fun List<JiraIssue>.toJiraIssueEntities(): List<JiraIssueEntity> {
 fun List<JiraIssueEntity>.toJiraIssues(): List<JiraIssue> {
     return this.map { it.toJiraIssue() }
 }
-
-// TODO: Add mappers for kotlin-jira-api models when library is integrated
-// For example:
-// fun uk.co.andrewreed.jira.api.models.Issue.toJiraIssue(): JiraIssue { ... }
-// fun JiraIssue.toApiIssue(): uk.co.andrewreed.jira.api.models.Issue { ... }

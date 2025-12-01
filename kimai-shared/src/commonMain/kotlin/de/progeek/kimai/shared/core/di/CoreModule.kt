@@ -16,6 +16,6 @@ fun initKoin(appDeclaration: KoinAppDeclaration = {}) =
             repositoriesModule(),
             storageModule(),
             networkModule(),
-            jiraModule(),
+            jiraModule()
         )
     }

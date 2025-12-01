@@ -8,8 +8,8 @@ import com.russhwolf.settings.coroutines.getLongOrNullFlow
 import com.russhwolf.settings.coroutines.getStringFlow
 import com.russhwolf.settings.coroutines.getStringOrNullFlow
 import de.progeek.kimai.shared.BuildKonfig
-import de.progeek.kimai.shared.core.jira.models.JiraAuthMethod
 import de.progeek.kimai.shared.core.jira.models.JiraCredentials
+import de.progeek.kimai.shared.core.jira.models.SerializableAuthMethod
 import de.progeek.kimai.shared.core.models.EntryMode
 import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.storage.credentials.AesGCMCipher
@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.map
 class SettingsRepository(
     private val settings: ObservableSettings,
     private val aesCipher: AesGCMCipher
-)   {
+) {
 
     companion object {
         private const val JIRA_BASE_URL_KEY = "JIRA_BASE_URL"
@@ -41,21 +41,21 @@ class SettingsRepository(
     }
 
     fun saveDefaultProject(project: Project): Project {
-        settings.putLong ("DEFAULT_PROJECT", project.id)
+        settings.putLong("DEFAULT_PROJECT", project.id)
         return project
     }
 
     @OptIn(ExperimentalSettingsApi::class)
     fun getTheme(): Flow<ThemeEnum> {
-        return settings.getStringFlow ("THEME", "LIGHT").map { ThemeEnum.valueOf(it) }
+        return settings.getStringFlow("THEME", "LIGHT").map { ThemeEnum.valueOf(it) }
     }
 
     @OptIn(ExperimentalSettingsApi::class)
     fun getDefaultProject(): Flow<Long?> {
-        return settings.getLongOrNullFlow ("DEFAULT_PROJECT")
+        return settings.getLongOrNullFlow("DEFAULT_PROJECT")
     }
 
-    fun clearDefaultProject(){
+    fun clearDefaultProject() {
         return settings.remove("DEFAULT_PROJECT")
     }
 
@@ -97,9 +97,9 @@ class SettingsRepository(
     }
 
     fun saveJiraCredentials(credentials: JiraCredentials) {
-        val token = when (credentials.authMethod) {
-            is JiraAuthMethod.ApiToken -> credentials.authMethod.token
-            is JiraAuthMethod.PersonalAccessToken -> credentials.authMethod.token
+        val token = when (val method = credentials.authMethod) {
+            is SerializableAuthMethod.ApiToken -> method.token
+            is SerializableAuthMethod.PersonalAccessToken -> method.token
         }
         // Encrypt the token
         val encrypted = aesCipher.encryptString(token)
@@ -108,10 +108,13 @@ class SettingsRepository(
         settings.putString(JIRA_AUTH_METHOD_KEY, credentials.authMethod::class.simpleName ?: "ApiToken")
 
         // Save email if using API Token
-        if (credentials.authMethod is JiraAuthMethod.ApiToken) {
-            settings.putString(JIRA_EMAIL_KEY, credentials.authMethod.email)
-        } else {
-            settings.remove(JIRA_EMAIL_KEY)
+        when (val method = credentials.authMethod) {
+            is SerializableAuthMethod.ApiToken -> {
+                settings.putString(JIRA_EMAIL_KEY, method.email)
+            }
+            is SerializableAuthMethod.PersonalAccessToken -> {
+                settings.remove(JIRA_EMAIL_KEY)
+            }
         }
     }
 
@@ -120,16 +123,20 @@ class SettingsRepository(
         return settings.getStringOrNullFlow(JIRA_CREDENTIALS_KEY).map { encryptedToken ->
             encryptedToken?.let {
                 val token = aesCipher.decryptString(it)
-                token?.let { decryptedToken ->
+                val baseUrl = settings.getStringOrNull(JIRA_BASE_URL_KEY)
+
+                if (token != null && baseUrl != null) {
                     val authMethodName = settings.getStringOrNull(JIRA_AUTH_METHOD_KEY) ?: "ApiToken"
                     val authMethod = if (authMethodName == "ApiToken") {
                         val email = settings.getStringOrNull(JIRA_EMAIL_KEY) ?: ""
-                        JiraAuthMethod.ApiToken(email, decryptedToken)
+                        SerializableAuthMethod.ApiToken(email, token)
                     } else {
-                        JiraAuthMethod.PersonalAccessToken(decryptedToken)
+                        SerializableAuthMethod.PersonalAccessToken(token)
                     }
 
-                    JiraCredentials(authMethod)
+                    JiraCredentials(baseUrl, authMethod)
+                } else {
+                    null
                 }
             }
         }

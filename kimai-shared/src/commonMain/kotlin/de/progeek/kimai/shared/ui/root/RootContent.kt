@@ -14,7 +14,7 @@ import de.progeek.kimai.shared.ui.login.LoginScreen
 fun RootContent(component: RootComponent) {
     Children(
         stack = component.childStack,
-        animation = stackAnimation(fade() + scale()),
+        animation = stackAnimation(fade() + scale())
     ) {
         when (val child = it.instance) {
             is RootComponent.Child.Login -> LoginScreen(child.component)

@@ -16,6 +16,12 @@ import kotlin.time.Duration.Companion.minutes
  * Uses Store5 for cache management with 15-minute expiration policy.
  * Data flows from JiraClient (network) → JiraDatasource (local cache) → UI
  *
+ * ## Store5 Design Decision
+ * This repository uses a single-key store (empty string as key) because:
+ * - All issues are fetched with a single JQL query
+ * - The local database is the source of truth for all cached issues
+ * - Local filtering is performed in JiraDatasource for search operations
+ *
  * @property jiraDatasource Local database datasource for Jira issues
  * @property jiraClient Client for Jira API operations
  */
@@ -23,48 +29,78 @@ class JiraRepository(
     private val jiraDatasource: JiraDatasource,
     private val jiraClient: JiraClient
 ) {
+    companion object {
+        /**
+         * Single key for the issues store.
+         * We use a single-key approach since all issues are cached together.
+         */
+        private const val ISSUES_STORE_KEY = "all_issues"
+
+        /**
+         * Default JQL for fetching issues.
+         */
+        private const val DEFAULT_FETCH_JQL = "updated >= -30d ORDER BY updated DESC"
+
+        /**
+         * Maximum issues to fetch per sync.
+         */
+        private const val MAX_FETCH_RESULTS = 100
+    }
 
     /**
      * Store5 configuration for Jira issues cache.
      *
-     * - Fetcher: Fetches issues from Jira API using JiraClient
+     * - Fetcher: Fetches issues from Jira API using JiraClient with default JQL
      * - SourceOfTruth: Local SQLite database via JiraDatasource
      * - MemoryPolicy: 15-minute expiration for cached data
      */
     private val issuesStore = StoreBuilder
         .from(
-            fetcher = Fetcher.of { query: String ->
-                // Fetch from Jira API
-                // TODO: Replace with actual JQL when kotlin-jira-api is integrated
-                jiraClient.searchIssues(query, maxResults = 100).getOrThrow()
+            fetcher = Fetcher.of { _: String ->
+                // Always fetch with the default JQL - local filtering handles search
+                jiraClient.search(DEFAULT_FETCH_JQL, maxResults = MAX_FETCH_RESULTS).getOrThrow()
             },
             sourceOfTruth = SourceOfTruth.of(
                 reader = { _: String -> jiraDatasource.getAll() },
                 writer = { _: String, issues: List<JiraIssue> ->
                     jiraDatasource.insert(issues)
                 },
+                delete = { _: String -> jiraDatasource.deleteAll() },
                 deleteAll = { jiraDatasource.deleteAll() }
             )
         )
         .cachePolicy(
             MemoryPolicy.builder<String, List<JiraIssue>>()
                 .setExpireAfterWrite(15.minutes)
+                .setMaxSize(1L) // Single key store
                 .build()
         )
         .build()
 
     /**
-     * Search for Jira issues using JQL query.
+     * Get all Jira issues with automatic refresh.
      *
      * Returns cached data if available and not expired, otherwise fetches from network.
+     * Use this for displaying the full list of issues.
      *
-     * @param jql JQL query string (e.g., "project = PROJ AND status = 'In Progress'")
-     * @return Flow of matching issues
+     * @return Flow of all cached issues
      */
-    fun searchIssues(jql: String): Flow<List<JiraIssue>> {
+    fun getAllIssues(): Flow<List<JiraIssue>> {
         return issuesStore.stream(
-            StoreReadRequest.cached(jql, refresh = false)
+            StoreReadRequest.cached(ISSUES_STORE_KEY, refresh = true)
         ).map { it.dataOrNull() ?: emptyList() }
+    }
+
+    /**
+     * Search for Jira issues using JQL query.
+     *
+     * @param jql JQL query string (currently uses default, kept for API compatibility)
+     * @return Flow of matching issues
+     * @deprecated Use getAllIssues() for full list or searchCached() for filtering
+     */
+    @Suppress("UNUSED_PARAMETER")
+    fun searchIssues(jql: String): Flow<List<JiraIssue>> {
+        return getAllIssues()
     }
 
     /**
@@ -110,17 +146,43 @@ class JiraRepository(
     }
 
     /**
-     * Search cached issues by query string.
+     * Search cached issues by query string (local only).
      *
      * Searches both issue key and summary fields.
-     * Useful for local autocomplete when offline.
+     * Useful for autocomplete in TimesheetInputField.
      *
      * @param query Search query
      * @param limit Maximum number of results (default 50)
-     * @return Result with matching issues
+     * @return Result with matching issues sorted by key
      */
     suspend fun searchCached(query: String, limit: Long = 50): Result<List<JiraIssue>> {
         return jiraDatasource.search(query, limit)
+    }
+
+    /**
+     * Search issues with local-first strategy and remote fallback.
+     *
+     * First searches local cache. If no results found, queries remote Jira API.
+     * Useful for JiraIssuePickerDialog where comprehensive search is needed.
+     *
+     * @param query Search query
+     * @param limit Maximum number of results (default 50)
+     * @return Result with matching issues sorted by key
+     */
+    suspend fun searchWithFallback(query: String, limit: Long = 100): Result<List<JiraIssue>> {
+        // First: try local cache
+        val localResult = jiraDatasource.search(query, limit)
+        if (localResult.isSuccess && localResult.getOrNull()?.isNotEmpty() == true) {
+            return localResult
+        }
+
+        // Fallback: query remote API with text search JQL
+        val jql = "text ~ \"$query\" ORDER BY key ASC"
+        return jiraClient.search(jql, maxResults = limit.toInt()).map { issues ->
+            // Cache remote results for future local searches
+            jiraDatasource.insert(issues)
+            issues.sortedBy { it.key }
+        }
     }
 
     /**
@@ -128,12 +190,13 @@ class JiraRepository(
      *
      * Clears cache and fetches fresh data.
      *
-     * @param jql JQL query to refresh (default: empty string for default query)
+     * @param jql JQL query (ignored - uses default query)
      */
     @OptIn(ExperimentalStoreApi::class)
+    @Suppress("UNUSED_PARAMETER")
     suspend fun invalidateCache(jql: String = "") {
         issuesStore.clear()
-        issuesStore.fresh(jql)
+        issuesStore.fresh(ISSUES_STORE_KEY)
     }
 
     /**

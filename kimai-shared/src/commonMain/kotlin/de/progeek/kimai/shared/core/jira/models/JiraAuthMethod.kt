@@ -26,16 +26,3 @@ sealed class JiraAuthMethod {
         val token: String
     ) : JiraAuthMethod()
 }
-
-/**
- * Detect authentication method based on Jira base URL.
- *
- * @param baseUrl Jira base URL
- * @return Suggested authentication method type
- */
-fun detectAuthMethodType(baseUrl: String): String {
-    return when {
-        baseUrl.contains(".atlassian.net") -> "API_TOKEN"
-        else -> "PERSONAL_ACCESS_TOKEN"
-    }
-}

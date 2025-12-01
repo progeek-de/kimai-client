@@ -31,7 +31,7 @@ class RootComponent(
 ) : ComponentContext by componentContext {
 
     private val store = instanceKeeper.getStore {
-        RootStoreFactory(storeFactory).create(dispatchers.main, dispatchers.io, dispatchers)
+        RootStoreFactory(storeFactory).create(dispatchers.main, dispatchers.io)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

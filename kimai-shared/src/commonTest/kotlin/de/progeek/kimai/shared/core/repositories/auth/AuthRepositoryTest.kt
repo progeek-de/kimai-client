@@ -88,9 +88,13 @@ class AuthRepositoryTest {
         verify { mockTimesheetsClient.refresh(testBaseUrl, any()) }
 
         // Verify credentials were saved
-        coVerify { mockCredentialsRepo.save(match {
-            it.email == testEmail && it.password == testPassword
-        }) }
+        coVerify {
+            mockCredentialsRepo.save(
+                match {
+                    it.email == testEmail && it.password == testPassword
+                }
+            )
+        }
 
         // Verify base URL was saved
         verify { mockSettings.putString(BASE_URL_KEY, testBaseUrl) }
@@ -130,18 +134,38 @@ class AuthRepositoryTest {
         repository.login(testEmail, testPassword, testBaseUrl)
 
         // Then - verify each client's refresh was called exactly once
-        verify(exactly = 1) { mockActivityClient.refresh(testBaseUrl, match {
-            it.email == testEmail && it.password == testPassword
-        }) }
-        verify(exactly = 1) { mockCustomerClient.refresh(testBaseUrl, match {
-            it.email == testEmail && it.password == testPassword
-        }) }
-        verify(exactly = 1) { mockProjectClient.refresh(testBaseUrl, match {
-            it.email == testEmail && it.password == testPassword
-        }) }
-        verify(exactly = 1) { mockTimesheetsClient.refresh(testBaseUrl, match {
-            it.email == testEmail && it.password == testPassword
-        }) }
+        verify(exactly = 1) {
+            mockActivityClient.refresh(
+                testBaseUrl,
+                match {
+                    it.email == testEmail && it.password == testPassword
+                }
+            )
+        }
+        verify(exactly = 1) {
+            mockCustomerClient.refresh(
+                testBaseUrl,
+                match {
+                    it.email == testEmail && it.password == testPassword
+                }
+            )
+        }
+        verify(exactly = 1) {
+            mockProjectClient.refresh(
+                testBaseUrl,
+                match {
+                    it.email == testEmail && it.password == testPassword
+                }
+            )
+        }
+        verify(exactly = 1) {
+            mockTimesheetsClient.refresh(
+                testBaseUrl,
+                match {
+                    it.email == testEmail && it.password == testPassword
+                }
+            )
+        }
     }
 
     @Test

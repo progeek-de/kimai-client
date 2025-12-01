@@ -8,7 +8,6 @@ import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import de.progeek.kimai.shared.core.jira.client.JiraClient
 import de.progeek.kimai.shared.core.jira.models.JiraCredentials
 import de.progeek.kimai.shared.core.jira.models.JiraProject
-import de.progeek.kimai.shared.core.jira.repositories.JiraRepository
 import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.repositories.credentials.CredentialsRepository
 import de.progeek.kimai.shared.core.repositories.project.ProjectRepository
@@ -33,38 +32,39 @@ class SettingsStoreFactory(
     private val credentialsRepository by inject<CredentialsRepository>()
     private val projectRepository by inject<ProjectRepository>()
     private val jiraClient by inject<JiraClient>()
-    private val jiraRepository by inject<JiraRepository>()
 
     fun create(mainContext: CoroutineContext, ioContext: CoroutineContext): SettingsStore =
-        object : SettingsStore, Store<SettingsStore.Intent, SettingsStore.State, Nothing> by storeFactory.create(
-            name = "SettingsStore",
-            initialState = SettingsStore.State(
-                email = "",
-                theme = ThemeEnum.SYSTEM,
-                defaultProject = null,
-                projects = emptyList(),
-                language = getLanguages().first(),
-                jiraEnabled = false,
-                jiraBaseUrl = null,
-                jiraCredentials = null,
-                jiraDefaultProject = null,
-                jiraSyncInterval = 15,
-                jiraProjects = emptyList(),
-                jiraConnectionStatus = SettingsStore.JiraConnectionStatus.Unknown,
-                jiraConnectionMessage = null
-            ),
-            bootstrapper = SimpleBootstrapper(Unit),
-            executorFactory = { ExecutorImpl(mainContext, ioContext) },
-            reducer = ReducerImpl
-        ) {}
+        object :
+            SettingsStore,
+            Store<SettingsStore.Intent, SettingsStore.State, Nothing> by storeFactory.create(
+                name = "SettingsStore",
+                initialState = SettingsStore.State(
+                    email = "",
+                    theme = ThemeEnum.SYSTEM,
+                    defaultProject = null,
+                    projects = emptyList(),
+                    language = getLanguages().first(),
+                    jiraEnabled = false,
+                    jiraBaseUrl = null,
+                    jiraCredentials = null,
+                    jiraDefaultProject = null,
+                    jiraSyncInterval = 15,
+                    jiraProjects = emptyList(),
+                    jiraConnectionStatus = SettingsStore.JiraConnectionStatus.Unknown,
+                    jiraConnectionMessage = null
+                ),
+                bootstrapper = SimpleBootstrapper(Unit),
+                executorFactory = { ExecutorImpl(mainContext, ioContext) },
+                reducer = ReducerImpl
+            ) {}
 
     private sealed class Msg {
         data class SettingsEmail(val email: String) : Msg()
-        data class Theme(val theme: ThemeEnum): Msg()
-        data class DefaultProject(val project: Project): Msg()
-        data class ProjectsUpdated(val projects: List<Project>): Msg()
-        data class ClearDefaultProject(val project: Project?): Msg()
-        data class LanguageUpdated(val language: Language): Msg()
+        data class Theme(val theme: ThemeEnum) : Msg()
+        data class DefaultProject(val project: Project) : Msg()
+        data class ProjectsUpdated(val projects: List<Project>) : Msg()
+        data class ClearDefaultProject(val project: Project?) : Msg()
+        data class LanguageUpdated(val language: Language) : Msg()
 
         // Jira Messages
         data class JiraEnabledUpdated(val enabled: Boolean) : Msg()
@@ -81,7 +81,7 @@ class SettingsStoreFactory(
 
     private inner class ExecutorImpl(
         mainContext: CoroutineContext,
-        private val ioContext: CoroutineContext,
+        private val ioContext: CoroutineContext
     ) : CoroutineExecutor<SettingsStore.Intent, Unit, SettingsStore.State, Msg, Nothing>(mainContext) {
 
         override fun executeAction(action: Unit, getState: () -> SettingsStore.State) {
@@ -113,7 +113,7 @@ class SettingsStoreFactory(
                     toggleJiraEnabled(intent.enabled)
                 }
                 is SettingsStore.Intent.TestJiraConnection -> {
-                    testJiraConnection()
+                    testJiraConnection(intent.credentials)
                 }
                 is SettingsStore.Intent.ClearJiraCredentials -> {
                     clearJiraCredentials()
@@ -133,19 +133,21 @@ class SettingsStoreFactory(
         private fun loadLanguage() {
             scope.launch {
                 settingsRepository.getLanguage().flowOn(ioContext).collect { language ->
-                    getLanguages().find { it.languageCode ==  language }.notNull {
+                    getLanguages().find { it.languageCode == language }.notNull {
                         dispatch(Msg.LanguageUpdated(it))
                     }
                 }
             }
         }
+
         private fun loadCredentialsEmail() {
             val credentials = credentialsRepository.getCredentials()
-                credentials?.let {
-                dispatch(Msg.SettingsEmail(credentials.email)) }
+            credentials?.let {
+                dispatch(Msg.SettingsEmail(credentials.email))
+            }
         }
 
-        private fun loadTheme () {
+        private fun loadTheme() {
             scope.launch {
                 settingsRepository.getTheme().flowOn(ioContext).collectLatest {
                     dispatch(Msg.Theme(it))
@@ -153,7 +155,7 @@ class SettingsStoreFactory(
             }
         }
 
-        private fun loadProjects(){
+        private fun loadProjects() {
             scope.launch {
                 settingsRepository.getDefaultProject().flowOn(ioContext).collectLatest { projectId ->
                     projectRepository.getProjects().flowOn(ioContext).collectLatest { projects ->
@@ -201,35 +203,31 @@ class SettingsStoreFactory(
 
         private fun loadJiraSettings() {
             scope.launch {
-                // Load Jira enabled state
                 settingsRepository.getJiraEnabled().flowOn(ioContext).collectLatest { enabled ->
                     dispatch(Msg.JiraEnabledUpdated(enabled))
                 }
             }
 
             scope.launch {
-                // Load Jira base URL
                 settingsRepository.getJiraBaseUrl().flowOn(ioContext).collectLatest { url ->
                     dispatch(Msg.JiraBaseUrlUpdated(url))
                 }
             }
 
             scope.launch {
-                // Load Jira credentials
+                // Credentials are automatically synced via JiraCredentialsProvider
                 settingsRepository.getJiraCredentials().flowOn(ioContext).collectLatest { credentials ->
                     dispatch(Msg.JiraCredentialsUpdated(credentials))
                 }
             }
 
             scope.launch {
-                // Load Jira default project
                 settingsRepository.getJiraDefaultProject().flowOn(ioContext).collectLatest { projectKey ->
                     dispatch(Msg.JiraDefaultProjectUpdated(projectKey))
                 }
             }
 
             scope.launch {
-                // Load Jira sync interval
                 settingsRepository.getJiraSyncInterval().flowOn(ioContext).collectLatest { interval ->
                     dispatch(Msg.JiraSyncIntervalUpdated(interval))
                 }
@@ -244,6 +242,7 @@ class SettingsStoreFactory(
                     settingsRepository.saveJiraEnabled(intent.enabled)
                     settingsRepository.saveJiraDefaultProject(intent.defaultProject)
                     settingsRepository.saveJiraSyncInterval(intent.syncInterval)
+                    // Note: Credentials are automatically synced to JiraClient via JiraCredentialsProvider
                 }
 
                 // Update state
@@ -269,28 +268,32 @@ class SettingsStoreFactory(
             }
         }
 
-        private fun testJiraConnection() {
+        private fun testJiraConnection(credentials: JiraCredentials?) {
             scope.launch {
                 dispatch(Msg.JiraConnectionStatusUpdated(SettingsStore.JiraConnectionStatus.Testing, null))
 
                 val result = withContext(ioContext) {
-                    jiraClient.testConnection()
+                    jiraClient.testConnection(credentials)
                 }
 
                 result.fold(
                     onSuccess = {
-                        dispatch(Msg.JiraConnectionStatusUpdated(
-                            SettingsStore.JiraConnectionStatus.Success,
-                            "Connection successful"
-                        ))
+                        dispatch(
+                            Msg.JiraConnectionStatusUpdated(
+                                SettingsStore.JiraConnectionStatus.Success,
+                                "Connection successful"
+                            )
+                        )
                         // Load projects on successful connection
                         loadJiraProjects()
                     },
                     onFailure = { error ->
-                        dispatch(Msg.JiraConnectionStatusUpdated(
-                            SettingsStore.JiraConnectionStatus.Failed,
-                            error.message ?: "Connection failed"
-                        ))
+                        dispatch(
+                            Msg.JiraConnectionStatusUpdated(
+                                SettingsStore.JiraConnectionStatus.Failed,
+                                error.message ?: "Connection failed"
+                            )
+                        )
                     }
                 )
             }
@@ -319,6 +322,7 @@ class SettingsStoreFactory(
                 withContext(ioContext) {
                     settingsRepository.clearJiraCredentials()
                     settingsRepository.saveJiraEnabled(false)
+                    // Note: Credentials are automatically cleared from JiraClient via JiraCredentialsProvider
                 }
 
                 dispatch(Msg.JiraCredentialsUpdated(null))

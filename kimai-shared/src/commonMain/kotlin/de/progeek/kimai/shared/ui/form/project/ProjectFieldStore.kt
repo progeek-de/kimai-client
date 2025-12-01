@@ -29,7 +29,7 @@ interface ProjectFieldStore : Store<Intent, State, Label> {
     data class State(
         internal val projects: List<Project> = emptyList(),
         val filteredProjects: List<Project> = emptyList(),
-        val selectedProject: Project? = null,
+        val selectedProject: Project? = null
     )
 
     sealed interface Label {
@@ -44,14 +44,15 @@ class ProjectFieldStoreFactory(
     private val settingsRepository by inject<SettingsRepository>()
 
     fun create(timesheet: Timesheet? = null, mainContext: CoroutineContext, ioContext: CoroutineContext): ProjectFieldStore =
-        object : ProjectFieldStore, Store<Intent, State, Label> by storeFactory.create(
-            name = "ProjectSelectionStore",
-            initialState = State(selectedProject = timesheet?.project),
-            bootstrapper = SimpleBootstrapper(Unit),
-            executorFactory = { ExecutorImpl(mainContext, ioContext) },
-            reducer = ReducerImpl
-        ) {}
-
+        object :
+            ProjectFieldStore,
+            Store<Intent, State, Label> by storeFactory.create(
+                name = "ProjectSelectionStore",
+                initialState = State(selectedProject = timesheet?.project),
+                bootstrapper = SimpleBootstrapper(Unit),
+                executorFactory = { ExecutorImpl(mainContext, ioContext) },
+                reducer = ReducerImpl
+            ) {}
 
     private sealed class Msg {
         data class LoadedProjects(val projects: List<Project>) : Msg()
@@ -62,7 +63,7 @@ class ProjectFieldStoreFactory(
 
     private inner class ExecutorImpl(
         mainContext: CoroutineContext,
-        private val ioContext: CoroutineContext,
+        private val ioContext: CoroutineContext
     ) : CoroutineExecutor<Intent, Unit, State, Msg, Label>(
         mainContext
     ) {
@@ -119,7 +120,7 @@ class ProjectFieldStoreFactory(
                     copy(selectedProject = msg.project)
                 }
                 is Msg.SelectedProject -> copy(
-                    selectedProject = msg.project,
+                    selectedProject = msg.project
                 )
                 is Msg.UpdatedCustomer -> copy(
                     selectedProject = null,
@@ -130,4 +131,3 @@ class ProjectFieldStoreFactory(
             }
     }
 }
-

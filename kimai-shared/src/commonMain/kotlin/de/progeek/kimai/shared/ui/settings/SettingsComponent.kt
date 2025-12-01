@@ -14,7 +14,6 @@ import de.progeek.kimai.shared.utils.Language
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
 
-
 class SettingsComponent(
     componentContext: ComponentContext,
     storeFactory: StoreFactory,
@@ -32,7 +31,7 @@ class SettingsComponent(
     fun onThemeChange(theme: ThemeEnum) {
         store.accept(SettingsStore.Intent.ChangeTheme(theme))
     }
-    fun onDefaultProjectClick( defaultProject: Project) {
+    fun onDefaultProjectClick(defaultProject: Project) {
         store.accept(SettingsStore.Intent.UpdateDefaultProject(defaultProject))
     }
     fun clearDefaultProject() {
@@ -67,8 +66,8 @@ class SettingsComponent(
         store.accept(SettingsStore.Intent.ToggleJiraEnabled(enabled))
     }
 
-    fun onTestJiraConnection() {
-        store.accept(SettingsStore.Intent.TestJiraConnection)
+    fun onTestJiraConnection(credentials: JiraCredentials? = null) {
+        store.accept(SettingsStore.Intent.TestJiraConnection(credentials))
     }
 
     fun onClearJiraCredentials() {
@@ -83,5 +82,3 @@ class SettingsComponent(
         data object Close : Output()
     }
 }
-
-

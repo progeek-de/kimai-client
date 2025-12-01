@@ -15,7 +15,7 @@ CREATE INDEX IF NOT EXISTS idx_jira_issue_updated ON jiraIssueEntity(updated);
 
 getAll:
 SELECT * FROM jiraIssueEntity
-ORDER BY updated DESC;
+ORDER BY key ASC;
 
 getByKey:
 SELECT * FROM jiraIssueEntity
@@ -24,18 +24,18 @@ WHERE key = :key;
 getByProject:
 SELECT * FROM jiraIssueEntity
 WHERE projectKey = :projectKey
-ORDER BY updated DESC;
+ORDER BY key ASC;
 
 getByAssignee:
 SELECT * FROM jiraIssueEntity
 WHERE assignee = :assignee
-ORDER BY updated DESC;
+ORDER BY key ASC;
 
 search:
 SELECT * FROM jiraIssueEntity
 WHERE key LIKE '%' || :query || '%'
    OR summary LIKE '%' || :query || '%'
-ORDER BY updated DESC
+ORDER BY key ASC
 LIMIT :limit;
 
 insert:

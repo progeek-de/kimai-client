@@ -14,10 +14,10 @@ import org.koin.dsl.module
 val repositoriesModule: () -> Module get() = {
     module {
         single { AuthRepository(get(), get(), get(), get(), get(), get(), get()) }
-        single { TimesheetRepository(get(), get()) }
-        single { ProjectRepository(get(), get()) }
-        single { ActivityRepository(get(), get()) }
+        single { TimesheetRepository(timesheetsClient = get(), timesheetDatasource = get()) }
+        single { ProjectRepository(projectDataSource = get(), projectClient = get()) }
+        single { ActivityRepository(activityClient = get(), activityDataSource = get()) }
         single { SettingsRepository(get(), get()) }
-        single { CustomerRepository(get(), get()) }
+        single { CustomerRepository(customerClient = get(), customerDataSource = get()) }
     }
 }

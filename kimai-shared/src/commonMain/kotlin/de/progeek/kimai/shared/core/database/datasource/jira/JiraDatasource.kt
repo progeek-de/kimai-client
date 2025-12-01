@@ -2,11 +2,11 @@ package de.progeek.kimai.shared.core.database.datasource.jira
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import de.progeek.kimai.shared.JiraIssueEntity
 import de.progeek.kimai.shared.core.database.KimaiDatabase
 import de.progeek.kimai.shared.core.jira.models.JiraIssue
 import de.progeek.kimai.shared.kimaiDispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 /**
@@ -21,12 +21,13 @@ class JiraDatasource(val database: KimaiDatabase) {
     /**
      * Get all cached Jira issues as a reactive Flow.
      *
-     * Issues are ordered by updated timestamp (most recent first).
+     * Issues are sorted by key with natural ordering (PROJ-2 before PROJ-10).
      */
     fun getAll(): Flow<List<JiraIssue>> =
         query.getAll(::toJiraIssue)
             .asFlow()
             .mapToList(kimaiDispatchers.io)
+            .map { it.sortedByKey() }
 
     /**
      * Get a specific Jira issue by its key.
@@ -44,23 +45,25 @@ class JiraDatasource(val database: KimaiDatabase) {
      * Get all issues for a specific project.
      *
      * @param projectKey Jira project key
-     * @return Flow of issues for the project
+     * @return Flow of issues for the project, sorted by key
      */
     fun getByProject(projectKey: String): Flow<List<JiraIssue>> =
         query.getByProject(projectKey, ::toJiraIssue)
             .asFlow()
             .mapToList(kimaiDispatchers.io)
+            .map { it.sortedByKey() }
 
     /**
      * Get all issues assigned to a specific user.
      *
      * @param assignee User email or username
-     * @return Flow of issues assigned to the user
+     * @return Flow of issues assigned to the user, sorted by key
      */
     fun getByAssignee(assignee: String): Flow<List<JiraIssue>> =
         query.getByAssignee(assignee, ::toJiraIssue)
             .asFlow()
             .mapToList(kimaiDispatchers.io)
+            .map { it.sortedByKey() }
 
     /**
      * Search for issues matching a query string.
@@ -69,12 +72,12 @@ class JiraDatasource(val database: KimaiDatabase) {
      *
      * @param searchQuery Query string
      * @param limit Maximum number of results (default 50)
-     * @return Result with list of matching issues
+     * @return Result with list of matching issues, sorted by key
      */
     suspend fun search(searchQuery: String, limit: Long = 50): Result<List<JiraIssue>> =
         withContext(kimaiDispatchers.io) {
             runCatching {
-                query.search(searchQuery, limit, ::toJiraIssue).executeAsList()
+                query.search(searchQuery, limit, ::toJiraIssue).executeAsList().sortedByKey()
             }
         }
 
@@ -159,5 +162,15 @@ class JiraDatasource(val database: KimaiDatabase) {
         runCatching {
             query.count().executeAsOne()
         }
+    }
+
+    companion object {
+        /**
+         * Sort issues by key with natural ordering descending (PROJ-10 before PROJ-2).
+         */
+        private fun List<JiraIssue>.sortedByKey(): List<JiraIssue> = sortedWith(
+            compareByDescending<JiraIssue> { it.key.substringBefore("-") }
+                .thenByDescending { it.key.substringAfter("-").toIntOrNull() ?: 0 }
+        )
     }
 }

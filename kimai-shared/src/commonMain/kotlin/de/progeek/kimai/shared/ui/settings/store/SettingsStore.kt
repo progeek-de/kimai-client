@@ -1,21 +1,19 @@
 package de.progeek.kimai.shared.ui.settings.store
 
 import com.arkivanov.mvikotlin.core.store.Store
-import de.progeek.kimai.shared.utils.Language
-import de.progeek.kimai.shared.core.jira.models.JiraAuthMethod
 import de.progeek.kimai.shared.core.jira.models.JiraCredentials
 import de.progeek.kimai.shared.core.jira.models.JiraProject
 import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
-
+import de.progeek.kimai.shared.utils.Language
 
 interface SettingsStore : Store<SettingsStore.Intent, SettingsStore.State, Nothing> {
 
     sealed class Intent {
-        data class ChangeTheme(val theme: ThemeEnum): Intent()
+        data class ChangeTheme(val theme: ThemeEnum) : Intent()
         data class UpdateDefaultProject(val defaultProject: Project) : Intent()
-        data class ClearDefaultProject(val nothing: kotlin.Nothing?): Intent()
-        data class ChangeLanguage(val language: Language): Intent()
+        data class ClearDefaultProject(val nothing: kotlin.Nothing?) : Intent()
+        data class ChangeLanguage(val language: Language) : Intent()
 
         // Jira Integration Intents
         data class SaveJiraConfig(
@@ -26,7 +24,7 @@ interface SettingsStore : Store<SettingsStore.Intent, SettingsStore.State, Nothi
             val syncInterval: Int
         ) : Intent()
         data class ToggleJiraEnabled(val enabled: Boolean) : Intent()
-        data object TestJiraConnection : Intent()
+        data class TestJiraConnection(val credentials: JiraCredentials? = null) : Intent()
         data object ClearJiraCredentials : Intent()
     }
 

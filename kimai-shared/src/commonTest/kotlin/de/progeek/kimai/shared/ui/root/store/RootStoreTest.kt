@@ -2,12 +2,14 @@ package de.progeek.kimai.shared.ui.root.store
 
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
+import de.progeek.kimai.shared.KimaiDispatchers
 import de.progeek.kimai.shared.core.models.Credentials
 import de.progeek.kimai.shared.core.repositories.credentials.CredentialsRepository
 import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -32,6 +34,11 @@ class RootStoreTest {
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var storeFactory: RootStoreFactory
     private val testDispatcher = UnconfinedTestDispatcher()
+    private val testKimaiDispatchers = object : KimaiDispatchers {
+        override val main: CoroutineDispatcher = testDispatcher
+        override val io: CoroutineDispatcher = testDispatcher
+        override val unconfined: CoroutineDispatcher = testDispatcher
+    }
 
     @BeforeTest
     fun setup() {
@@ -73,7 +80,8 @@ class RootStoreTest {
 
         val store = storeFactory.create(
             mainContext = testDispatcher,
-            ioContext = testDispatcher
+            ioContext = testDispatcher,
+            kimaiDispatchers = testKimaiDispatchers
         )
 
         // Check initial state before flows emit
@@ -96,7 +104,8 @@ class RootStoreTest {
 
         val store = storeFactory.create(
             mainContext = testDispatcher,
-            ioContext = testDispatcher
+            ioContext = testDispatcher,
+            kimaiDispatchers = testKimaiDispatchers
         )
 
         advanceUntilIdle()
@@ -115,7 +124,8 @@ class RootStoreTest {
 
         val store = storeFactory.create(
             mainContext = testDispatcher,
-            ioContext = testDispatcher
+            ioContext = testDispatcher,
+            kimaiDispatchers = testKimaiDispatchers
         )
 
         advanceUntilIdle()
@@ -132,7 +142,8 @@ class RootStoreTest {
 
         val store = storeFactory.create(
             mainContext = testDispatcher,
-            ioContext = testDispatcher
+            ioContext = testDispatcher,
+            kimaiDispatchers = testKimaiDispatchers
         )
 
         // Wait for flow to emit
@@ -150,7 +161,8 @@ class RootStoreTest {
 
         val store = storeFactory.create(
             mainContext = testDispatcher,
-            ioContext = testDispatcher
+            ioContext = testDispatcher,
+            kimaiDispatchers = testKimaiDispatchers
         )
 
         advanceUntilIdle()
@@ -168,7 +180,8 @@ class RootStoreTest {
 
         val store = storeFactory.create(
             mainContext = testDispatcher,
-            ioContext = testDispatcher
+            ioContext = testDispatcher,
+            kimaiDispatchers = testKimaiDispatchers
         )
 
         advanceUntilIdle()
@@ -185,7 +198,8 @@ class RootStoreTest {
 
         val store = storeFactory.create(
             mainContext = testDispatcher,
-            ioContext = testDispatcher
+            ioContext = testDispatcher,
+            kimaiDispatchers = testKimaiDispatchers
         )
 
         advanceUntilIdle()
@@ -202,7 +216,8 @@ class RootStoreTest {
 
         val store = storeFactory.create(
             mainContext = testDispatcher,
-            ioContext = testDispatcher
+            ioContext = testDispatcher,
+            kimaiDispatchers = testKimaiDispatchers
         )
 
         advanceUntilIdle()
