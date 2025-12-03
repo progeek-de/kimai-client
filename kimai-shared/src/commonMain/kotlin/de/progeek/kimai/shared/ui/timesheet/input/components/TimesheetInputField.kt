@@ -109,6 +109,8 @@ private fun InputField() {
                                         }
                                         true
                                     } else {
+                                        // No suggestion selected - dismiss and let outer handler process
+                                        component.onIntent(TimesheetInputStore.Intent.DismissTicketSuggestions)
                                         false
                                     }
                                 }
@@ -118,6 +120,14 @@ private fun InputField() {
                                 }
                                 else -> false
                             }
+                        } else if (keyEvent.type == KeyEventType.KeyDown && keyEvent.key == Key.Enter) {
+                            // Enter key pressed without ticket suggestions - start or stop timer
+                            if (running) {
+                                component.onIntent(TimesheetInputStore.Intent.Stop)
+                            } else {
+                                component.onIntent(TimesheetInputStore.Intent.Start)
+                            }
+                            true
                         } else {
                             false
                         }
