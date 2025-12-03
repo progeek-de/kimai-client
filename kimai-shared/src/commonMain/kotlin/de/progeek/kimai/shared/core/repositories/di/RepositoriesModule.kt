@@ -17,7 +17,7 @@ val repositoriesModule: () -> Module get() = {
         single { TimesheetRepository(timesheetsClient = get(), timesheetDatasource = get()) }
         single { ProjectRepository(projectDataSource = get(), projectClient = get()) }
         single { ActivityRepository(activityClient = get(), activityDataSource = get()) }
-        single { SettingsRepository(get(), get()) }
+        single { SettingsRepository(get()) }
         single { CustomerRepository(customerClient = get(), customerDataSource = get()) }
     }
 }

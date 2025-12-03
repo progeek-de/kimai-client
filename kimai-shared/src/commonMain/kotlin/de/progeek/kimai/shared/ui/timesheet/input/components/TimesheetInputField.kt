@@ -6,8 +6,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -20,7 +18,6 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
@@ -28,7 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import de.progeek.kimai.shared.SharedRes
-import de.progeek.kimai.shared.ui.jira.JiraIssuePickerDialog
+import de.progeek.kimai.shared.core.ticketsystem.models.TicketProvider
+import de.progeek.kimai.shared.ui.ticketsystem.picker.TicketPickerDialog
 import de.progeek.kimai.shared.ui.timesheet.TimesheetComponentLocal
 import de.progeek.kimai.shared.ui.timesheet.input.TimesheetInputComponent
 import de.progeek.kimai.shared.ui.timesheet.input.TimesheetInputStore
@@ -52,7 +50,7 @@ private fun InputField() {
     val state by component.state.collectAsState()
 
     var value by remember { mutableStateOf(state.runningTimesheet?.description ?: "") }
-    var showJiraDialog by remember { mutableStateOf(false) }
+    var showTicketDialog by remember { mutableStateOf(false) }
     var textFieldWidth by remember { mutableStateOf(0) }
     val density = LocalDensity.current
 
@@ -77,7 +75,7 @@ private fun InputField() {
                 onValueChange = {
                     value = it
                     component.onIntent(TimesheetInputStore.Intent.Description(it))
-                    component.onIntent(TimesheetInputStore.Intent.SearchJira(it))
+                    component.onIntent(TimesheetInputStore.Intent.SearchTickets(it))
                 },
                 modifier = if (running) {
                     Modifier.clickable { component.onIntent(TimesheetInputStore.Intent.Edit) }
@@ -87,7 +85,7 @@ private fun InputField() {
                     .height(48.dp)
                     .fillMaxWidth()
                     .onPreviewKeyEvent { keyEvent ->
-                        if (keyEvent.type == KeyEventType.KeyDown && state.showJiraSuggestions) {
+                        if (keyEvent.type == KeyEventType.KeyDown && state.showTicketSuggestions) {
                             when (keyEvent.key) {
                                 Key.DirectionDown -> {
                                     component.onIntent(TimesheetInputStore.Intent.NavigateDown)
@@ -100,11 +98,11 @@ private fun InputField() {
                                 Key.Enter -> {
                                     if (state.selectedSuggestionIndex >= 0) {
                                         component.onIntent(TimesheetInputStore.Intent.SelectSuggestion)
-                                        val selectedIssue = state.jiraSuggestions.getOrNull(
+                                        val selectedIssue = state.ticketSuggestions.getOrNull(
                                             state.selectedSuggestionIndex
                                         )
                                         if (selectedIssue != null) {
-                                            value = "${selectedIssue.summary} #${selectedIssue.key}"
+                                            value = state.issueInsertFormat.format(selectedIssue)
                                         }
                                         true
                                     } else {
@@ -112,7 +110,7 @@ private fun InputField() {
                                     }
                                 }
                                 Key.Escape -> {
-                                    component.onIntent(TimesheetInputStore.Intent.DismissJiraSuggestions)
+                                    component.onIntent(TimesheetInputStore.Intent.DismissTicketSuggestions)
                                     true
                                 }
                                 else -> false
@@ -158,10 +156,10 @@ private fun InputField() {
                         bottom = 0.dp
                     ),
                     leadingIcon = {
-                        JiraPickerButton(
+                        TicketPickerButton(
                             enabled = !running,
-                            jiraEnabled = state.jiraEnabled,
-                            onClick = { showJiraDialog = true }
+                            ticketSystemEnabled = state.ticketSystemEnabled,
+                            onClick = { showTicketDialog = true }
                         )
                     },
                     trailingIcon = {
@@ -180,12 +178,12 @@ private fun InputField() {
                 )
             }
 
-            // Jira autocomplete popup (doesn't steal focus)
-            if (state.showJiraSuggestions && !running) {
+            // Ticket autocomplete popup (doesn't steal focus)
+            if (state.showTicketSuggestions && !running) {
                 Popup(
                     offset = IntOffset(0, 48),
                     onDismissRequest = {
-                        component.onIntent(TimesheetInputStore.Intent.DismissJiraSuggestions)
+                        component.onIntent(TimesheetInputStore.Intent.DismissTicketSuggestions)
                     },
                     properties = PopupProperties(focusable = false)
                 ) {
@@ -196,7 +194,7 @@ private fun InputField() {
                         shape = MaterialTheme.shapes.small
                     ) {
                         Column {
-                            state.jiraSuggestions.forEachIndexed { index, issue ->
+                            state.ticketSuggestions.forEachIndexed { index, issue ->
                                 val isSelected = index == state.selectedSuggestionIndex
                                 Row(
                                     modifier = Modifier
@@ -209,19 +207,21 @@ private fun InputField() {
                                             }
                                         )
                                         .clickable {
-                                            val formattedText = "${issue.summary} #${issue.key}"
+                                            val formattedText = state.issueInsertFormat.format(issue)
                                             value = formattedText
                                             component.onIntent(
                                                 TimesheetInputStore.Intent.Description(formattedText)
                                             )
                                             component.onIntent(
-                                                TimesheetInputStore.Intent.DismissJiraSuggestions
+                                                TimesheetInputStore.Intent.DismissTicketSuggestions
                                             )
                                         }
                                         .padding(horizontal = 16.dp, vertical = 12.dp),
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
+                                    // Provider badge
+                                    ProviderBadge(provider = issue.provider)
                                     Text(
                                         text = issue.key,
                                         style = MaterialTheme.typography.labelMedium,
@@ -252,32 +252,53 @@ private fun InputField() {
         }
     }
 
-    // Render Jira picker dialog
-    if (showJiraDialog) {
+    // Render Ticket picker dialog
+    if (showTicketDialog) {
         val timesheetComponent = TimesheetComponentLocal.current
-        JiraIssuePickerDialog(
-            component = timesheetComponent.jiraIssuePickerComponent,
-            onDismiss = { showJiraDialog = false }
+        TicketPickerDialog(
+            component = timesheetComponent.ticketPickerComponent,
+            onDismiss = { showTicketDialog = false }
         )
     }
 }
 
 @Composable
-private fun JiraPickerButton(
+private fun TicketPickerButton(
     enabled: Boolean,
-    jiraEnabled: Boolean,
+    ticketSystemEnabled: Boolean,
     onClick: () -> Unit
 ) {
-    if (jiraEnabled) {
+    if (ticketSystemEnabled) {
         IconButton(
             onClick = onClick,
             enabled = enabled
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
-                contentDescription = "Select Jira Issue",
+                contentDescription = "Select Issue",
                 tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
             )
         }
+    }
+}
+
+@Composable
+private fun ProviderBadge(provider: TicketProvider) {
+    val (color, text) = when (provider) {
+        TicketProvider.JIRA -> MaterialTheme.colorScheme.primary to "J"
+        TicketProvider.GITHUB -> MaterialTheme.colorScheme.tertiary to "GH"
+        TicketProvider.GITLAB -> MaterialTheme.colorScheme.secondary to "GL"
+    }
+
+    Surface(
+        shape = MaterialTheme.shapes.extraSmall,
+        color = color.copy(alpha = 0.2f)
+    ) {
+        Text(
+            text,
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = color
+        )
     }
 }

@@ -36,8 +36,7 @@ class SettingsRepositoryTest {
     @BeforeTest
     fun setup() {
         mockSettings = mockk(relaxed = true)
-        val mockCipher = mockk<de.progeek.kimai.shared.core.storage.credentials.AesGCMCipher>(relaxed = true)
-        repository = SettingsRepository(mockSettings, mockCipher)
+        repository = SettingsRepository(mockSettings)
     }
 
     @AfterTest

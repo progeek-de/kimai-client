@@ -8,7 +8,7 @@ import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import de.progeek.kimai.shared.core.models.Credentials
 import de.progeek.kimai.shared.core.repositories.credentials.CredentialsRepository
 import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
-import de.progeek.kimai.shared.core.sync.JiraSyncScheduler
+import de.progeek.kimai.shared.core.ticketsystem.sync.TicketSyncScheduler
 import de.progeek.kimai.shared.ui.root.store.RootStore.State
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import de.progeek.kimai.shared.utils.isNull
@@ -28,7 +28,7 @@ class RootStoreFactory(
 
     private val credentialsRepository by inject<CredentialsRepository>()
     private val settingsRepository by inject<SettingsRepository>()
-    private val jiraSyncScheduler by inject<JiraSyncScheduler>()
+    private val ticketSyncScheduler by inject<TicketSyncScheduler>()
 
     fun create(mainContext: CoroutineContext, ioContext: CoroutineContext): RootStore =
         object :
@@ -55,7 +55,7 @@ class RootStoreFactory(
             loadCredentials()
             loadTheme()
             loadLanguage()
-            startJiraSync()
+            startTicketSync()
         }
 
         private fun loadCredentials() {
@@ -87,9 +87,9 @@ class RootStoreFactory(
             }
         }
 
-        private fun startJiraSync() {
-            // Start the injected Jira sync scheduler
-            jiraSyncScheduler.start()
+        private fun startTicketSync() {
+            // Start the ticket system sync scheduler
+            ticketSyncScheduler.start()
         }
     }
 

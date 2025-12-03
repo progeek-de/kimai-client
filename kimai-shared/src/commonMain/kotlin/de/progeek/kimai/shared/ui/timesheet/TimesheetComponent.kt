@@ -3,8 +3,9 @@ package de.progeek.kimai.shared.ui.timesheet
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import de.progeek.kimai.shared.KimaiDispatchers
-import de.progeek.kimai.shared.ui.jira.JiraIssuePickerComponent
+import de.progeek.kimai.shared.ui.ticketsystem.picker.TicketPickerComponent
 import de.progeek.kimai.shared.ui.timesheet.input.TimesheetInputComponent
+import de.progeek.kimai.shared.ui.timesheet.input.TimesheetInputStore
 import de.progeek.kimai.shared.ui.timesheet.list.TimesheetListComponent
 import de.progeek.kimai.shared.ui.timesheet.models.TimesheetFormParams
 import de.progeek.kimai.shared.ui.timesheet.topbar.TimesheetTopBarComponent
@@ -38,21 +39,22 @@ class TimesheetComponent(
     val timesheetInputComponent = TimesheetInputComponent(componentContext, storeFactory, dispatchers, ::onTimesheetInputOutput)
     val topBarComponent = TimesheetTopBarComponent(componentContext, storeFactory, dispatchers, ::onTopBarOutput)
 
-    val jiraIssuePickerComponent = JiraIssuePickerComponent(componentContext, storeFactory, dispatchers, ::onJiraIssuePickerOutput)
+    val ticketPickerComponent = TicketPickerComponent(componentContext, storeFactory, dispatchers, ::onTicketPickerOutput)
 
-    private fun onJiraIssuePickerOutput(out: JiraIssuePickerComponent.Output) {
+    private fun onTicketPickerOutput(out: TicketPickerComponent.Output) {
         when (out) {
-            is JiraIssuePickerComponent.Output.IssueSelected -> {
+            is TicketPickerComponent.Output.IssueSelected -> {
                 // Insert the formatted text into the timesheet input
                 timesheetInputComponent.onIntent(
-                    de.progeek.kimai.shared.ui.timesheet.input.TimesheetInputStore.Intent.InsertText(out.formattedText)
+                    TimesheetInputStore.Intent.InsertText(out.formattedText)
                 )
             }
-            is JiraIssuePickerComponent.Output.Dismissed -> {
+            is TicketPickerComponent.Output.Dismissed -> {
                 // Dialog dismissed, no action needed
             }
         }
     }
+
     private fun onTopBarOutput(out: TimesheetTopBarComponent.Output) {
         when (out) {
             is TimesheetTopBarComponent.Output.Reload -> {

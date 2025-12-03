@@ -5,8 +5,8 @@ import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import de.progeek.kimai.shared.KimaiDispatchers
-import de.progeek.kimai.shared.core.jira.models.JiraCredentials
 import de.progeek.kimai.shared.core.models.Project
+import de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat
 import de.progeek.kimai.shared.ui.settings.store.SettingsStore
 import de.progeek.kimai.shared.ui.settings.store.SettingsStoreFactory
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
@@ -31,9 +31,11 @@ class SettingsComponent(
     fun onThemeChange(theme: ThemeEnum) {
         store.accept(SettingsStore.Intent.ChangeTheme(theme))
     }
+
     fun onDefaultProjectClick(defaultProject: Project) {
         store.accept(SettingsStore.Intent.UpdateDefaultProject(defaultProject))
     }
+
     fun clearDefaultProject() {
         store.accept(SettingsStore.Intent.ClearDefaultProject(null))
     }
@@ -42,36 +44,8 @@ class SettingsComponent(
         store.accept(SettingsStore.Intent.ChangeLanguage(language))
     }
 
-    // Jira Integration Methods
-
-    fun onSaveJiraConfig(
-        baseUrl: String,
-        credentials: JiraCredentials,
-        enabled: Boolean,
-        defaultProject: String?,
-        syncInterval: Int
-    ) {
-        store.accept(
-            SettingsStore.Intent.SaveJiraConfig(
-                baseUrl = baseUrl,
-                credentials = credentials,
-                enabled = enabled,
-                defaultProject = defaultProject,
-                syncInterval = syncInterval
-            )
-        )
-    }
-
-    fun onToggleJiraEnabled(enabled: Boolean) {
-        store.accept(SettingsStore.Intent.ToggleJiraEnabled(enabled))
-    }
-
-    fun onTestJiraConnection(credentials: JiraCredentials? = null) {
-        store.accept(SettingsStore.Intent.TestJiraConnection(credentials))
-    }
-
-    fun onClearJiraCredentials() {
-        store.accept(SettingsStore.Intent.ClearJiraCredentials)
+    fun onIssueInsertFormatChange(format: IssueInsertFormat) {
+        store.accept(SettingsStore.Intent.ChangeIssueInsertFormat(format))
     }
 
     fun onOutput() {

@@ -5,13 +5,11 @@ import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import de.progeek.kimai.shared.core.jira.client.JiraClient
-import de.progeek.kimai.shared.core.jira.models.JiraCredentials
-import de.progeek.kimai.shared.core.jira.models.JiraProject
 import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.repositories.credentials.CredentialsRepository
 import de.progeek.kimai.shared.core.repositories.project.ProjectRepository
 import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
+import de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import de.progeek.kimai.shared.utils.Language
 import de.progeek.kimai.shared.utils.getLanguages
@@ -31,7 +29,6 @@ class SettingsStoreFactory(
     private val settingsRepository by inject<SettingsRepository>()
     private val credentialsRepository by inject<CredentialsRepository>()
     private val projectRepository by inject<ProjectRepository>()
-    private val jiraClient by inject<JiraClient>()
 
     fun create(mainContext: CoroutineContext, ioContext: CoroutineContext): SettingsStore =
         object :
@@ -44,14 +41,7 @@ class SettingsStoreFactory(
                     defaultProject = null,
                     projects = emptyList(),
                     language = getLanguages().first(),
-                    jiraEnabled = false,
-                    jiraBaseUrl = null,
-                    jiraCredentials = null,
-                    jiraDefaultProject = null,
-                    jiraSyncInterval = 15,
-                    jiraProjects = emptyList(),
-                    jiraConnectionStatus = SettingsStore.JiraConnectionStatus.Unknown,
-                    jiraConnectionMessage = null
+                    issueInsertFormat = IssueInsertFormat.SUMMARY_HASH_KEY
                 ),
                 bootstrapper = SimpleBootstrapper(Unit),
                 executorFactory = { ExecutorImpl(mainContext, ioContext) },
@@ -65,18 +55,7 @@ class SettingsStoreFactory(
         data class ProjectsUpdated(val projects: List<Project>) : Msg()
         data class ClearDefaultProject(val project: Project?) : Msg()
         data class LanguageUpdated(val language: Language) : Msg()
-
-        // Jira Messages
-        data class JiraEnabledUpdated(val enabled: Boolean) : Msg()
-        data class JiraBaseUrlUpdated(val url: String?) : Msg()
-        data class JiraCredentialsUpdated(val credentials: JiraCredentials?) : Msg()
-        data class JiraDefaultProjectUpdated(val projectKey: String?) : Msg()
-        data class JiraSyncIntervalUpdated(val interval: Int) : Msg()
-        data class JiraProjectsUpdated(val projects: List<JiraProject>) : Msg()
-        data class JiraConnectionStatusUpdated(
-            val status: SettingsStore.JiraConnectionStatus,
-            val message: String?
-        ) : Msg()
+        data class IssueInsertFormatUpdated(val format: IssueInsertFormat) : Msg()
     }
 
     private inner class ExecutorImpl(
@@ -89,7 +68,7 @@ class SettingsStoreFactory(
             loadTheme()
             loadProjects()
             loadLanguage()
-            loadJiraSettings()
+            loadIssueInsertFormat()
         }
 
         override fun executeIntent(intent: SettingsStore.Intent, getState: () -> SettingsStore.State): Unit =
@@ -106,17 +85,8 @@ class SettingsStoreFactory(
                 is SettingsStore.Intent.ChangeLanguage -> {
                     changeLanguage(intent.language)
                 }
-                is SettingsStore.Intent.SaveJiraConfig -> {
-                    saveJiraConfig(intent)
-                }
-                is SettingsStore.Intent.ToggleJiraEnabled -> {
-                    toggleJiraEnabled(intent.enabled)
-                }
-                is SettingsStore.Intent.TestJiraConnection -> {
-                    testJiraConnection(intent.credentials)
-                }
-                is SettingsStore.Intent.ClearJiraCredentials -> {
-                    clearJiraCredentials()
+                is SettingsStore.Intent.ChangeIssueInsertFormat -> {
+                    changeIssueInsertFormat(intent.format)
                 }
             }
 
@@ -199,136 +169,20 @@ class SettingsStoreFactory(
             }
         }
 
-        // Jira Integration Methods
-
-        private fun loadJiraSettings() {
+        private fun loadIssueInsertFormat() {
             scope.launch {
-                settingsRepository.getJiraEnabled().flowOn(ioContext).collectLatest { enabled ->
-                    dispatch(Msg.JiraEnabledUpdated(enabled))
-                }
-            }
-
-            scope.launch {
-                settingsRepository.getJiraBaseUrl().flowOn(ioContext).collectLatest { url ->
-                    dispatch(Msg.JiraBaseUrlUpdated(url))
-                }
-            }
-
-            scope.launch {
-                // Credentials are automatically synced via JiraCredentialsProvider
-                settingsRepository.getJiraCredentials().flowOn(ioContext).collectLatest { credentials ->
-                    dispatch(Msg.JiraCredentialsUpdated(credentials))
-                }
-            }
-
-            scope.launch {
-                settingsRepository.getJiraDefaultProject().flowOn(ioContext).collectLatest { projectKey ->
-                    dispatch(Msg.JiraDefaultProjectUpdated(projectKey))
-                }
-            }
-
-            scope.launch {
-                settingsRepository.getJiraSyncInterval().flowOn(ioContext).collectLatest { interval ->
-                    dispatch(Msg.JiraSyncIntervalUpdated(interval))
+                settingsRepository.getIssueInsertFormat().flowOn(ioContext).collectLatest { format ->
+                    dispatch(Msg.IssueInsertFormatUpdated(format))
                 }
             }
         }
 
-        private fun saveJiraConfig(intent: SettingsStore.Intent.SaveJiraConfig) {
+        private fun changeIssueInsertFormat(format: IssueInsertFormat) {
             scope.launch {
                 withContext(ioContext) {
-                    settingsRepository.saveJiraBaseUrl(intent.baseUrl)
-                    settingsRepository.saveJiraCredentials(intent.credentials)
-                    settingsRepository.saveJiraEnabled(intent.enabled)
-                    settingsRepository.saveJiraDefaultProject(intent.defaultProject)
-                    settingsRepository.saveJiraSyncInterval(intent.syncInterval)
-                    // Note: Credentials are automatically synced to JiraClient via JiraCredentialsProvider
+                    settingsRepository.saveIssueInsertFormat(format)
                 }
-
-                // Update state
-                dispatch(Msg.JiraBaseUrlUpdated(intent.baseUrl))
-                dispatch(Msg.JiraCredentialsUpdated(intent.credentials))
-                dispatch(Msg.JiraEnabledUpdated(intent.enabled))
-                dispatch(Msg.JiraDefaultProjectUpdated(intent.defaultProject))
-                dispatch(Msg.JiraSyncIntervalUpdated(intent.syncInterval))
-
-                // If enabled, load projects
-                if (intent.enabled) {
-                    loadJiraProjects()
-                }
-            }
-        }
-
-        private fun toggleJiraEnabled(enabled: Boolean) {
-            scope.launch {
-                withContext(ioContext) {
-                    settingsRepository.saveJiraEnabled(enabled)
-                }
-                dispatch(Msg.JiraEnabledUpdated(enabled))
-            }
-        }
-
-        private fun testJiraConnection(credentials: JiraCredentials?) {
-            scope.launch {
-                dispatch(Msg.JiraConnectionStatusUpdated(SettingsStore.JiraConnectionStatus.Testing, null))
-
-                val result = withContext(ioContext) {
-                    jiraClient.testConnection(credentials)
-                }
-
-                result.fold(
-                    onSuccess = {
-                        dispatch(
-                            Msg.JiraConnectionStatusUpdated(
-                                SettingsStore.JiraConnectionStatus.Success,
-                                "Connection successful"
-                            )
-                        )
-                        // Load projects on successful connection
-                        loadJiraProjects()
-                    },
-                    onFailure = { error ->
-                        dispatch(
-                            Msg.JiraConnectionStatusUpdated(
-                                SettingsStore.JiraConnectionStatus.Failed,
-                                error.message ?: "Connection failed"
-                            )
-                        )
-                    }
-                )
-            }
-        }
-
-        private fun loadJiraProjects() {
-            scope.launch {
-                val result = withContext(ioContext) {
-                    jiraClient.getProjects()
-                }
-
-                result.fold(
-                    onSuccess = { projects ->
-                        dispatch(Msg.JiraProjectsUpdated(projects))
-                    },
-                    onFailure = {
-                        // Silently fail - projects will remain empty
-                        dispatch(Msg.JiraProjectsUpdated(emptyList()))
-                    }
-                )
-            }
-        }
-
-        private fun clearJiraCredentials() {
-            scope.launch {
-                withContext(ioContext) {
-                    settingsRepository.clearJiraCredentials()
-                    settingsRepository.saveJiraEnabled(false)
-                    // Note: Credentials are automatically cleared from JiraClient via JiraCredentialsProvider
-                }
-
-                dispatch(Msg.JiraCredentialsUpdated(null))
-                dispatch(Msg.JiraEnabledUpdated(false))
-                dispatch(Msg.JiraProjectsUpdated(emptyList()))
-                dispatch(Msg.JiraConnectionStatusUpdated(SettingsStore.JiraConnectionStatus.Unknown, null))
+                dispatch(Msg.IssueInsertFormatUpdated(format))
             }
         }
     }
@@ -342,18 +196,7 @@ class SettingsStoreFactory(
                 is Msg.ProjectsUpdated -> copy(projects = msg.projects)
                 is Msg.ClearDefaultProject -> copy(defaultProject = msg.project)
                 is Msg.LanguageUpdated -> copy(language = msg.language)
-
-                // Jira Message Reducers
-                is Msg.JiraEnabledUpdated -> copy(jiraEnabled = msg.enabled)
-                is Msg.JiraBaseUrlUpdated -> copy(jiraBaseUrl = msg.url)
-                is Msg.JiraCredentialsUpdated -> copy(jiraCredentials = msg.credentials)
-                is Msg.JiraDefaultProjectUpdated -> copy(jiraDefaultProject = msg.projectKey)
-                is Msg.JiraSyncIntervalUpdated -> copy(jiraSyncInterval = msg.interval)
-                is Msg.JiraProjectsUpdated -> copy(jiraProjects = msg.projects)
-                is Msg.JiraConnectionStatusUpdated -> copy(
-                    jiraConnectionStatus = msg.status,
-                    jiraConnectionMessage = msg.message
-                )
+                is Msg.IssueInsertFormatUpdated -> copy(issueInsertFormat = msg.format)
             }
     }
 }

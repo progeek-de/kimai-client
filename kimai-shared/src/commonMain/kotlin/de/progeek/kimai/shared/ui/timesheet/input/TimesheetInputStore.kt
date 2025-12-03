@@ -5,18 +5,21 @@ import com.arkivanov.mvikotlin.core.store.SimpleBootstrapper
 import com.arkivanov.mvikotlin.core.store.Store
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
-import de.progeek.kimai.shared.core.jira.models.JiraIssue
-import de.progeek.kimai.shared.core.jira.repositories.JiraRepository
 import de.progeek.kimai.shared.core.models.EntryMode
 import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.models.TimesheetForm
 import de.progeek.kimai.shared.core.repositories.project.ProjectRepository
 import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
 import de.progeek.kimai.shared.core.repositories.timesheet.TimesheetRepository
+import de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat
+import de.progeek.kimai.shared.core.ticketsystem.models.TicketIssue
+import de.progeek.kimai.shared.core.ticketsystem.repository.TicketConfigRepository
+import de.progeek.kimai.shared.core.ticketsystem.repository.TicketSystemRepository
 import de.progeek.kimai.shared.ui.timesheet.input.TimesheetInputStore.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -32,8 +35,8 @@ interface TimesheetInputStore : Store<Intent, State, Label> {
         data object Edit : Intent()
         data class Description(val description: String) : Intent()
         data class InsertText(val text: String) : Intent()
-        data class SearchJira(val query: String) : Intent()
-        data object DismissJiraSuggestions : Intent()
+        data class SearchTickets(val query: String) : Intent()
+        data object DismissTicketSuggestions : Intent()
         data object NavigateUp : Intent()
         data object NavigateDown : Intent()
         data object SelectSuggestion : Intent()
@@ -44,10 +47,11 @@ interface TimesheetInputStore : Store<Intent, State, Label> {
         val defaultProject: Project? = null,
         val runningTimesheet: TimesheetForm? = null,
         val mode: EntryMode = EntryMode.TIMER,
-        val jiraEnabled: Boolean = false,
-        val jiraSuggestions: List<JiraIssue> = emptyList(),
-        val showJiraSuggestions: Boolean = false,
-        val selectedSuggestionIndex: Int = -1
+        val ticketSystemEnabled: Boolean = false,
+        val ticketSuggestions: List<TicketIssue> = emptyList(),
+        val showTicketSuggestions: Boolean = false,
+        val selectedSuggestionIndex: Int = -1,
+        val issueInsertFormat: IssueInsertFormat = IssueInsertFormat.SUMMARY_HASH_KEY
     )
 
     sealed interface Label {
@@ -62,14 +66,14 @@ class TimesheetInputStoreFactory(
 ) : KoinComponent {
 
     companion object {
-        private const val MIN_SEARCH_LENGTH = 2
         private const val SEARCH_DEBOUNCE_MS = 300L
     }
 
     private val timesheetRepository by inject<TimesheetRepository>()
     private val settingsRepository by inject<SettingsRepository>()
     private val projectRepository by inject<ProjectRepository>()
-    private val jiraRepository by inject<JiraRepository>()
+    private val ticketSystemRepository by inject<TicketSystemRepository>()
+    private val ticketConfigRepository by inject<TicketConfigRepository>()
 
     fun create(mainContext: CoroutineContext, ioContext: CoroutineContext): TimesheetInputStore =
         object :
@@ -77,7 +81,13 @@ class TimesheetInputStoreFactory(
             Store<Intent, State, Label> by storeFactory.create(
                 name = "TimesheetInputStore",
                 initialState = State(),
-                bootstrapper = SimpleBootstrapper(Action.LoadEntryMode, Action.LoadTimesheetForm, Action.LoadDefaultProject, Action.LoadJiraEnabled),
+                bootstrapper = SimpleBootstrapper(
+                    Action.LoadEntryMode,
+                    Action.LoadTimesheetForm,
+                    Action.LoadDefaultProject,
+                    Action.LoadTicketSystemEnabled,
+                    Action.LoadIssueInsertFormat
+                ),
                 executorFactory = { ExecutorImpl(mainContext, ioContext) },
                 reducer = ReducerImpl
             ) {}
@@ -86,7 +96,8 @@ class TimesheetInputStoreFactory(
         data object LoadEntryMode : Action
         data object LoadTimesheetForm : Action
         data object LoadDefaultProject : Action
-        data object LoadJiraEnabled : Action
+        data object LoadTicketSystemEnabled : Action
+        data object LoadIssueInsertFormat : Action
     }
 
     private sealed class Msg {
@@ -95,9 +106,10 @@ class TimesheetInputStoreFactory(
         data class LoadedEntryMode(val entryMode: EntryMode) : Msg()
         data class LoadedTimesheetForm(val form: TimesheetForm?) : Msg()
         data class ChangedDescription(val description: String) : Msg()
-        data class LoadedJiraEnabled(val enabled: Boolean) : Msg()
-        data class JiraSuggestionsLoaded(val suggestions: List<JiraIssue>) : Msg()
-        data object DismissJiraSuggestions : Msg()
+        data class LoadedTicketSystemEnabled(val enabled: Boolean) : Msg()
+        data class LoadedIssueInsertFormat(val format: IssueInsertFormat) : Msg()
+        data class TicketSuggestionsLoaded(val suggestions: List<TicketIssue>) : Msg()
+        data object DismissTicketSuggestions : Msg()
         data class NavigateSelection(val index: Int) : Msg()
         data class SelectSuggestion(val description: String) : Msg()
     }
@@ -106,7 +118,7 @@ class TimesheetInputStoreFactory(
         mainContext: CoroutineContext,
         private val ioContext: CoroutineContext
     ) : CoroutineExecutor<Intent, Action, State, Msg, Label>(mainContext) {
-        private var jiraSearchJob: Job? = null
+        private var ticketSearchJob: Job? = null
 
         override fun executeIntent(intent: Intent, getState: () -> State) {
             when (intent) {
@@ -116,8 +128,8 @@ class TimesheetInputStoreFactory(
                 Intent.Edit -> handleEdit(getState())
                 is Intent.Description -> handleDescription(intent.description)
                 is Intent.InsertText -> handleInsertText(intent.text, getState())
-                is Intent.SearchJira -> handleSearchJira(intent.query)
-                Intent.DismissJiraSuggestions -> dispatch(Msg.DismissJiraSuggestions)
+                is Intent.SearchTickets -> handleSearchTickets(intent.query)
+                Intent.DismissTicketSuggestions -> dispatch(Msg.DismissTicketSuggestions)
                 Intent.NavigateUp -> handleNavigateUp(getState())
                 Intent.NavigateDown -> handleNavigateDown(getState())
                 Intent.SelectSuggestion -> handleSelectSuggestion(getState())
@@ -135,46 +147,46 @@ class TimesheetInputStoreFactory(
                 else -> "$currentText $text"
             }
 
-            handleSearchJira(newDescription)
+            handleSearchTickets(newDescription)
             dispatch(Msg.ChangedDescription(newDescription))
         }
 
-        private fun handleSearchJira(query: String) {
-            jiraSearchJob?.cancel()
-            jiraSearchJob = scope.launch {
+        private fun handleSearchTickets(query: String) {
+            ticketSearchJob?.cancel()
+            ticketSearchJob = scope.launch {
                 delay(SEARCH_DEBOUNCE_MS)
-                jiraRepository.searchWithFallback(query, limit = 5)
+                ticketSystemRepository.searchWithFallback(query, limit = 5)
                     .onSuccess { results ->
-                        dispatch(Msg.JiraSuggestionsLoaded(results))
+                        dispatch(Msg.TicketSuggestionsLoaded(results))
                     }
                     .onFailure {
-                        dispatch(Msg.JiraSuggestionsLoaded(emptyList()))
+                        dispatch(Msg.TicketSuggestionsLoaded(emptyList()))
                     }
             }
         }
 
         private fun handleNavigateUp(state: State) {
-            if (!state.showJiraSuggestions || state.jiraSuggestions.isEmpty()) return
+            if (!state.showTicketSuggestions || state.ticketSuggestions.isEmpty()) return
             val newIndex = when {
-                state.selectedSuggestionIndex <= 0 -> state.jiraSuggestions.size - 1
+                state.selectedSuggestionIndex <= 0 -> state.ticketSuggestions.size - 1
                 else -> state.selectedSuggestionIndex - 1
             }
             dispatch(Msg.NavigateSelection(newIndex))
         }
 
         private fun handleNavigateDown(state: State) {
-            if (!state.showJiraSuggestions || state.jiraSuggestions.isEmpty()) return
+            if (!state.showTicketSuggestions || state.ticketSuggestions.isEmpty()) return
             val newIndex = when {
-                state.selectedSuggestionIndex >= state.jiraSuggestions.size - 1 -> 0
+                state.selectedSuggestionIndex >= state.ticketSuggestions.size - 1 -> 0
                 else -> state.selectedSuggestionIndex + 1
             }
             dispatch(Msg.NavigateSelection(newIndex))
         }
 
         private fun handleSelectSuggestion(state: State) {
-            if (!state.showJiraSuggestions || state.selectedSuggestionIndex < 0) return
-            val selectedIssue = state.jiraSuggestions.getOrNull(state.selectedSuggestionIndex) ?: return
-            val formattedText = "${selectedIssue.summary} #${selectedIssue.key}"
+            if (!state.showTicketSuggestions || state.selectedSuggestionIndex < 0) return
+            val selectedIssue = state.ticketSuggestions.getOrNull(state.selectedSuggestionIndex) ?: return
+            val formattedText = state.issueInsertFormat.format(selectedIssue)
             dispatch(Msg.SelectSuggestion(formattedText))
         }
 
@@ -220,7 +232,8 @@ class TimesheetInputStoreFactory(
                 Action.LoadEntryMode -> loadEntryMode()
                 Action.LoadTimesheetForm -> loadTimesheetForm()
                 Action.LoadDefaultProject -> loadDefaultProject()
-                Action.LoadJiraEnabled -> loadJiraEnabled()
+                Action.LoadTicketSystemEnabled -> loadTicketSystemEnabled()
+                Action.LoadIssueInsertFormat -> loadIssueInsertFormat()
             }
         }
 
@@ -251,10 +264,18 @@ class TimesheetInputStoreFactory(
             }
         }
 
-        private fun loadJiraEnabled() {
+        private fun loadTicketSystemEnabled() {
             scope.launch {
-                settingsRepository.getJiraEnabled().flowOn(ioContext).collectLatest { enabled ->
-                    dispatch(Msg.LoadedJiraEnabled(enabled))
+                ticketConfigRepository.hasEnabledConfigs().flowOn(ioContext).collectLatest { enabled ->
+                    dispatch(Msg.LoadedTicketSystemEnabled(enabled))
+                }
+            }
+        }
+
+        private fun loadIssueInsertFormat() {
+            scope.launch {
+                settingsRepository.getIssueInsertFormat().flowOn(ioContext).collectLatest { format ->
+                    dispatch(Msg.LoadedIssueInsertFormat(format))
                 }
             }
         }
@@ -276,20 +297,21 @@ class TimesheetInputStoreFactory(
                 is Msg.ChangedDescription -> copy(description = msg.description)
                 is Msg.LoadedDefaultProject -> copy(defaultProject = msg.project)
                 is Msg.ResetDefaultProject -> copy(defaultProject = null)
-                is Msg.LoadedJiraEnabled -> copy(jiraEnabled = msg.enabled)
-                is Msg.JiraSuggestionsLoaded -> copy(
-                    jiraSuggestions = msg.suggestions,
-                    showJiraSuggestions = msg.suggestions.isNotEmpty(),
+                is Msg.LoadedTicketSystemEnabled -> copy(ticketSystemEnabled = msg.enabled)
+                is Msg.LoadedIssueInsertFormat -> copy(issueInsertFormat = msg.format)
+                is Msg.TicketSuggestionsLoaded -> copy(
+                    ticketSuggestions = msg.suggestions,
+                    showTicketSuggestions = msg.suggestions.isNotEmpty(),
                     selectedSuggestionIndex = -1
                 )
-                Msg.DismissJiraSuggestions -> copy(
-                    showJiraSuggestions = false,
+                Msg.DismissTicketSuggestions -> copy(
+                    showTicketSuggestions = false,
                     selectedSuggestionIndex = -1
                 )
                 is Msg.NavigateSelection -> copy(selectedSuggestionIndex = msg.index)
                 is Msg.SelectSuggestion -> copy(
                     description = msg.description,
-                    showJiraSuggestions = false,
+                    showTicketSuggestions = false,
                     selectedSuggestionIndex = -1
                 )
             }
