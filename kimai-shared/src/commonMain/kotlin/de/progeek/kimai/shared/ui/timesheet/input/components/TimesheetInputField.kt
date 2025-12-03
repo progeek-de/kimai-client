@@ -45,6 +45,13 @@ private fun TimesheetInputFieldContent() {
         descriptionValue = state.runningTimesheet?.description ?: ""
     }
 
+    // Sync description from store when not running (e.g., from ticket picker)
+    LaunchedEffect(state.description) {
+        if (state.runningTimesheet == null && state.description != descriptionValue) {
+            descriptionValue = state.description
+        }
+    }
+
     val isRunning = state.runningTimesheet != null
 
     Column(

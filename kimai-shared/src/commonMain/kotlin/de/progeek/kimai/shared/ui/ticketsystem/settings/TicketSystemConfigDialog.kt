@@ -34,6 +34,7 @@ fun TicketSystemConfigDialog(
     existingConfig: TicketSystemConfig?,
     provider: TicketProvider,
     onSave: (TicketSystemConfig) -> Unit,
+    onDelete: (() -> Unit)? = null,
     onDismiss: () -> Unit
 ) {
     val ticketRepository: TicketSystemRepository = koinInject()
@@ -276,11 +277,22 @@ fun TicketSystemConfigDialog(
             }
         },
         dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                shape = MaterialTheme.shapes.small
-            ) {
-                Text("Cancel")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Delete button - only shown for existing configs
+                if (existingConfig != null && onDelete != null) {
+                    TextButton(
+                        onClick = onDelete,
+                        shape = MaterialTheme.shapes.small
+                    ) {
+                        Text("Delete", color = MaterialTheme.colorScheme.error)
+                    }
+                }
+                TextButton(
+                    onClick = onDismiss,
+                    shape = MaterialTheme.shapes.small
+                ) {
+                    Text("Cancel")
+                }
             }
         }
     )

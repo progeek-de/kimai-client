@@ -44,10 +44,13 @@ class TimesheetComponent(
     private fun onTicketPickerOutput(out: TicketPickerComponent.Output) {
         when (out) {
             is TicketPickerComponent.Output.IssueSelected -> {
-                // Insert the formatted text into the timesheet input
-                timesheetInputComponent.onIntent(
-                    TimesheetInputStore.Intent.InsertText(out.formattedText)
-                )
+                // Only set description if timer is not running
+                val isRunning = timesheetInputComponent.state.value.runningTimesheet != null
+                if (!isRunning) {
+                    timesheetInputComponent.onIntent(
+                        TimesheetInputStore.Intent.Description(out.formattedText)
+                    )
+                }
             }
             is TicketPickerComponent.Output.Dismissed -> {
                 // Dialog dismissed, no action needed

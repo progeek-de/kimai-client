@@ -2,12 +2,8 @@ package de.progeek.kimai.shared.ui.ticketsystem.settings
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketProvider
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
 import de.progeek.kimai.shared.core.ticketsystem.repository.TicketConfigRepository
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -74,9 +71,6 @@ fun TicketSystemSettingsSection() {
                         editingConfig = config
                         selectedProvider = config.provider
                         showConfigDialog = true
-                    },
-                    onDelete = {
-                        showDeleteConfirm = config
                     }
                 )
             }
@@ -108,6 +102,14 @@ fun TicketSystemSettingsSection() {
                 showConfigDialog = false
                 editingConfig = null
                 selectedProvider = null
+            },
+            onDelete = editingConfig?.let { config ->
+                {
+                    showConfigDialog = false
+                    showDeleteConfirm = config
+                    editingConfig = null
+                    selectedProvider = null
+                }
             },
             onDismiss = {
                 showConfigDialog = false
@@ -152,8 +154,7 @@ fun TicketSystemSettingsSection() {
 private fun TicketSystemConfigItem(
     config: TicketSystemConfig,
     onToggle: (Boolean) -> Unit,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onEdit: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -189,30 +190,10 @@ private fun TicketSystemConfigItem(
                 }
             }
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onEdit) {
-                    Icon(
-                        Icons.Default.Edit,
-                        contentDescription = "Edit",
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                }
-                Switch(
-                    checked = config.enabled,
-                    onCheckedChange = onToggle
-                )
-            }
+            Switch(
+                checked = config.enabled,
+                onCheckedChange = onToggle
+            )
         }
     }
 }
