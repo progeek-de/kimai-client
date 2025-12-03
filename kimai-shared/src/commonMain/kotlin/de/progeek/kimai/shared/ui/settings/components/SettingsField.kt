@@ -19,7 +19,7 @@ fun SettingsField(
     content: @Composable () -> Unit
 ) {
     Column(
-        modifier = modifier.padding(start = 16.dp, top = 12.dp).fillMaxWidth()
+        modifier = modifier.padding(top = 12.dp).fillMaxWidth()
     ) {
         Text(
             label,
@@ -29,7 +29,7 @@ fun SettingsField(
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
         content()
     }

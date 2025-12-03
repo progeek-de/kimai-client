@@ -25,7 +25,7 @@ fun UserProfileSection(component: SettingsComponent) {
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.padding(vertical = 16.dp)
     ) {
         Icon(
             imageVector = Icons.Default.PersonOutline,
