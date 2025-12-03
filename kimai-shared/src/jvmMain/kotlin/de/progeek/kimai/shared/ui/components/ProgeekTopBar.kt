@@ -2,7 +2,6 @@ package de.progeek.kimai.shared.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -31,7 +30,7 @@ actual fun KimaiTopAppBar(
             actions = {
                 Button(
                     onClick = onBackClick,
-                    shape = RoundedCornerShape(4.dp)
+                    shape = MaterialTheme.shapes.small
                 ) {
                     Text(stringResource(SharedRes.strings.back), color = Color.White)
                 }

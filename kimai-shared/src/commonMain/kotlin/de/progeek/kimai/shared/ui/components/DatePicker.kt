@@ -65,10 +65,13 @@ internal fun DatePicker(
             horizontalAlignment = Alignment.End,
             modifier = Modifier.fillMaxWidth().padding(8.dp)
         ) {
-            Button(onClick = {
-                onDateChange(Instant.fromEpochMilliseconds(datePickerState.selectedDateMillis ?: 0))
-                openDatePicker = false
-            }) {
+            Button(
+                onClick = {
+                    onDateChange(Instant.fromEpochMilliseconds(datePickerState.selectedDateMillis ?: 0))
+                    openDatePicker = false
+                },
+                shape = MaterialTheme.shapes.small
+            ) {
                 Text(stringResource(SharedRes.strings.ok))
             }
         }

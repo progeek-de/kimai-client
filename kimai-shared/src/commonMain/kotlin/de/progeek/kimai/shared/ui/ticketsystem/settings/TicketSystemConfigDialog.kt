@@ -220,6 +220,7 @@ fun TicketSystemConfigDialog(
                                 isTesting = false
                             }
                         },
+                        shape = MaterialTheme.shapes.small,
                         enabled = !isTesting
                     ) {
                         if (isTesting) {
@@ -268,13 +269,17 @@ fun TicketSystemConfigDialog(
                         onSave(config)
                     }
                 },
+                shape = MaterialTheme.shapes.small,
                 enabled = displayName.isNotBlank() && baseUrl.isNotBlank()
             ) {
                 Text("Save")
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                shape = MaterialTheme.shapes.small
+            ) {
                 Text("Cancel")
             }
         }

@@ -2,7 +2,6 @@ package de.progeek.kimai.shared.ui.login
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material3.*
@@ -35,7 +34,7 @@ fun LoginCard() {
     Card(
         modifier = Modifier.padding(32.dp).shadow(
             elevation = 4.dp,
-            shape = RoundedCornerShape(5.dp)
+            shape = MaterialTheme.shapes.small
         ),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
 
@@ -83,6 +82,7 @@ fun LoginCard() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 20.dp),
+                    shape = MaterialTheme.shapes.small,
                     enabled = isEmailValid && email.isNotBlank() && password.isNotBlank()
                 ) {
                     Text(stringResource(SharedRes.strings.login).uppercase())
@@ -167,7 +167,8 @@ fun HostButton() {
     var dialogOpen by remember { mutableStateOf(false) }
 
     TextButton(
-        onClick = { dialogOpen = true }
+        onClick = { dialogOpen = true },
+        shape = MaterialTheme.shapes.small
     ) {
         Text(
             state.baseUrl
@@ -220,7 +221,10 @@ fun ChangeBaseUrlDialog(
                 Divider(color = MaterialTheme.colorScheme.onSecondary, modifier = Modifier.padding(vertical = 16.dp))
 
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                    OutlinedButton(onClick = onDismiss) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        shape = MaterialTheme.shapes.small
+                    ) {
                         Text(
                             stringResource(SharedRes.strings.cancel),
                             color = MaterialTheme.colorScheme.primary
@@ -228,6 +232,7 @@ fun ChangeBaseUrlDialog(
                     }
                     Button(
                         modifier = Modifier.padding(start = 8.dp),
+                        shape = MaterialTheme.shapes.small,
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
                         onClick = { onChange(host) }
                     ) {

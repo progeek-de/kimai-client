@@ -118,6 +118,7 @@ private fun InputButton(
             onClick = onClick,
             interactionSource = interactionSource,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+            shape = MaterialTheme.shapes.small,
             modifier = Modifier
                 .padding(end = 4.dp)
                 .requiredWidthIn(min = 96.dp)
@@ -137,7 +138,7 @@ private fun InputButton(
                 .padding(end = 4.dp)
                 .requiredWidthIn(min = 96.dp)
                 .focusProperties { canFocus = false }, // crashes without this
-            shape = MaterialTheme.shapes.extraSmall
+            shape = MaterialTheme.shapes.small
         ) {
             Text(text, color = Color.White)
         }

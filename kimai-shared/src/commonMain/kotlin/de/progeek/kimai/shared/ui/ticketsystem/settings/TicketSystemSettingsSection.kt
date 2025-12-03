@@ -130,13 +130,17 @@ fun TicketSystemSettingsSection() {
                             configRepository.deleteConfig(config.id)
                         }
                         showDeleteConfirm = null
-                    }
+                    },
+                    shape = MaterialTheme.shapes.small
                 ) {
                     Text("Delete", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = null }) {
+                TextButton(
+                    onClick = { showDeleteConfirm = null },
+                    shape = MaterialTheme.shapes.small
+                ) {
                     Text("Cancel")
                 }
             }

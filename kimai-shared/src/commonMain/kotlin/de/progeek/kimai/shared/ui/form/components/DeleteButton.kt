@@ -35,6 +35,7 @@ private fun Button() {
         modifier = Modifier.width(128.dp),
         enabled = (state.id != null),
         onClick = { deleteDialogOpen = true },
+        shape = MaterialTheme.shapes.small,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
     ) {
         Text(stringResource(SharedRes.strings.delete), color = MaterialTheme.colorScheme.error)

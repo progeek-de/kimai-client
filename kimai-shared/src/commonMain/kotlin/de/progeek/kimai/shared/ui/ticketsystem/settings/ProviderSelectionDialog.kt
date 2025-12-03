@@ -41,7 +41,10 @@ fun ProviderSelectionDialog(
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                shape = MaterialTheme.shapes.small
+            ) {
                 Text("Cancel")
             }
         }
