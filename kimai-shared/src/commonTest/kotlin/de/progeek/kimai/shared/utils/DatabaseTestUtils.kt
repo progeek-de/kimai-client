@@ -7,6 +7,7 @@ import de.progeek.kimai.shared.core.database.datasource.activity.ActivityDatasou
 import de.progeek.kimai.shared.core.database.datasource.customer.CustomerDatasource
 import de.progeek.kimai.shared.core.database.datasource.project.ProjectDatasource
 import de.progeek.kimai.shared.core.database.datasource.timesheet.TimesheetDatasource
+import de.progeek.kimai.shared.core.ticketsystem.datasource.TicketIssueDatasource
 
 /**
  * Database test utilities for SQLDelight testing.
@@ -60,7 +61,8 @@ data class TestDatasources(
     val timesheetDatasource: TimesheetDatasource,
     val projectDatasource: ProjectDatasource,
     val activityDatasource: ActivityDatasource,
-    val customerDatasource: CustomerDatasource
+    val customerDatasource: CustomerDatasource,
+    val ticketIssueDatasource: TicketIssueDatasource
 )
 
 /**
@@ -74,7 +76,8 @@ fun createTestDatasources(): TestDatasources {
         timesheetDatasource = TimesheetDatasource(database),
         projectDatasource = ProjectDatasource(database),
         activityDatasource = ActivityDatasource(database),
-        customerDatasource = CustomerDatasource(database)
+        customerDatasource = CustomerDatasource(database),
+        ticketIssueDatasource = TicketIssueDatasource(database)
     )
 }
 
