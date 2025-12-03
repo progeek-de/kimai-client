@@ -6,7 +6,6 @@ import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
 import de.progeek.kimai.shared.KimaiDispatchers
 import de.progeek.kimai.shared.core.models.Project
-import de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat
 import de.progeek.kimai.shared.ui.settings.store.SettingsStore
 import de.progeek.kimai.shared.ui.settings.store.SettingsStoreFactory
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
@@ -42,10 +41,6 @@ class SettingsComponent(
 
     fun onLanguageChange(language: Language) {
         store.accept(SettingsStore.Intent.ChangeLanguage(language))
-    }
-
-    fun onIssueInsertFormatChange(format: IssueInsertFormat) {
-        store.accept(SettingsStore.Intent.ChangeIssueInsertFormat(format))
     }
 
     fun onOutput() {

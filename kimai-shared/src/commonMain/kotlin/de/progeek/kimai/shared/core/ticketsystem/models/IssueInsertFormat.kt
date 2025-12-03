@@ -1,41 +1,67 @@
 package de.progeek.kimai.shared.core.ticketsystem.models
 
 /**
- * Configurable format for inserting issue references into text fields.
+ * Utility object for formatting issue references using customizable patterns.
+ *
+ * Supported placeholders:
+ * - {key} - The issue key (e.g., "PROJ-123", "#456")
+ * - {summary} - The issue summary/title
+ * - {status} - The issue status
+ * - {project} - The project key
+ * - {type} - The issue type
+ *
+ * Example patterns:
+ * - "{key}: {summary}" -> "PROJ-123: Fix login bug"
+ * - "{summary} #{key}" -> "Fix login bug #PROJ-123"
+ * - "#{key}" -> "#PROJ-123"
+ * - "[{key}] {summary}" -> "[PROJ-123] Fix login bug"
  */
-enum class IssueInsertFormat(
-    val displayName: String,
-    val example: String
-) {
-    /**
-     * Summary followed by hashtag and key.
-     * Example: "Fix login bug #PROJ-123"
-     */
-    SUMMARY_HASH_KEY("Summary #Key", "Fix login bug #PROJ-123"),
+object IssueInsertFormat {
 
     /**
-     * Key followed by colon and summary.
-     * Example: "PROJ-123: Fix login bug"
+     * Default format pattern used when none is specified.
      */
-    KEY_COLON_SUMMARY("Key: Summary", "PROJ-123: Fix login bug"),
+    const val DEFAULT_FORMAT = "{key}: {summary}"
 
     /**
-     * Only the key with hashtag.
-     * Example: "#PROJ-123"
+     * Format a ticket issue using the specified format pattern.
+     *
+     * @param issue The ticket issue to format
+     * @param formatPattern The format pattern with placeholders
+     * @return The formatted string with placeholders replaced
      */
-    KEY_ONLY("Only Key", "#PROJ-123");
-
-    /**
-     * Format a ticket issue using this format pattern.
-     */
-    fun format(issue: TicketIssue): String = when (this) {
-        SUMMARY_HASH_KEY -> "${issue.summary} #${issue.key}"
-        KEY_COLON_SUMMARY -> "${issue.key}: ${issue.summary}"
-        KEY_ONLY -> "#${issue.key}"
+    fun format(issue: TicketIssue, formatPattern: String): String {
+        return formatPattern
+            .replace("{key}", issue.key)
+            .replace("{summary}", issue.summary)
+            .replace("{status}", issue.status)
+            .replace("{project}", issue.projectKey)
+            .replace("{type}", issue.issueType)
     }
 
-    companion object {
-        fun fromString(value: String): IssueInsertFormat =
-            entries.find { it.name.equals(value, ignoreCase = true) } ?: SUMMARY_HASH_KEY
+    /**
+     * Generate an example output for a format pattern.
+     *
+     * @param formatPattern The format pattern to demonstrate
+     * @return Example output showing what the pattern produces
+     */
+    fun generateExample(formatPattern: String): String {
+        return formatPattern
+            .replace("{key}", "PROJ-123")
+            .replace("{summary}", "Fix login bug")
+            .replace("{status}", "Open")
+            .replace("{project}", "PROJ")
+            .replace("{type}", "Bug")
     }
+
+    /**
+     * List of available placeholders for display in UI.
+     */
+    val availablePlaceholders = listOf(
+        "{key}" to "Issue key (e.g., PROJ-123)",
+        "{summary}" to "Issue title/summary",
+        "{status}" to "Current status",
+        "{project}" to "Project key",
+        "{type}" to "Issue type"
+    )
 }

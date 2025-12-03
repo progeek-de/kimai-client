@@ -81,7 +81,8 @@ class TicketConfigDatasource(
                     syncIntervalMinutes = config.syncIntervalMinutes.toLong(),
                     defaultProjectKey = config.defaultProjectKey,
                     createdAt = config.createdAt.toEpochMilliseconds(),
-                    updatedAt = Clock.System.now().toEpochMilliseconds()
+                    updatedAt = Clock.System.now().toEpochMilliseconds(),
+                    issueFormat = config.issueFormat
                 )
                 config
             }
@@ -182,7 +183,8 @@ class TicketConfigDatasource(
             syncIntervalMinutes = syncIntervalMinutes.toInt(),
             defaultProjectKey = defaultProjectKey,
             createdAt = Instant.fromEpochMilliseconds(createdAt),
-            updatedAt = Instant.fromEpochMilliseconds(updatedAt)
+            updatedAt = Instant.fromEpochMilliseconds(updatedAt),
+            issueFormat = issueFormat
         )
     }
 }

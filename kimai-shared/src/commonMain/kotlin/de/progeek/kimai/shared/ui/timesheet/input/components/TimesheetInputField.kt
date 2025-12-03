@@ -102,7 +102,10 @@ private fun InputField() {
                                             state.selectedSuggestionIndex
                                         )
                                         if (selectedIssue != null) {
-                                            value = state.issueInsertFormat.format(selectedIssue)
+                                            val config = state.ticketConfigs.find { it.id == selectedIssue.sourceId }
+                                            val formatPattern = config?.issueFormat
+                                                ?: de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat.DEFAULT_FORMAT
+                                            value = selectedIssue.format(formatPattern)
                                         }
                                         true
                                     } else {
@@ -207,7 +210,10 @@ private fun InputField() {
                                             }
                                         )
                                         .clickable {
-                                            val formattedText = state.issueInsertFormat.format(issue)
+                                            val config = state.ticketConfigs.find { it.id == issue.sourceId }
+                                            val formatPattern = config?.issueFormat
+                                                ?: de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat.DEFAULT_FORMAT
+                                            val formattedText = issue.format(formatPattern)
                                             value = formattedText
                                             component.onIntent(
                                                 TimesheetInputStore.Intent.Description(formattedText)

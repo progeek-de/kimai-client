@@ -79,7 +79,7 @@ data class TicketIssue(
     val webUrl: String? = null
 ) {
     /**
-     * Format the issue for insertion into text fields.
+     * Format the issue for insertion into text fields using a format pattern.
      */
-    fun format(format: IssueInsertFormat): String = format.format(this)
+    fun format(formatPattern: String): String = IssueInsertFormat.format(this, formatPattern)
 }

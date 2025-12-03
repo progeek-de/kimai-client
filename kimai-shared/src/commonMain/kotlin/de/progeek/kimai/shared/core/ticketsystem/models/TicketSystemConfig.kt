@@ -62,7 +62,14 @@ data class TicketSystemConfig(
     /**
      * Timestamp when this configuration was last updated.
      */
-    val updatedAt: Instant = Clock.System.now()
+    val updatedAt: Instant = Clock.System.now(),
+
+    /**
+     * Custom format pattern for inserting issue references.
+     * Uses placeholders like {key}, {summary}, {status}, {project}, {type}.
+     * Example: "{key}: {summary}" produces "PROJ-123: Fix login bug"
+     */
+    val issueFormat: String = IssueInsertFormat.DEFAULT_FORMAT
 ) {
     init {
         require(id.isNotBlank()) { "Configuration ID cannot be blank" }

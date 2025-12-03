@@ -33,7 +33,6 @@ fun SettingsContent(component: SettingsComponent) {
             DefaultProjectSection(component)
             ThemeSection(component)
             LanguageSection(component)
-            IssueInsertFormatSection(component)
             TicketSystemSettingsSection()
             VersionInfo()
         }

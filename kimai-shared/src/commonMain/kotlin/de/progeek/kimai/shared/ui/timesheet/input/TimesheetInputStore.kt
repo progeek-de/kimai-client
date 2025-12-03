@@ -13,6 +13,7 @@ import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
 import de.progeek.kimai.shared.core.repositories.timesheet.TimesheetRepository
 import de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketIssue
+import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
 import de.progeek.kimai.shared.core.ticketsystem.repository.TicketConfigRepository
 import de.progeek.kimai.shared.core.ticketsystem.repository.TicketSystemRepository
 import de.progeek.kimai.shared.ui.timesheet.input.TimesheetInputStore.*
@@ -51,7 +52,7 @@ interface TimesheetInputStore : Store<Intent, State, Label> {
         val ticketSuggestions: List<TicketIssue> = emptyList(),
         val showTicketSuggestions: Boolean = false,
         val selectedSuggestionIndex: Int = -1,
-        val issueInsertFormat: IssueInsertFormat = IssueInsertFormat.SUMMARY_HASH_KEY
+        val ticketConfigs: List<TicketSystemConfig> = emptyList()
     )
 
     sealed interface Label {
@@ -86,7 +87,7 @@ class TimesheetInputStoreFactory(
                     Action.LoadTimesheetForm,
                     Action.LoadDefaultProject,
                     Action.LoadTicketSystemEnabled,
-                    Action.LoadIssueInsertFormat
+                    Action.LoadTicketConfigs
                 ),
                 executorFactory = { ExecutorImpl(mainContext, ioContext) },
                 reducer = ReducerImpl
@@ -97,7 +98,7 @@ class TimesheetInputStoreFactory(
         data object LoadTimesheetForm : Action
         data object LoadDefaultProject : Action
         data object LoadTicketSystemEnabled : Action
-        data object LoadIssueInsertFormat : Action
+        data object LoadTicketConfigs : Action
     }
 
     private sealed class Msg {
@@ -107,7 +108,7 @@ class TimesheetInputStoreFactory(
         data class LoadedTimesheetForm(val form: TimesheetForm?) : Msg()
         data class ChangedDescription(val description: String) : Msg()
         data class LoadedTicketSystemEnabled(val enabled: Boolean) : Msg()
-        data class LoadedIssueInsertFormat(val format: IssueInsertFormat) : Msg()
+        data class LoadedTicketConfigs(val configs: List<TicketSystemConfig>) : Msg()
         data class TicketSuggestionsLoaded(val suggestions: List<TicketIssue>) : Msg()
         data object DismissTicketSuggestions : Msg()
         data class NavigateSelection(val index: Int) : Msg()
@@ -186,7 +187,10 @@ class TimesheetInputStoreFactory(
         private fun handleSelectSuggestion(state: State) {
             if (!state.showTicketSuggestions || state.selectedSuggestionIndex < 0) return
             val selectedIssue = state.ticketSuggestions.getOrNull(state.selectedSuggestionIndex) ?: return
-            val formattedText = state.issueInsertFormat.format(selectedIssue)
+            // Get the format from the config that matches this issue's sourceId
+            val config = state.ticketConfigs.find { it.id == selectedIssue.sourceId }
+            val formatPattern = config?.issueFormat ?: IssueInsertFormat.DEFAULT_FORMAT
+            val formattedText = selectedIssue.format(formatPattern)
             dispatch(Msg.SelectSuggestion(formattedText))
         }
 
@@ -233,7 +237,7 @@ class TimesheetInputStoreFactory(
                 Action.LoadTimesheetForm -> loadTimesheetForm()
                 Action.LoadDefaultProject -> loadDefaultProject()
                 Action.LoadTicketSystemEnabled -> loadTicketSystemEnabled()
-                Action.LoadIssueInsertFormat -> loadIssueInsertFormat()
+                Action.LoadTicketConfigs -> loadTicketConfigs()
             }
         }
 
@@ -272,10 +276,10 @@ class TimesheetInputStoreFactory(
             }
         }
 
-        private fun loadIssueInsertFormat() {
+        private fun loadTicketConfigs() {
             scope.launch {
-                settingsRepository.getIssueInsertFormat().flowOn(ioContext).collectLatest { format ->
-                    dispatch(Msg.LoadedIssueInsertFormat(format))
+                ticketConfigRepository.getAllConfigs().flowOn(ioContext).collectLatest { configs ->
+                    dispatch(Msg.LoadedTicketConfigs(configs))
                 }
             }
         }
@@ -298,7 +302,7 @@ class TimesheetInputStoreFactory(
                 is Msg.LoadedDefaultProject -> copy(defaultProject = msg.project)
                 is Msg.ResetDefaultProject -> copy(defaultProject = null)
                 is Msg.LoadedTicketSystemEnabled -> copy(ticketSystemEnabled = msg.enabled)
-                is Msg.LoadedIssueInsertFormat -> copy(issueInsertFormat = msg.format)
+                is Msg.LoadedTicketConfigs -> copy(ticketConfigs = msg.configs)
                 is Msg.TicketSuggestionsLoaded -> copy(
                     ticketSuggestions = msg.suggestions,
                     showTicketSuggestions = msg.suggestions.isNotEmpty(),

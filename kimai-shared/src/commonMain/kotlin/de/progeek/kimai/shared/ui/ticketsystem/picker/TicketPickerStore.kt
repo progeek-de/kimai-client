@@ -2,6 +2,7 @@ package de.progeek.kimai.shared.ui.ticketsystem.picker
 
 import com.arkivanov.mvikotlin.core.store.Store
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketIssue
+import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
 
 /**
  * Store for managing ticket picker dialog state.
@@ -24,7 +25,8 @@ interface TicketPickerStore : Store<TicketPickerStore.Intent, TicketPickerStore.
         val isOffline: Boolean = false,
         val error: String? = null,
         val lastSyncTime: Long? = null,
-        val hasEnabledSources: Boolean = false
+        val hasEnabledSources: Boolean = false,
+        val ticketConfigs: List<TicketSystemConfig> = emptyList()
     )
 
     sealed class Label {

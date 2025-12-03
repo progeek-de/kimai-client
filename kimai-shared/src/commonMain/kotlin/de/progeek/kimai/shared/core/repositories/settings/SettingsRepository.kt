@@ -9,7 +9,6 @@ import de.progeek.kimai.shared.BuildKonfig
 import de.progeek.kimai.shared.core.models.EntryMode
 import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.storage.credentials.CredentialsConstants.BASE_URL_KEY
-import de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import de.progeek.kimai.shared.utils.Language
 import kotlinx.coroutines.flow.Flow
@@ -18,10 +17,6 @@ import kotlinx.coroutines.flow.map
 class SettingsRepository(
     private val settings: ObservableSettings
 ) {
-
-    companion object {
-        private const val ISSUE_INSERT_FORMAT_KEY = "ISSUE_INSERT_FORMAT"
-    }
 
     fun saveTheme(theme: ThemeEnum): ThemeEnum {
         settings.putString("THEME", theme.toString())
@@ -71,24 +66,5 @@ class SettingsRepository(
 
     fun getBaseUrl(): String {
         return settings.getString(BASE_URL_KEY, BuildKonfig.KIMAI_SERVER)
-    }
-
-    // Issue Insert Format Settings
-
-    fun saveIssueInsertFormat(format: IssueInsertFormat) {
-        settings.putString(ISSUE_INSERT_FORMAT_KEY, format.name)
-    }
-
-    @OptIn(ExperimentalSettingsApi::class)
-    fun getIssueInsertFormat(): Flow<IssueInsertFormat> {
-        return settings.getStringOrNullFlow(ISSUE_INSERT_FORMAT_KEY).map { formatName ->
-            formatName?.let {
-                try {
-                    IssueInsertFormat.valueOf(it)
-                } catch (e: IllegalArgumentException) {
-                    IssueInsertFormat.SUMMARY_HASH_KEY
-                }
-            } ?: IssueInsertFormat.SUMMARY_HASH_KEY
-        }
     }
 }

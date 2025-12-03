@@ -7,6 +7,8 @@ import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketIssue
+import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
+import de.progeek.kimai.shared.core.ticketsystem.repository.TicketConfigRepository
 import de.progeek.kimai.shared.core.ticketsystem.repository.TicketSystemRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -23,6 +25,7 @@ class TicketPickerStoreFactory(
 ) : KoinComponent {
 
     private val ticketRepository: TicketSystemRepository by inject()
+    private val ticketConfigRepository: TicketConfigRepository by inject()
 
     fun create(mainContext: CoroutineContext, ioContext: CoroutineContext): TicketPickerStore =
         object : TicketPickerStore,
@@ -43,6 +46,7 @@ class TicketPickerStoreFactory(
         data class ErrorUpdated(val error: String?) : Msg()
         data class SyncTimeUpdated(val time: Long) : Msg()
         data class HasSourcesUpdated(val hasSources: Boolean) : Msg()
+        data class ConfigsLoaded(val configs: List<TicketSystemConfig>) : Msg()
     }
 
     private inner class ExecutorImpl(
@@ -55,6 +59,15 @@ class TicketPickerStoreFactory(
 
         override fun executeAction(action: Unit, getState: () -> TicketPickerStore.State) {
             loadIssues(getState)
+            loadConfigs()
+        }
+
+        private fun loadConfigs() {
+            scope.launch {
+                ticketConfigRepository.getAllConfigs().collect { configs ->
+                    dispatch(Msg.ConfigsLoaded(configs))
+                }
+            }
         }
 
         override fun executeIntent(
@@ -63,7 +76,7 @@ class TicketPickerStoreFactory(
         ) {
             when (intent) {
                 is TicketPickerStore.Intent.SearchQueryUpdated -> handleSearchQuery(intent.query, getState)
-                is TicketPickerStore.Intent.IssueSelected -> handleIssueSelected(intent.issue)
+                is TicketPickerStore.Intent.IssueSelected -> handleIssueSelected(intent.issue, getState)
                 is TicketPickerStore.Intent.Refresh -> refreshIssues(getState)
                 is TicketPickerStore.Intent.Dismiss -> publish(TicketPickerStore.Label.Dismissed)
             }
@@ -114,9 +127,11 @@ class TicketPickerStoreFactory(
             }
         }
 
-        private fun handleIssueSelected(issue: TicketIssue) {
-            // Use default format - can be made configurable later
-            val formattedText = issue.format(IssueInsertFormat.KEY_COLON_SUMMARY)
+        private fun handleIssueSelected(issue: TicketIssue, getState: () -> TicketPickerStore.State) {
+            // Get the format from the config that matches this issue's sourceId
+            val config = getState().ticketConfigs.find { it.id == issue.sourceId }
+            val formatPattern = config?.issueFormat ?: IssueInsertFormat.DEFAULT_FORMAT
+            val formattedText = issue.format(formatPattern)
             publish(TicketPickerStore.Label.IssueSelected(formattedText))
         }
 
@@ -165,6 +180,7 @@ class TicketPickerStoreFactory(
                 is Msg.ErrorUpdated -> copy(error = msg.error)
                 is Msg.SyncTimeUpdated -> copy(lastSyncTime = msg.time)
                 is Msg.HasSourcesUpdated -> copy(hasEnabledSources = msg.hasSources)
+                is Msg.ConfigsLoaded -> copy(ticketConfigs = msg.configs)
             }
     }
 }

@@ -24,7 +24,7 @@ import de.progeek.kimai.shared.core.ticketsystem.repository.TicketSystemReposito
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.koin.compose.koinInject
-import java.util.UUID
+import kotlin.random.Random
 
 /**
  * Dialog for configuring a ticket system instance.
@@ -42,6 +42,9 @@ fun TicketSystemConfigDialog(
     var displayName by remember { mutableStateOf(existingConfig?.displayName ?: "") }
     var baseUrl by remember { mutableStateOf(existingConfig?.baseUrl ?: getDefaultBaseUrl(provider)) }
     var syncInterval by remember { mutableStateOf(existingConfig?.syncIntervalMinutes?.toString() ?: "15") }
+    var issueFormat by remember {
+        mutableStateOf(existingConfig?.issueFormat ?: de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat.DEFAULT_FORMAT)
+    }
 
     // Jira fields
     var jiraEmail by remember { mutableStateOf("") }
@@ -166,6 +169,12 @@ fun TicketSystemConfigDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
+                // Issue Format
+                IssueFormatField(
+                    value = issueFormat,
+                    onValueChange = { issueFormat = it }
+                )
+
                 // Test Connection
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -178,7 +187,7 @@ fun TicketSystemConfigDialog(
                                 isTesting = true
                                 testResult = null
                                 val config = buildConfig(
-                                    id = existingConfig?.id ?: UUID.randomUUID().toString(),
+                                    id = existingConfig?.id ?: generateUuid(),
                                     displayName = displayName,
                                     provider = provider,
                                     baseUrl = baseUrl,
@@ -191,6 +200,7 @@ fun TicketSystemConfigDialog(
                                     githubRepos = githubRepos,
                                     gitlabToken = gitlabToken,
                                     gitlabProjectIds = gitlabProjectIds,
+                                    issueFormat = issueFormat,
                                     existingConfig = existingConfig
                                 )
                                 if (config != null) {
@@ -238,7 +248,7 @@ fun TicketSystemConfigDialog(
             TextButton(
                 onClick = {
                     val config = buildConfig(
-                        id = existingConfig?.id ?: UUID.randomUUID().toString(),
+                        id = existingConfig?.id ?: generateUuid(),
                         displayName = displayName,
                         provider = provider,
                         baseUrl = baseUrl,
@@ -251,6 +261,7 @@ fun TicketSystemConfigDialog(
                         githubRepos = githubRepos,
                         gitlabToken = gitlabToken,
                         gitlabProjectIds = gitlabProjectIds,
+                        issueFormat = issueFormat,
                         existingConfig = existingConfig
                     )
                     if (config != null) {
@@ -427,6 +438,37 @@ private fun GitLabCredentialFields(
     }
 }
 
+@Composable
+private fun IssueFormatField(
+    value: String,
+    onValueChange: (String) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            label = { Text("Issue Format") },
+            placeholder = { Text("{key}: {summary}") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Show preview
+        Text(
+            "Preview: ${de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat.generateExample(value)}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        // Show available placeholders
+        Text(
+            "Placeholders: {key}, {summary}, {status}, {project}, {type}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
 private fun getDefaultBaseUrl(provider: TicketProvider): String = when (provider) {
     TicketProvider.JIRA -> ""
     TicketProvider.GITHUB -> "https://api.github.com"
@@ -453,6 +495,7 @@ private fun buildConfig(
     githubRepos: String,
     gitlabToken: String,
     gitlabProjectIds: String,
+    issueFormat: String,
     existingConfig: TicketSystemConfig?
 ): TicketSystemConfig? {
     val credentials = when (provider) {
@@ -491,6 +534,16 @@ private fun buildConfig(
         credentials = credentials,
         syncIntervalMinutes = syncInterval,
         createdAt = existingConfig?.createdAt ?: Clock.System.now(),
-        updatedAt = Clock.System.now()
+        updatedAt = Clock.System.now(),
+        issueFormat = issueFormat.ifBlank { de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat.DEFAULT_FORMAT }
     )
+}
+
+/**
+ * Generates a random UUID-like string.
+ */
+private fun generateUuid(): String {
+    val chars = "0123456789abcdef"
+    fun randomHex(length: Int) = (1..length).map { chars[Random.nextInt(chars.length)] }.joinToString("")
+    return "${randomHex(8)}-${randomHex(4)}-${randomHex(4)}-${randomHex(4)}-${randomHex(12)}"
 }

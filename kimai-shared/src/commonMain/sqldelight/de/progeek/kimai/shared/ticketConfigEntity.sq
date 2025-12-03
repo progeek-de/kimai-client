@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS ticketConfigEntity (
     syncIntervalMinutes INTEGER NOT NULL DEFAULT 15,
     defaultProjectKey TEXT,
     createdAt INTEGER NOT NULL,
-    updatedAt INTEGER NOT NULL
+    updatedAt INTEGER NOT NULL,
+    issueFormat TEXT NOT NULL DEFAULT '{key}: {summary}'
 );
 
 CREATE INDEX IF NOT EXISTS idx_ticket_config_provider ON ticketConfigEntity(provider);
@@ -34,7 +35,7 @@ WHERE provider = :provider
 ORDER BY displayName ASC;
 
 insert:
-INSERT OR REPLACE INTO ticketConfigEntity VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO ticketConfigEntity VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 delete:
 DELETE FROM ticketConfigEntity WHERE id = :id;

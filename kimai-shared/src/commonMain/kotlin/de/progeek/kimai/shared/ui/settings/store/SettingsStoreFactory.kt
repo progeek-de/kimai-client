@@ -9,7 +9,6 @@ import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.repositories.credentials.CredentialsRepository
 import de.progeek.kimai.shared.core.repositories.project.ProjectRepository
 import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
-import de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import de.progeek.kimai.shared.utils.Language
 import de.progeek.kimai.shared.utils.getLanguages
@@ -40,8 +39,7 @@ class SettingsStoreFactory(
                     theme = ThemeEnum.SYSTEM,
                     defaultProject = null,
                     projects = emptyList(),
-                    language = getLanguages().first(),
-                    issueInsertFormat = IssueInsertFormat.SUMMARY_HASH_KEY
+                    language = getLanguages().first()
                 ),
                 bootstrapper = SimpleBootstrapper(Unit),
                 executorFactory = { ExecutorImpl(mainContext, ioContext) },
@@ -55,7 +53,6 @@ class SettingsStoreFactory(
         data class ProjectsUpdated(val projects: List<Project>) : Msg()
         data class ClearDefaultProject(val project: Project?) : Msg()
         data class LanguageUpdated(val language: Language) : Msg()
-        data class IssueInsertFormatUpdated(val format: IssueInsertFormat) : Msg()
     }
 
     private inner class ExecutorImpl(
@@ -68,7 +65,6 @@ class SettingsStoreFactory(
             loadTheme()
             loadProjects()
             loadLanguage()
-            loadIssueInsertFormat()
         }
 
         override fun executeIntent(intent: SettingsStore.Intent, getState: () -> SettingsStore.State): Unit =
@@ -84,9 +80,6 @@ class SettingsStoreFactory(
                 }
                 is SettingsStore.Intent.ChangeLanguage -> {
                     changeLanguage(intent.language)
-                }
-                is SettingsStore.Intent.ChangeIssueInsertFormat -> {
-                    changeIssueInsertFormat(intent.format)
                 }
             }
 
@@ -168,23 +161,6 @@ class SettingsStoreFactory(
                 dispatch(Msg.ClearDefaultProject(null))
             }
         }
-
-        private fun loadIssueInsertFormat() {
-            scope.launch {
-                settingsRepository.getIssueInsertFormat().flowOn(ioContext).collectLatest { format ->
-                    dispatch(Msg.IssueInsertFormatUpdated(format))
-                }
-            }
-        }
-
-        private fun changeIssueInsertFormat(format: IssueInsertFormat) {
-            scope.launch {
-                withContext(ioContext) {
-                    settingsRepository.saveIssueInsertFormat(format)
-                }
-                dispatch(Msg.IssueInsertFormatUpdated(format))
-            }
-        }
     }
 
     private object ReducerImpl : Reducer<SettingsStore.State, Msg> {
@@ -196,7 +172,6 @@ class SettingsStoreFactory(
                 is Msg.ProjectsUpdated -> copy(projects = msg.projects)
                 is Msg.ClearDefaultProject -> copy(defaultProject = msg.project)
                 is Msg.LanguageUpdated -> copy(language = msg.language)
-                is Msg.IssueInsertFormatUpdated -> copy(issueInsertFormat = msg.format)
             }
     }
 }
