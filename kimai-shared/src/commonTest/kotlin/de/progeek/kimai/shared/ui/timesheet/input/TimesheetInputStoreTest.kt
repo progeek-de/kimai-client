@@ -12,6 +12,7 @@ import de.progeek.kimai.shared.core.models.TimesheetForm
 import de.progeek.kimai.shared.core.repositories.project.ProjectRepository
 import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
 import de.progeek.kimai.shared.core.repositories.timesheet.TimesheetRepository
+import de.progeek.kimai.shared.core.ticketsystem.repository.TicketConfigRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -40,6 +41,7 @@ class TimesheetInputStoreTest {
     private lateinit var timesheetRepository: TimesheetRepository
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var projectRepository: ProjectRepository
+    private lateinit var ticketConfigRepository: TicketConfigRepository
     private lateinit var storeFactory: TimesheetInputStoreFactory
     private val testDispatcher = UnconfinedTestDispatcher()
 
@@ -69,12 +71,14 @@ class TimesheetInputStoreTest {
         timesheetRepository = mockk(relaxed = true)
         settingsRepository = mockk(relaxed = true)
         projectRepository = mockk(relaxed = true)
+        ticketConfigRepository = mockk(relaxed = true)
 
         // Setup default return values
         every { settingsRepository.getEntryMode() } returns flowOf(EntryMode.TIMER)
         every { timesheetRepository.getRunningTimesheetStream() } returns flowOf(null)
         every { settingsRepository.getDefaultProject() } returns flowOf(null)
         every { projectRepository.getProjects() } returns flowOf(emptyList())
+        every { ticketConfigRepository.hasEnabledConfigs() } returns flowOf(false)
 
         // Setup Koin
         startKoin {
@@ -83,6 +87,7 @@ class TimesheetInputStoreTest {
                     single { timesheetRepository }
                     single { settingsRepository }
                     single { projectRepository }
+                    single { ticketConfigRepository }
                 }
             )
         }
