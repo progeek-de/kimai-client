@@ -607,4 +607,96 @@ class TicketIssueDatasourceTest {
 
         assertEquals(TicketProvider.GITLAB, result.getOrNull()?.provider)
     }
+
+    // ============================================================
+    // Natural Sorting Tests (sortedByKey)
+    // ============================================================
+
+    @Test
+    fun `getBySource returns issues sorted naturally - PROJ-10 after PROJ-9`() = runTest {
+        val issue9 = testIssue1.copy(id = "9", key = "PROJ-9")
+        val issue10 = testIssue1.copy(id = "10", key = "PROJ-10")
+        val issue11 = testIssue1.copy(id = "11", key = "PROJ-11")
+        val issue2 = testIssue1.copy(id = "2", key = "PROJ-2")
+
+        // Insert in random order
+        datasource.insert(issue10)
+        datasource.insert(issue2)
+        datasource.insert(issue11)
+        datasource.insert(issue9)
+
+        datasource.getBySource(sourceId1).test(timeout = 5.seconds) {
+            val items = awaitItem()
+            assertEquals(4, items.size)
+            // Should be sorted descending: PROJ-11, PROJ-10, PROJ-9, PROJ-2
+            assertEquals("PROJ-11", items[0].key)
+            assertEquals("PROJ-10", items[1].key)
+            assertEquals("PROJ-9", items[2].key)
+            assertEquals("PROJ-2", items[3].key)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `getByProject returns issues sorted naturally`() = runTest {
+        val issue1 = testIssue1.copy(id = "1", key = "PROJ-1")
+        val issue100 = testIssue1.copy(id = "100", key = "PROJ-100")
+        val issue20 = testIssue1.copy(id = "20", key = "PROJ-20")
+
+        datasource.insert(issue100)
+        datasource.insert(issue1)
+        datasource.insert(issue20)
+
+        datasource.getByProject("PROJ").test(timeout = 5.seconds) {
+            val items = awaitItem()
+            assertEquals(3, items.size)
+            // Should be sorted descending: PROJ-100, PROJ-20, PROJ-1
+            assertEquals("PROJ-100", items[0].key)
+            assertEquals("PROJ-20", items[1].key)
+            assertEquals("PROJ-1", items[2].key)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `searchBySource returns issues sorted naturally`() = runTest {
+        val issue5 = testIssue1.copy(id = "5", key = "PROJ-5", summary = "Bug fix")
+        val issue15 = testIssue1.copy(id = "15", key = "PROJ-15", summary = "Bug fix")
+        val issue3 = testIssue1.copy(id = "3", key = "PROJ-3", summary = "Bug fix")
+
+        datasource.insert(issue15)
+        datasource.insert(issue3)
+        datasource.insert(issue5)
+
+        val result = datasource.searchBySource(sourceId1, "Bug")
+
+        assertTrue(result.isSuccess)
+        val items = result.getOrNull()!!
+        assertEquals(3, items.size)
+        // Should be sorted descending: PROJ-15, PROJ-5, PROJ-3
+        assertEquals("PROJ-15", items[0].key)
+        assertEquals("PROJ-5", items[1].key)
+        assertEquals("PROJ-3", items[2].key)
+    }
+
+    @Test
+    fun `natural sorting handles GitHub style keys with hash`() = runTest {
+        val githubIssue1 = testIssue3.copy(id = "1", key = "#1")
+        val githubIssue10 = testIssue3.copy(id = "10", key = "#10")
+        val githubIssue2 = testIssue3.copy(id = "2", key = "#2")
+
+        datasource.insert(githubIssue10)
+        datasource.insert(githubIssue1)
+        datasource.insert(githubIssue2)
+
+        datasource.getBySource(sourceId2).test(timeout = 5.seconds) {
+            val items = awaitItem()
+            assertEquals(3, items.size)
+            // Should be sorted descending: #10, #2, #1
+            assertEquals("#10", items[0].key)
+            assertEquals("#2", items[1].key)
+            assertEquals("#1", items[2].key)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
 }

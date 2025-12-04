@@ -139,22 +139,4 @@ class HomeStoreTest {
         // Final state should have loading = false
         assertFalse(store.stateFlow.value.isLoading)
     }
-
-    @Test
-    fun `store completes sync successfully`() = runTest(testDispatcher) {
-        coEvery { activityRepository.invalidateCache() } returns Unit
-        coEvery { projectRepository.invalidateCache() } returns Unit
-        coEvery { customerRepository.invalidateCache() } returns Unit
-
-        val store = storeFactory.create(
-            mainContext = testDispatcher,
-            ioContext = testDispatcher
-        )
-
-        // Wait for sync to complete
-        advanceUntilIdle()
-
-        // Final state should not be loading
-        assertFalse(store.stateFlow.value.isLoading)
-    }
 }

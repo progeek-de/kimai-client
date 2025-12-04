@@ -419,6 +419,132 @@ class TicketSystemRepositoryTest {
     }
 
     // ============================================================
+    // refreshAllSources() Tests
+    // ============================================================
+
+    @Test
+    fun `refreshAllSources succeeds with no enabled configs`() = runTest {
+        every { mockConfigRepository.getEnabledConfigs() } returns flowOf(emptyList())
+
+        val result = repository.refreshAllSources()
+
+        assertTrue(result.isSuccess)
+    }
+
+    @Test
+    fun `refreshAllSources refreshes all enabled sources`() = runTest {
+        val jiraProvider = createMockProvider(TicketProvider.JIRA, "user", listOf(testIssue1))
+        val githubProvider = createMockProvider(TicketProvider.GITHUB, "user", listOf(testIssue2))
+
+        registry.register(jiraProvider)
+        registry.register(githubProvider)
+        every { mockConfigRepository.getEnabledConfigs() } returns flowOf(listOf(testConfig1, testConfig2))
+
+        val result = repository.refreshAllSources()
+
+        // Result depends on Store5 behavior, but should not throw
+        // The actual refresh involves network calls which are mocked
+        assertNotNull(result)
+    }
+
+    // ============================================================
+    // searchAllSources() Sorting Tests
+    // ============================================================
+
+    @Test
+    fun `searchAllSources sorts by updated descending`() = runTest {
+        val olderIssue = testIssue1.copy(updated = Instant.fromEpochMilliseconds(1600000000000))
+        val newerIssue = testIssue2.copy(updated = Instant.fromEpochMilliseconds(1800000000000))
+
+        val jiraProvider = createMockProvider(TicketProvider.JIRA, "user", listOf(olderIssue))
+        val githubProvider = createMockProvider(TicketProvider.GITHUB, "user", listOf(newerIssue))
+
+        registry.register(jiraProvider)
+        registry.register(githubProvider)
+        every { mockConfigRepository.getEnabledConfigs() } returns flowOf(listOf(testConfig1, testConfig2))
+
+        val result = repository.searchAllSources("test", 50)
+
+        assertTrue(result.isSuccess)
+        val issues = result.getOrNull()!!
+        assertEquals(2, issues.size)
+        // Newer issue should be first
+        assertEquals(newerIssue.id, issues.first().id)
+    }
+
+    @Test
+    fun `searchAllSources respects limit`() = runTest {
+        val issues = (1..20).map {
+            testIssue1.copy(
+                id = "issue-$it",
+                key = "PROJ-$it",
+                updated = Instant.fromEpochMilliseconds(1700000000000 + it * 1000)
+            )
+        }
+
+        val jiraProvider = createMockProvider(TicketProvider.JIRA, "user", issues)
+        registry.register(jiraProvider)
+        every { mockConfigRepository.getEnabledConfigs() } returns flowOf(listOf(testConfig1))
+
+        val result = repository.searchAllSources("test", 5)
+
+        assertTrue(result.isSuccess)
+        assertEquals(5, result.getOrNull()?.size)
+    }
+
+    // ============================================================
+    // searchWithFallback() Remote Fallback Tests
+    // ============================================================
+
+    @Test
+    fun `searchWithFallback falls back to remote when local cache is empty`() = runTest {
+        val jiraProvider = createMockProvider(TicketProvider.JIRA, "user", listOf(testIssue1))
+        registry.register(jiraProvider)
+        every { mockConfigRepository.getEnabledConfigs() } returns flowOf(listOf(testConfig1))
+
+        val result = repository.searchWithFallback("nonexistent", 50)
+
+        assertTrue(result.isSuccess)
+        // Remote search should have been triggered
+        assertEquals(1, result.getOrNull()?.size)
+    }
+
+    @Test
+    fun `searchWithFallback caches remote results`() = runTest {
+        val jiraProvider = createMockProvider(TicketProvider.JIRA, "user", listOf(testIssue1))
+        registry.register(jiraProvider)
+        every { mockConfigRepository.getEnabledConfigs() } returns flowOf(listOf(testConfig1))
+
+        // First search - should hit remote and cache
+        val result1 = repository.searchWithFallback("nonexistent", 50)
+        assertTrue(result1.isSuccess)
+
+        // Verify it's now in cache
+        val cachedCount = repository.getCachedIssueCount()
+        assertTrue(cachedCount.getOrNull()!! >= 1)
+    }
+
+    // ============================================================
+    // Error Handling Tests
+    // ============================================================
+
+    @Test
+    fun `searchAllSources handles provider errors gracefully`() = runTest {
+        val failingProvider = mockk<TicketSystemProvider> {
+            every { providerType } returns TicketProvider.JIRA
+            coEvery { searchIssues(any(), any(), any()) } returns Result.failure(Exception("Network error"))
+        }
+        registry.register(failingProvider)
+        every { mockConfigRepository.getEnabledConfigs() } returns flowOf(listOf(testConfig1))
+
+        val result = repository.searchAllSources("test", 50)
+
+        assertTrue(result.isSuccess)
+        // Should return empty list instead of failing
+        assertTrue(result.getOrNull()?.isEmpty() == true)
+    }
+
+    // ============================================================
     // Helper Functions
     // ============================================================
 

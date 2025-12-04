@@ -492,10 +492,8 @@ class TimesheetRepositoryTest {
         val result = repository.addTimesheet(form)
 
         // Then
-        // The implementation wraps the flatMap result in runCatching, which means
-        // Result.failure from flatMap becomes wrapped in Result.success
-        // This is a known issue with the repository implementation
-        assertTrue(result.isSuccess)
+        assertTrue(result.isFailure, "Client error should propagate as failure")
+        assertEquals("Network error", result.exceptionOrNull()?.message)
         // Verify datasource insert was never called since flatMap short-circuits
         coVerify(exactly = 0) { mockDatasource.insert(any<TimesheetEntity>()) }
     }

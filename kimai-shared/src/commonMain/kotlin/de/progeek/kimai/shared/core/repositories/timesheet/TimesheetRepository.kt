@@ -71,12 +71,8 @@ class TimesheetRepository(
     }
 
     suspend fun addTimesheet(timesheet: TimesheetForm): Result<Unit> {
-        return kotlin.runCatching {
-            timesheetsClient.createTimesheet(timesheet).flatMap {
-                Result.success(
-                    timesheetDatasource.insert(it.toTimesheetEntity())
-                )
-            }
+        return timesheetsClient.createTimesheet(timesheet).flatMap {
+            timesheetDatasource.insert(it.toTimesheetEntity()).map { }
         }
     }
 

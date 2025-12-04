@@ -7,6 +7,8 @@ import de.progeek.kimai.shared.core.database.datasource.activity.ActivityDatasou
 import de.progeek.kimai.shared.core.database.datasource.customer.CustomerDatasource
 import de.progeek.kimai.shared.core.database.datasource.project.ProjectDatasource
 import de.progeek.kimai.shared.core.database.datasource.timesheet.TimesheetDatasource
+import de.progeek.kimai.shared.core.storage.credentials.AesGCMCipher
+import de.progeek.kimai.shared.core.ticketsystem.datasource.TicketConfigDatasource
 import de.progeek.kimai.shared.core.ticketsystem.datasource.TicketIssueDatasource
 
 /**
@@ -62,7 +64,8 @@ data class TestDatasources(
     val projectDatasource: ProjectDatasource,
     val activityDatasource: ActivityDatasource,
     val customerDatasource: CustomerDatasource,
-    val ticketIssueDatasource: TicketIssueDatasource
+    val ticketIssueDatasource: TicketIssueDatasource,
+    val ticketConfigDatasource: TicketConfigDatasource
 )
 
 /**
@@ -70,6 +73,7 @@ data class TestDatasources(
  */
 fun createTestDatasources(): TestDatasources {
     val database = createTestDatabase()
+    val aesCipher = AesGCMCipher()
 
     return TestDatasources(
         database = database,
@@ -77,7 +81,8 @@ fun createTestDatasources(): TestDatasources {
         projectDatasource = ProjectDatasource(database),
         activityDatasource = ActivityDatasource(database),
         customerDatasource = CustomerDatasource(database),
-        ticketIssueDatasource = TicketIssueDatasource(database)
+        ticketIssueDatasource = TicketIssueDatasource(database),
+        ticketConfigDatasource = TicketConfigDatasource(database, aesCipher)
     )
 }
 
