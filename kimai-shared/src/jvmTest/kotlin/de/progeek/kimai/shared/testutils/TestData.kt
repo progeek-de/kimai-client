@@ -1,10 +1,6 @@
 package de.progeek.kimai.shared.testutils
 
-import de.progeek.kimai.shared.core.models.Activity
-import de.progeek.kimai.shared.core.models.Credentials
-import de.progeek.kimai.shared.core.models.Customer
-import de.progeek.kimai.shared.core.models.Project
-import de.progeek.kimai.shared.core.models.Timesheet
+import de.progeek.kimai.shared.core.models.*
 import kotlinx.datetime.LocalDateTime
 import kotlin.time.Duration.Companion.hours
 
@@ -128,10 +124,7 @@ object TestData {
         begin: LocalDateTime = LocalDateTime(2025, 1, 1, 9, 0),
         end: LocalDateTime? = LocalDateTime(2025, 1, 1, 12, 0),
         description: String? = "Test description",
-        exported: Boolean = false,
-        jiraIssueKey: String? = null,
-        jiraIssueSummary: String? = null,
-        jiraIssueStatus: String? = null
+        exported: Boolean = false
     ): Timesheet = Timesheet(
         id = id,
         project = project,
@@ -140,10 +133,7 @@ object TestData {
         end = end,
         duration = if (end != null) 3.hours else null,
         description = description,
-        exported = exported,
-        jiraIssueKey = jiraIssueKey,
-        jiraIssueSummary = jiraIssueSummary,
-        jiraIssueStatus = jiraIssueStatus
+        exported = exported
     )
 
     /**
