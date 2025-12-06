@@ -13,7 +13,6 @@ import de.progeek.kimai.shared.core.ticketsystem.models.TicketProvider
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
 import de.progeek.kimai.shared.core.ticketsystem.repository.TicketConfigRepository
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 /**
@@ -33,7 +32,7 @@ fun TicketSystemSettingsSection() {
     var showDeleteConfirm by remember { mutableStateOf<TicketSystemConfig?>(null) }
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         // Section Header
@@ -56,7 +55,7 @@ fun TicketSystemSettingsSection() {
                 "No ticket systems configured. Click + to add one.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = 8.dp)
+                modifier = Modifier.padding(vertical = 4.dp)
             )
         } else {
             configs.forEach { config ->

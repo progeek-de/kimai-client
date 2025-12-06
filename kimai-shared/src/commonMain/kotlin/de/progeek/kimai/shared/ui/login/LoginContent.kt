@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -55,7 +56,7 @@ fun LoginCard() {
                     }
                 },
                 label = { Text(stringResource(SharedRes.strings.email)) },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).focusRequester(emailFocusRequester)
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).focusRequester(emailFocusRequester).testTag("email_input_field")
             )
 
             OutlinedTextField(
@@ -72,7 +73,7 @@ fun LoginCard() {
                     }
                 },
                 label = { Text(stringResource(SharedRes.strings.password)) },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).focusRequester(passwordFocusRequester),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).focusRequester(passwordFocusRequester).testTag("password_input_field"),
                 visualTransformation = PasswordVisualTransformation()
             )
 
@@ -81,7 +82,8 @@ fun LoginCard() {
                     onClick = { component.onLoginClick(email, password) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 20.dp),
+                        .padding(top = 20.dp)
+                        .testTag("login_button"),
                     shape = MaterialTheme.shapes.small,
                     enabled = isEmailValid && email.isNotBlank() && password.isNotBlank()
                 ) {
@@ -95,15 +97,15 @@ fun LoginCard() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 if (state.isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                    CircularProgressIndicator(modifier = Modifier.size(32.dp).testTag("login_progress_indicator"))
                 }
 
                 if (state.isError) {
-                    Text(stringResource(SharedRes.strings.invalid_login), color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(SharedRes.strings.invalid_login), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("login_error_text"))
                 }
 
                 if (!isEmailValid) {
-                    Text(stringResource(SharedRes.strings.invalid_email), color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(SharedRes.strings.invalid_email), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("email_error_text"))
                 }
             }
         }
@@ -168,7 +170,8 @@ fun HostButton() {
 
     TextButton(
         onClick = { dialogOpen = true },
-        shape = MaterialTheme.shapes.small
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.testTag("host_button")
     ) {
         Text(
             state.baseUrl
@@ -211,7 +214,7 @@ fun ChangeBaseUrlDialog(
             Column(modifier = Modifier.padding(8.dp)) {
                 Row(modifier = Modifier.fillMaxWidth().padding(top = 24.dp)) {
                     OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        modifier = Modifier.fillMaxWidth().padding(16.dp).testTag("dialog_host_input"),
                         value = host,
                         onValueChange = { host = it },
                         label = { Text("Host") }

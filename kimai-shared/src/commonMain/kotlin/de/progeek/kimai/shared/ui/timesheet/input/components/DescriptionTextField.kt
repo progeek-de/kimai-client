@@ -99,16 +99,18 @@ private fun TextFieldDecorationBox(
             top = 0.dp,
             bottom = 0.dp
         ),
-        leadingIcon = {
-            TicketPickerButton(
-                enabled = !isRunning,
-                ticketSystemEnabled = ticketSystemEnabled,
-                onClick = onTicketPickerClick
-            )
-        },
+        leadingIcon = ticketPickerButton(isRunning, ticketSystemEnabled, onTicketPickerClick),
         trailingIcon = { TimesheetInputButton() },
         container = { TextFieldContainer() }
     )
+}
+
+private fun ticketPickerButton(isRunning: Boolean, ticketSystemEnabled: Boolean, onTicketPickerClick: () -> Unit): @Composable (() -> Unit)? {
+    if(!isRunning && ticketSystemEnabled) {
+        return { TicketPickerButton(!isRunning, ticketSystemEnabled, onTicketPickerClick) }
+    }
+
+    return null
 }
 
 /**

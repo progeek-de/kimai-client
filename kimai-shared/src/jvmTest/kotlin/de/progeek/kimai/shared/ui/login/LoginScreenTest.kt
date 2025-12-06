@@ -1,12 +1,7 @@
 package de.progeek.kimai.shared.ui.login
 
-import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotEnabled
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
-import androidx.compose.ui.test.runComposeUiTest
 import de.progeek.kimai.shared.testutils.TestData
 import de.progeek.kimai.shared.testutils.TestKoinModule
 import de.progeek.kimai.shared.testutils.TestTheme
@@ -159,7 +154,7 @@ class LoginScreenTest {
     }
 
     @Test
-    fun `login screen displays kimai logo`() = runComposeUiTest {
+    fun `login screen renders without errors`() = runComposeUiTest {
         val component = createLoginComponent()
 
         setContent {
@@ -168,9 +163,10 @@ class LoginScreenTest {
             }
         }
 
-        // Logo should exist (it's rendered as an image)
-        // Since it's an image, we can't easily assert its existence by text
-        // The test passes if the content renders without error
+        // Verify essential UI elements are rendered
+        onNodeWithTag("login_button").assertExists()
+        onNodeWithTag("email_input_field").assertExists()
+        onNodeWithTag("password_input_field").assertExists()
     }
 
     @Test
@@ -215,7 +211,7 @@ class LoginScreenTest {
         onNodeWithText("E-Mail", substring = true, ignoreCase = true).performTextInput("notanemail")
 
         // Should show invalid email error
-        onNodeWithText("invalid", substring = true, ignoreCase = true).assertExists()
+        onNodeWithTag("email_error_text").assertExists()
     }
 
     @Test
@@ -244,8 +240,8 @@ class LoginScreenTest {
         // Click login
         onNodeWithText("LOGIN", ignoreCase = true).performClick()
 
-        // The loading state should be shown (CircularProgressIndicator)
-        // Note: This is difficult to test without proper test tags
+        // Verify loading indicator is shown
+        onNodeWithTag("login_progress_indicator").assertExists()
     }
 
     @Test
@@ -258,8 +254,6 @@ class LoginScreenTest {
             }
         }
 
-        // Find and click the server URL text button
-        // The server URL is shown without https:// prefix
         onNodeWithText("kimai.cloud", substring = true).performClick()
 
         // Dialog should appear with Host field
