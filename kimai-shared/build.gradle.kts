@@ -5,14 +5,10 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
-    // Android plugin removed - focus on desktop only
-    // alias(libs.plugins.android.library)
     alias(libs.plugins.multiplatform.resources)
     alias(libs.plugins.jetbrains.compose)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.jlleitschuh.gradle.ktlint)
-    // kotlin-parcelize removed - only needed for Android
-    // id("kotlin-parcelize")
     id("com.codingfeline.buildkonfig")
     jacoco
 }
@@ -42,9 +38,6 @@ kotlin {
             )
         }
     }
-
-    // Android and iOS targets removed - focus on desktop only
-    // See CLAUDE.md: "Android and iOS platform modules were removed (focus on desktop)"
 
     sourceSets {
         val commonMain by getting {
@@ -108,9 +101,6 @@ kotlin {
 
                 // napier logging
                 implementation(libs.napier)
-
-                // jira integration
-                implementation(libs.kotlin.jira.api)
             }
         }
 
@@ -291,5 +281,3 @@ tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
 
     executionData.setFrom(files("${layout.buildDirectory.get()}/jacoco/jvmTest.exec"))
 }
-
-// iOS task dependency fix removed - iOS targets removed

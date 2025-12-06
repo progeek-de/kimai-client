@@ -44,9 +44,6 @@ internal inline fun toTimesheet(
             name = ac_name,
             project = pr_id
         ),
-        exported = exported == 1L,
-        jiraIssueKey = null,
-        jiraIssueSummary = null,
-        jiraIssueStatus = null
+        exported = exported == 1L
     )
 }

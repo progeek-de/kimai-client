@@ -6,13 +6,7 @@ import de.progeek.kimai.shared.utils.clearDatabase
 import de.progeek.kimai.shared.utils.createTestDatasources
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 /**
  * Test suite for TimesheetDatasource.
@@ -77,9 +71,6 @@ class TimesheetDatasourceTest {
         project: Long = 1L,
         activity: Long = 1L,
         exported: Long = 0L,
-        jiraIssueKey: String? = null,
-        jiraIssueSummary: String? = null,
-        jiraIssueStatus: String? = null
     ) = TimesheetEntity(
         id = id,
         begin = begin,

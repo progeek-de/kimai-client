@@ -60,10 +60,7 @@ fun TimesheetForm.toTimesheet(): Timesheet {
         end = end,
         duration = duration,
         description = description,
-        exported = false,
-        jiraIssueKey = null,
-        jiraIssueSummary = null,
-        jiraIssueStatus = null
+        exported = false
     )
 }
 
