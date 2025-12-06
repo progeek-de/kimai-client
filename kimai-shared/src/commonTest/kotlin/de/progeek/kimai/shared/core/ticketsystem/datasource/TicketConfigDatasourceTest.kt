@@ -430,15 +430,24 @@ class TicketConfigDatasourceTest {
 
     @Test
     fun `updateSyncInterval updates updatedAt timestamp`() = runTest {
-        val originalTime = Clock.System.now()
-        datasource.save(jiraConfig.copy(updatedAt = originalTime))
+        datasource.save(jiraConfig)
+
+        // Get the initial updatedAt timestamp
+        var initialUpdatedAt: kotlinx.datetime.Instant? = null
+        datasource.getById(jiraConfig.id).test(timeout = 5.seconds) {
+            val config = awaitItem()
+            assertNotNull(config)
+            initialUpdatedAt = config.updatedAt
+            cancelAndIgnoreRemainingEvents()
+        }
 
         datasource.updateSyncInterval(jiraConfig.id, 120)
 
         datasource.getById(jiraConfig.id).test(timeout = 5.seconds) {
             val config = awaitItem()
             assertNotNull(config)
-            assertTrue(config.updatedAt >= originalTime)
+            assertNotNull(initialUpdatedAt)
+            assertTrue(config.updatedAt >= initialUpdatedAt!!)
             cancelAndIgnoreRemainingEvents()
         }
     }
