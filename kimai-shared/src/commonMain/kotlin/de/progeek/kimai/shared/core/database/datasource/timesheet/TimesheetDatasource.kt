@@ -96,7 +96,7 @@ class TimesheetDatasource(val database: KimaiDatabase) {
             query.transaction {
                 list.forEach { item ->
                     query.deleteById(
-                        id = item,
+                        id = item
                     )
                 }
             }

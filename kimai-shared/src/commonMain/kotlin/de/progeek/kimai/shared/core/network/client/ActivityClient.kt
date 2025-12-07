@@ -9,13 +9,13 @@ import de.progeek.kimai.shared.core.storage.credentials.AesGCMCipher
 class ActivityClient(
     settings: ObservableSettings,
     aesCipher: AesGCMCipher,
-    private val client: ActivityApi,
-): CredentialsListener(settings, aesCipher, client) {
+    private val client: ActivityApi
+) : CredentialsListener(settings, aesCipher, client) {
 
     suspend fun getActivities(): Result<List<Activity>> {
         return kotlin.runCatching {
             val response = client.getGetActivities()
-            if(!response.success) {
+            if (!response.success) {
                 throw Throwable("Error while getting activities")
             }
 

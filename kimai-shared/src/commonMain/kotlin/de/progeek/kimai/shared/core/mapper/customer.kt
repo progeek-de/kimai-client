@@ -15,6 +15,6 @@ fun CustomerEntity.map(): Customer {
 fun de.progeek.kimai.openapi.models.Customer.toCustomer(): Customer {
     return Customer(
         id = id?.toLong() ?: -1,
-        name = name,
+        name = name
     )
 }

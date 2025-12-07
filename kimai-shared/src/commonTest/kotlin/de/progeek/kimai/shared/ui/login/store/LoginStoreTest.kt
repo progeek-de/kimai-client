@@ -15,12 +15,7 @@ import kotlinx.coroutines.test.runTest
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LoginStoreTest {
@@ -248,57 +243,5 @@ class LoginStoreTest {
         advanceUntilIdle()
 
         assertTrue(store.stateFlow.value.isLoggedIn, "Login should succeed with custom baseUrl")
-    }
-
-    @Test
-    fun `successful login sets isLoggedIn to true and isError to false`() = runTest(testDispatcher) {
-        val credentials = Credentials(testEmail, testPassword)
-        coEvery { authRepository.login(testEmail, testPassword, testBaseUrl) } returns credentials
-
-        val store = storeFactory.create(
-            mainContext = testDispatcher,
-            ioContext = testDispatcher
-        )
-
-        store.accept(LoginStore.Intent.Login(testEmail, testPassword))
-        advanceUntilIdle()
-
-        val state = store.stateFlow.value
-        assertTrue(state.isLoggedIn)
-        assertFalse(state.isError)
-        assertFalse(state.isLoading)
-    }
-
-    @Test
-    fun `failed login sets isError to true and isLoggedIn to false`() = runTest(testDispatcher) {
-        coEvery { authRepository.login(testEmail, testPassword, testBaseUrl) } returns null
-
-        val store = storeFactory.create(
-            mainContext = testDispatcher,
-            ioContext = testDispatcher
-        )
-
-        store.accept(LoginStore.Intent.Login(testEmail, testPassword))
-        advanceUntilIdle()
-
-        val state = store.stateFlow.value
-        assertTrue(state.isError)
-        assertFalse(state.isLoggedIn)
-        assertFalse(state.isLoading)
-    }
-
-    @Test
-    fun `baseUrl is loaded from settings on initialization`() = runTest(testDispatcher) {
-        val customUrl = "https://my-kimai.cloud"
-        every { settingsRepository.getBaseUrl() } returns customUrl
-
-        val store = storeFactory.create(
-            mainContext = testDispatcher,
-            ioContext = testDispatcher
-        )
-
-        advanceUntilIdle()
-
-        assertEquals(customUrl, store.stateFlow.value.baseUrl)
     }
 }

@@ -18,7 +18,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormTimeFields(
@@ -43,13 +42,11 @@ fun FormTimeFields(
                 .minus(begin.toInstant(TimeZone.currentSystemDefault()))
     }
 
-    
     var openDatePicker by remember { mutableStateOf(false) }
 
     val startAfterEndText = stringResource(SharedRes.strings.start_after_end)
     val endBeforeStartText = stringResource(SharedRes.strings.end_before_start)
     val closeText = stringResource(SharedRes.strings.close)
-
 
     Surface(shadowElevation = 4.dp, color = MaterialTheme.colorScheme.onSecondary, modifier = Modifier.padding(bottom = 24.dp)) {
         Row(
@@ -72,8 +69,9 @@ fun FormTimeFields(
                                 }
 
                                 end
-                            } else
+                            } else {
                                 it
+                            }
                         )
                     }
                 )
@@ -88,7 +86,7 @@ fun FormTimeFields(
                     time = end,
                     onChange = {
                         onEndChange(
-                            if(begin > it) {
+                            if (begin > it) {
                                 scope.launch {
                                     snackbarHostState.showSnackbar(
                                         endBeforeStartText,
@@ -98,9 +96,9 @@ fun FormTimeFields(
                                 }
 
                                 begin
-                            }
-                            else
+                            } else {
                                 it
+                            }
                         )
                     }
                 )
@@ -122,9 +120,11 @@ fun FormTimeFields(
                 Text(
                     duration.toComponents { hours, minutes, seconds, _ ->
                         "${hours.toString().padStart(2, '0')}:${
-                            minutes.toString().padStart(2, '0')
+                        minutes.toString().padStart(2, '0')
                         }:${seconds.toString().padStart(2, '0')}"
-                    }, color = MaterialTheme.colorScheme.surfaceTint, fontSize = MaterialTheme.typography.bodyMedium.fontSize
+                    },
+                    color = MaterialTheme.colorScheme.surfaceTint,
+                    fontSize = MaterialTheme.typography.bodyMedium.fontSize
                 )
             }
         }
@@ -140,5 +140,4 @@ fun FormTimeFields(
             }
         }
     }
-
 }

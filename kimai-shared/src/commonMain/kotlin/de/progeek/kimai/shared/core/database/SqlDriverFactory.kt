@@ -5,4 +5,4 @@ import org.koin.core.scope.Scope
 
 expect fun Scope.sqlDriverFactory(): SqlDriver
 fun createDatabase(driver: SqlDriver): KimaiDatabase =
-    KimaiDatabase(driver = driver,)
+    KimaiDatabase(driver = driver)

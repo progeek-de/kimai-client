@@ -33,11 +33,16 @@ internal inline fun toTimesheet(
         duration = duration?.toDuration(DurationUnit.SECONDS),
         description = description,
         project = Project(
-            id = pr_id, name = pr_name, parent = pr_parent, globalActivities = pr_globalActivities == 1L,
+            id = pr_id,
+            name = pr_name,
+            parent = pr_parent,
+            globalActivities = pr_globalActivities == 1L,
             customer = Customer(id = cu_id, name = cu_name)
         ),
         activity = Activity(
-            id = ac_id, name = ac_name, project = pr_id
+            id = ac_id,
+            name = ac_name,
+            project = pr_id
         ),
         exported = exported == 1L
     )

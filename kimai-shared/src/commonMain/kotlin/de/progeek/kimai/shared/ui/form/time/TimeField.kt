@@ -11,13 +11,10 @@ import de.progeek.kimai.shared.ui.form.time.components.RunningTimeField
 fun TimeField(component: TimeFieldComponent, snackbarHostState: SnackbarHostState) {
     val state by component.state.collectAsState()
 
-    when(state.mode) {
+    when (state.mode) {
         TimeFieldMode.ADD -> EditTimeField(component, snackbarHostState)
         TimeFieldMode.START -> RunningTimeField(component, snackbarHostState)
         TimeFieldMode.EDIT_RUNNING -> RunningTimeField(component, snackbarHostState)
         TimeFieldMode.EDIT -> EditTimeField(component, snackbarHostState)
     }
 }
-
-
-

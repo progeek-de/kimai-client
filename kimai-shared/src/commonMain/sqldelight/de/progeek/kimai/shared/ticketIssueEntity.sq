@@ -1,0 +1,81 @@
+-- Unified ticket issue table for all providers (Jira, GitHub, GitLab)
+CREATE TABLE IF NOT EXISTS ticketIssueEntity (
+    id TEXT NOT NULL,
+    sourceId TEXT NOT NULL,
+    key TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    status TEXT NOT NULL,
+    projectKey TEXT NOT NULL,
+    projectName TEXT NOT NULL,
+    issueType TEXT NOT NULL,
+    assignee TEXT,
+    updated INTEGER NOT NULL,
+    provider TEXT NOT NULL,
+    webUrl TEXT,
+    PRIMARY KEY (sourceId, id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_ticket_issue_source ON ticketIssueEntity(sourceId);
+CREATE INDEX IF NOT EXISTS idx_ticket_issue_key ON ticketIssueEntity(key);
+CREATE INDEX IF NOT EXISTS idx_ticket_issue_project ON ticketIssueEntity(projectKey);
+CREATE INDEX IF NOT EXISTS idx_ticket_issue_updated ON ticketIssueEntity(updated);
+
+getAll:
+SELECT * FROM ticketIssueEntity
+ORDER BY updated DESC;
+
+getBySource:
+SELECT * FROM ticketIssueEntity
+WHERE sourceId = :sourceId
+ORDER BY key ASC;
+
+getByKey:
+SELECT * FROM ticketIssueEntity
+WHERE key = :key
+LIMIT 1;
+
+getBySourceAndKey:
+SELECT * FROM ticketIssueEntity
+WHERE sourceId = :sourceId AND key = :key;
+
+getByProject:
+SELECT * FROM ticketIssueEntity
+WHERE projectKey = :projectKey
+ORDER BY key ASC;
+
+getByAssignee:
+SELECT * FROM ticketIssueEntity
+WHERE assignee = :assignee
+ORDER BY key ASC;
+
+search:
+SELECT * FROM ticketIssueEntity
+WHERE key LIKE '%' || :query || '%'
+   OR summary LIKE '%' || :query || '%'
+ORDER BY updated DESC
+LIMIT :limit;
+
+searchBySource:
+SELECT * FROM ticketIssueEntity
+WHERE sourceId = :sourceId
+  AND (key LIKE '%' || :query || '%' OR summary LIKE '%' || :query || '%')
+ORDER BY key ASC
+LIMIT :limit;
+
+insert:
+INSERT OR REPLACE INTO ticketIssueEntity VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteBySource:
+DELETE FROM ticketIssueEntity WHERE sourceId = :sourceId;
+
+deleteByKey:
+DELETE FROM ticketIssueEntity WHERE key = :key;
+
+deleteAll:
+DELETE FROM ticketIssueEntity;
+
+count:
+SELECT COUNT(*) FROM ticketIssueEntity;
+
+countBySource:
+SELECT COUNT(*) FROM ticketIssueEntity WHERE sourceId = :sourceId;

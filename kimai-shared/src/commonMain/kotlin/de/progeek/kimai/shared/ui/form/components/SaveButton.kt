@@ -3,6 +3,7 @@ package de.progeek.kimai.shared.ui.form.components
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -23,9 +24,11 @@ fun SaveButton() {
     Button(
         modifier = Modifier.padding(horizontal = 8.dp).width(128.dp),
         enabled = ((state.project != null && state.activity != null)),
+        shape = MaterialTheme.shapes.small,
         onClick = {
             component.onIntent(FormStore.Intent.Save)
-        }) {
+        }
+    ) {
         Text(stringResource(SharedRes.strings.ok), color = Color.White)
     }
 }

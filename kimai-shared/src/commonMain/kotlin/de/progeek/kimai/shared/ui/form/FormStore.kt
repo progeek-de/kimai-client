@@ -29,8 +29,8 @@ interface FormStore : Store<Intent, State, Label> {
         data class DescriptionUpdated(val description: String) : Intent()
         data class BeginUpdated(val begin: LocalDateTime) : Intent()
         data class EndUpdated(val end: LocalDateTime) : Intent()
-        data object Save: Intent()
-        data object Delete: Intent()
+        data object Save : Intent()
+        data object Delete : Intent()
     }
 
     data class State(
@@ -41,7 +41,7 @@ interface FormStore : Store<Intent, State, Label> {
         val customer: Customer? = null,
         val project: Project? = null,
         val activity: Activity? = null,
-        val description: String  = ""
+        val description: String = ""
     )
 
     sealed class Label {
@@ -82,7 +82,7 @@ internal class FormStoreFactory(
 
         fun buildInitialState(params: TimesheetFormParams): State {
             val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-            return when(params) {
+            return when (params) {
                 is TimesheetFormParams.AddTimesheet -> {
                     State(mode = TimeFieldMode.ADD, begin = now, end = now, description = params.description ?: "")
                 }
@@ -94,7 +94,8 @@ internal class FormStoreFactory(
             }
         }
 
-        return object : FormStore,
+        return object :
+            FormStore,
             Store<Intent, State, Label> by storeFactory.create(
                 name = "FormStore",
                 initialState = buildInitialState(params),
@@ -118,11 +119,11 @@ internal class FormStoreFactory(
 
     private inner class ExecutorImpl(
         mainContext: CoroutineContext,
-        private val ioContext: CoroutineContext,
+        private val ioContext: CoroutineContext
     ) :
         CoroutineExecutor<Intent, Unit, State, Msg, Label>(mainContext) {
 
-        override fun executeIntent(intent: Intent, getState: () -> State): Unit {
+        override fun executeIntent(intent: Intent, getState: () -> State) {
             when (intent) {
                 is Intent.ActivityUpdated -> dispatch(Msg.ActivityUpdated(intent.activity))
                 is Intent.BeginUpdated -> dispatch(Msg.BeginUpdated(intent.begin))
@@ -137,7 +138,7 @@ internal class FormStoreFactory(
 
         private fun save(state: State) {
             val timesheet = state.toTimesheetForm()
-            when(state.mode) {
+            when (state.mode) {
                 TimeFieldMode.ADD -> addTimesheet(timesheet)
                 TimeFieldMode.START -> createTimesheet(timesheet)
                 TimeFieldMode.EDIT_RUNNING -> updateTimesheet(timesheet)

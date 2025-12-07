@@ -25,7 +25,7 @@ internal fun CalendarButton(
     begin: LocalDateTime,
     end: LocalDateTime,
     onBeginChange: (LocalDateTime) -> Unit,
-    onEndChange: (LocalDateTime) -> Unit,
+    onEndChange: (LocalDateTime) -> Unit
 ) {
     var openDatePicker by remember { mutableStateOf(false) }
 

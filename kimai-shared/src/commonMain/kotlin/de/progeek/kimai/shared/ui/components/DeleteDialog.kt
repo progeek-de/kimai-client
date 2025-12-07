@@ -42,9 +42,14 @@ fun DeleteDialog(onDismiss: () -> Unit, onDelete: () -> Unit) {
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
                     OutlinedButton(
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                        shape = MaterialTheme.shapes.small,
                         onClick = onDelete
                     ) { Text(stringResource(SharedRes.strings.delete), color = MaterialTheme.colorScheme.error) }
-                    Button(modifier = Modifier.padding(start = 8.dp), onClick = onDismiss) {
+                    Button(
+                        modifier = Modifier.padding(start = 8.dp),
+                        shape = MaterialTheme.shapes.small,
+                        onClick = onDismiss
+                    ) {
                         Text(
                             stringResource(SharedRes.strings.cancel),
                             color = Color.White
@@ -53,6 +58,5 @@ fun DeleteDialog(onDismiss: () -> Unit, onDelete: () -> Unit) {
                 }
             }
         }
-
     }
 }

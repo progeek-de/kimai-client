@@ -35,9 +35,8 @@ private fun FormContent(component: FormComponent) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-
     LaunchedEffect(key1 = imeState.value) {
-        if (imeState.value == true){
+        if (imeState.value == true) {
             scrollState.scrollTo(scrollState.maxValue)
         }
     }
@@ -47,7 +46,7 @@ private fun FormContent(component: FormComponent) {
                 component.onOutput(FormComponent.Output.Close)
             })
         },
-        snackbarHost =  {
+        snackbarHost = {
             SnackbarHost(
                 hostState = snackbarHostState,
                 modifier = Modifier

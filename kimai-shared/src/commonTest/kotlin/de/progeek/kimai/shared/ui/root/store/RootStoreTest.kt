@@ -5,6 +5,7 @@ import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import de.progeek.kimai.shared.core.models.Credentials
 import de.progeek.kimai.shared.core.repositories.credentials.CredentialsRepository
 import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
+import de.progeek.kimai.shared.core.ticketsystem.sync.TicketSyncScheduler
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import io.mockk.every
 import io.mockk.mockk
@@ -30,6 +31,7 @@ class RootStoreTest {
 
     private lateinit var credentialsRepository: CredentialsRepository
     private lateinit var settingsRepository: SettingsRepository
+    private lateinit var ticketSyncScheduler: TicketSyncScheduler
     private lateinit var storeFactory: RootStoreFactory
     private val testDispatcher = UnconfinedTestDispatcher()
 
@@ -37,6 +39,7 @@ class RootStoreTest {
     fun setup() {
         credentialsRepository = mockk(relaxed = true)
         settingsRepository = mockk(relaxed = true)
+        ticketSyncScheduler = mockk(relaxed = true)
 
         // Setup Koin for RootStoreFactory dependency injection
         startKoin {
@@ -44,6 +47,7 @@ class RootStoreTest {
                 module {
                     single { credentialsRepository }
                     single { settingsRepository }
+                    single { ticketSyncScheduler }
                 }
             )
         }

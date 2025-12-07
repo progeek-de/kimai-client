@@ -19,7 +19,6 @@ class ProjectDatasource(val database: KimaiDatabase) {
             .asFlow()
             .mapToList(kimaiDispatchers.io)
 
-
     suspend fun getById(id: Int): Result<Project?> = withContext(kimaiDispatchers.io) {
         runCatching {
             query.getProjectById(id.toLong()).executeAsOneOrNull()?.map()

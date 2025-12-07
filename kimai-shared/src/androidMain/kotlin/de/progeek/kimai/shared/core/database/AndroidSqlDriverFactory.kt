@@ -7,8 +7,13 @@ import org.koin.core.scope.Scope
 
 actual fun Scope.sqlDriverFactory(): SqlDriver {
     return AndroidSqliteDriver(
-        KimaiDatabase.Schema,
-        androidContext(),
-        "${DatabaseConstants.name}.db"
+        schema = KimaiDatabase.Schema,
+        context = androidContext(),
+        name = "${DatabaseConstants.name}.db",
+        callback = object : AndroidSqliteDriver.Callback(KimaiDatabase.Schema) {
+            override fun onOpen(db: app.cash.sqldelight.db.SqlDriver) {
+                super.onOpen(db)
+            }
+        }
     )
 }

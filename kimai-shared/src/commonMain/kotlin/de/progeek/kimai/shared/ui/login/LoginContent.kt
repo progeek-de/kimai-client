@@ -2,13 +2,13 @@ package de.progeek.kimai.shared.ui.login
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -35,28 +35,28 @@ fun LoginCard() {
     Card(
         modifier = Modifier.padding(32.dp).shadow(
             elevation = 4.dp,
-            shape = RoundedCornerShape(5.dp)
+            shape = MaterialTheme.shapes.small
         ),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
 
     ) {
         Column(modifier = Modifier.width(400.dp).padding(30.dp, 50.dp)) {
-
             OutlinedTextField(
                 value = email,
                 onValueChange = {
                     if (it.contains('\t')) {
                         passwordFocusRequester.requestFocus()
                     } else if (it.contains('\n')) {
-                        if (isEmailValid && email.isNotEmpty() && password.isNotEmpty())
+                        if (isEmailValid && email.isNotEmpty() && password.isNotEmpty()) {
                             component.onLoginClick(email, password)
+                        }
                     } else {
                         email = it
                         isEmailValid = isValidEmail(it)
                     }
                 },
                 label = { Text(stringResource(SharedRes.strings.email)) },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).focusRequester(emailFocusRequester),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).focusRequester(emailFocusRequester).testTag("email_input_field")
             )
 
             OutlinedTextField(
@@ -65,15 +65,16 @@ fun LoginCard() {
                     if (it.contains('\t')) {
                         emailFocusRequester.requestFocus()
                     } else if (it.contains('\n')) {
-                        if (isEmailValid && email.isNotEmpty() && password.isNotEmpty())
+                        if (isEmailValid && email.isNotEmpty() && password.isNotEmpty()) {
                             component.onLoginClick(email, password)
+                        }
                     } else {
                         password = it
                     }
                 },
                 label = { Text(stringResource(SharedRes.strings.password)) },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).focusRequester(passwordFocusRequester),
-                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).focusRequester(passwordFocusRequester).testTag("password_input_field"),
+                visualTransformation = PasswordVisualTransformation()
             )
 
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -81,8 +82,10 @@ fun LoginCard() {
                     onClick = { component.onLoginClick(email, password) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 20.dp),
-                    enabled = isEmailValid && email.isNotBlank() && password.isNotBlank(),
+                        .padding(top = 20.dp)
+                        .testTag("login_button"),
+                    shape = MaterialTheme.shapes.small,
+                    enabled = isEmailValid && email.isNotBlank() && password.isNotBlank()
                 ) {
                     Text(stringResource(SharedRes.strings.login).uppercase())
                 }
@@ -94,15 +97,15 @@ fun LoginCard() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 if (state.isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                    CircularProgressIndicator(modifier = Modifier.size(32.dp).testTag("login_progress_indicator"))
                 }
 
                 if (state.isError) {
-                    Text(stringResource(SharedRes.strings.invalid_login), color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(SharedRes.strings.invalid_login), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("login_error_text"))
                 }
 
                 if (!isEmailValid) {
-                    Text(stringResource(SharedRes.strings.invalid_email), color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(SharedRes.strings.invalid_email), color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("email_error_text"))
                 }
             }
         }
@@ -130,7 +133,7 @@ fun Footer() {
             ServerInfo()
             Text(
                 text = stringResource(SharedRes.strings.version, state.version),
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodySmall
             )
         }
     }
@@ -151,7 +154,7 @@ fun ServerInfo() {
             ) {
                 Text(
                     text = "Server:",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium
                 )
                 HostButton()
             }
@@ -166,11 +169,14 @@ fun HostButton() {
     var dialogOpen by remember { mutableStateOf(false) }
 
     TextButton(
-        onClick = { dialogOpen = true }
+        onClick = { dialogOpen = true },
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.testTag("host_button")
     ) {
-        Text(state.baseUrl
-            .replace("https://", "")
-            .replace("http://", "")
+        Text(
+            state.baseUrl
+                .replace("https://", "")
+                .replace("http://", "")
         )
         Icon(
             imageVector = Icons.Rounded.ExpandMore,
@@ -179,7 +185,7 @@ fun HostButton() {
         )
     }
 
-    if(dialogOpen) {
+    if (dialogOpen) {
         ChangeBaseUrlDialog(
             baseUrl = state.baseUrl,
             onDismiss = { dialogOpen = false }
@@ -194,7 +200,7 @@ fun HostButton() {
 fun ChangeBaseUrlDialog(
     baseUrl: String,
     onDismiss: () -> Unit,
-    onChange: (baseUrl: String) -> Unit,
+    onChange: (baseUrl: String) -> Unit
 ) {
     var host by remember { mutableStateOf(baseUrl) }
 
@@ -208,7 +214,7 @@ fun ChangeBaseUrlDialog(
             Column(modifier = Modifier.padding(8.dp)) {
                 Row(modifier = Modifier.fillMaxWidth().padding(top = 24.dp)) {
                     OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        modifier = Modifier.fillMaxWidth().padding(16.dp).testTag("dialog_host_input"),
                         value = host,
                         onValueChange = { host = it },
                         label = { Text("Host") }
@@ -218,7 +224,10 @@ fun ChangeBaseUrlDialog(
                 Divider(color = MaterialTheme.colorScheme.onSecondary, modifier = Modifier.padding(vertical = 16.dp))
 
                 Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                    OutlinedButton(onClick = onDismiss) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        shape = MaterialTheme.shapes.small
+                    ) {
                         Text(
                             stringResource(SharedRes.strings.cancel),
                             color = MaterialTheme.colorScheme.primary
@@ -226,12 +235,15 @@ fun ChangeBaseUrlDialog(
                     }
                     Button(
                         modifier = Modifier.padding(start = 8.dp),
+                        shape = MaterialTheme.shapes.small,
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
                         onClick = { onChange(host) }
-                    ) { Text(
-                        stringResource(SharedRes.strings.ok),
-                        color = Color.White
-                    )}
+                    ) {
+                        Text(
+                            stringResource(SharedRes.strings.ok),
+                            color = Color.White
+                        )
+                    }
                 }
             }
         }

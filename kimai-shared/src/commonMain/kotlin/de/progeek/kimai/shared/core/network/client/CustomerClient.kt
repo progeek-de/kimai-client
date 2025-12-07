@@ -14,8 +14,9 @@ class CustomerClient(
     suspend fun getCustomers(): Result<List<Customer>> {
         return kotlin.runCatching {
             val response = client.getGetCustomers()
-            if(!response.success)
+            if (!response.success) {
                 throw Throwable("Error while getting customers")
+            }
 
             response.body().map { it.map() }
         }

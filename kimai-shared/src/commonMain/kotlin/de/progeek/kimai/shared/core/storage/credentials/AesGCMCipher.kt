@@ -44,4 +44,24 @@ class AesGCMCipher {
         }
     }
 
+    /**
+     * Encrypt a plain string value
+     */
+    @OptIn(ExperimentalStdlibApi::class)
+    fun encryptString(plaintext: String): String {
+        return cipher.encryptBlocking(plaintextInput = plaintext.encodeToByteArray())
+            .toHexString(HexFormat.Default)
+    }
+
+    /**
+     * Decrypt an encrypted string value
+     */
+    @OptIn(ExperimentalStdlibApi::class)
+    fun decryptString(encrypted: String): String? {
+        return try {
+            cipher.decryptBlocking(ciphertextInput = encrypted.hexToByteArray()).decodeToString()
+        } catch (e: Exception) {
+            null
+        }
+    }
 }

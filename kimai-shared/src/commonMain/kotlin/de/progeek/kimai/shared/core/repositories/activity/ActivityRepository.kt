@@ -18,10 +18,10 @@ class ActivityRepository(
                 activityClient.getActivities().getOrThrow()
             },
             sourceOfTruth = SourceOfTruth.of(
-                reader = {_ -> activityDataSource.getAll()},
-                writer = { _, list -> activityDataSource.insert(list)},
-                deleteAll = {activityDataSource.deleteAll()}
-            ),
+                reader = { _ -> activityDataSource.getAll() },
+                writer = { _, list -> activityDataSource.insert(list) },
+                deleteAll = { activityDataSource.deleteAll() }
+            )
         ).build()
 
     fun getActivities(): Flow<List<Activity>> = store.stream(

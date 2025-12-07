@@ -16,25 +16,25 @@ val networkModule: () -> Module get() = {
 
     module {
         single { AuthClient() }
-        single { (baseUrl: String) -> DefaultApi(baseUrl)}
+        single { (baseUrl: String) -> DefaultApi(baseUrl) }
 
         single { TimesheetApi(baseUrl, httpClientConfig = ::httpClientConfig) }
         single { ProjectApi(baseUrl, httpClientConfig = ::httpClientConfig) }
         single { ActivityApi(baseUrl, httpClientConfig = ::httpClientConfig) }
-        single { CustomerApi(baseUrl, httpClientConfig = ::httpClientConfig)}
-        single { TimesheetsClient(get(), get(), get()) }
-        single { ProjectClient(get(), get(), get()) }
-        single { ActivityClient(get(), get(), get()) }
-        single { CustomerClient(get(), get(), get()) }
+        single { CustomerApi(baseUrl, httpClientConfig = ::httpClientConfig) }
+        single { TimesheetsClient(settings = get(), aesCipher = get(), client = get()) }
+        single { ProjectClient(settings = get(), aesCipher = get(), client = get()) }
+        single { ActivityClient(settings = get(), aesCipher = get(), client = get()) }
+        single { CustomerClient(settings = get(), aesCipher = get(), client = get()) }
     }
 }
 
 private fun httpClientConfig(config: HttpClientConfig<*>) {
     config.install(Logging) {
         level = LogLevel.INFO
-        logger = when(BuildKonfig.DEBUG) {
-                true -> Logger.Companion.SIMPLE
-                false -> Logger.Companion.EMPTY
+        logger = when (BuildKonfig.DEBUG) {
+            true -> Logger.Companion.SIMPLE
+            false -> Logger.Companion.EMPTY
         }
     }
 }

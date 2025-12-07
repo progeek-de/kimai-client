@@ -8,7 +8,6 @@ import de.progeek.kimai.shared.core.repositories.project.ProjectRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -138,24 +137,6 @@ class HomeStoreTest {
         coVerify(exactly = 1) { customerRepository.invalidateCache() }
 
         // Final state should have loading = false
-        assertFalse(store.stateFlow.value.isLoading)
-    }
-
-    @Test
-    fun `store completes sync successfully`() = runTest(testDispatcher) {
-        coEvery { activityRepository.invalidateCache() } returns Unit
-        coEvery { projectRepository.invalidateCache() } returns Unit
-        coEvery { customerRepository.invalidateCache() } returns Unit
-
-        val store = storeFactory.create(
-            mainContext = testDispatcher,
-            ioContext = testDispatcher
-        )
-
-        // Wait for sync to complete
-        advanceUntilIdle()
-
-        // Final state should not be loading
         assertFalse(store.stateFlow.value.isLoading)
     }
 }

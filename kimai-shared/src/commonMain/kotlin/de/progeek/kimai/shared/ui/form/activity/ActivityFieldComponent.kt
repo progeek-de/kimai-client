@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-
 class ActivityFieldComponent(
     componentContext: FormComponentContext,
     storeFactory: StoreFactory,
@@ -50,14 +49,14 @@ class ActivityFieldComponent(
         bind(lifecycle, BinderLifecycleMode.CREATE_DESTROY) {
             scope.launch {
                 input.collectLatest {
-                    when(it) {
+                    when (it) {
                         is Input.UpdatedProject -> store.accept(ActivityFieldStore.Intent.UpdatedProject(it.project))
                     }
                 }
             }
 
             store.labels.bindTo {
-                when(it) {
+                when (it) {
                     is ActivityChanged -> output(Output.UpdatedActivity(it.activity))
                 }
             }
@@ -78,7 +77,7 @@ class ActivityFieldComponent(
 
     companion object {
         private fun getTimesheet(params: TimesheetFormParams): Timesheet? {
-            return when(params) {
+            return when (params) {
                 is TimesheetFormParams.AddTimesheet -> null
                 is TimesheetFormParams.EditTimesheet -> params.timesheet
                 is TimesheetFormParams.EditRunningTimesheet -> params.timesheet

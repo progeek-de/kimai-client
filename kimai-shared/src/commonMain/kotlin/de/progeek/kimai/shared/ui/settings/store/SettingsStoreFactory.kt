@@ -30,32 +30,34 @@ class SettingsStoreFactory(
     private val projectRepository by inject<ProjectRepository>()
 
     fun create(mainContext: CoroutineContext, ioContext: CoroutineContext): SettingsStore =
-        object : SettingsStore, Store<SettingsStore.Intent, SettingsStore.State, Nothing> by storeFactory.create(
-            name = "SettingsStore",
-            initialState = SettingsStore.State(
-                email = "",
-                theme = ThemeEnum.SYSTEM,
-                defaultProject = null,
-                projects = emptyList(),
-                language = getLanguages().first()
-            ),
-            bootstrapper = SimpleBootstrapper(Unit),
-            executorFactory = { ExecutorImpl(mainContext, ioContext) },
-            reducer = ReducerImpl
-        ) {}
+        object :
+            SettingsStore,
+            Store<SettingsStore.Intent, SettingsStore.State, Nothing> by storeFactory.create(
+                name = "SettingsStore",
+                initialState = SettingsStore.State(
+                    email = "",
+                    theme = ThemeEnum.SYSTEM,
+                    defaultProject = null,
+                    projects = emptyList(),
+                    language = getLanguages().first()
+                ),
+                bootstrapper = SimpleBootstrapper(Unit),
+                executorFactory = { ExecutorImpl(mainContext, ioContext) },
+                reducer = ReducerImpl
+            ) {}
 
     private sealed class Msg {
         data class SettingsEmail(val email: String) : Msg()
-        data class Theme(val theme: ThemeEnum): Msg()
-        data class DefaultProject(val project: Project): Msg()
-        data class ProjectsUpdated(val projects: List<Project>): Msg()
-        data class ClearDefaultProject(val project: Project?): Msg()
-        data class LanguageUpdated(val language: Language): Msg()
+        data class Theme(val theme: ThemeEnum) : Msg()
+        data class DefaultProject(val project: Project) : Msg()
+        data class ProjectsUpdated(val projects: List<Project>) : Msg()
+        data class ClearDefaultProject(val project: Project?) : Msg()
+        data class LanguageUpdated(val language: Language) : Msg()
     }
 
     private inner class ExecutorImpl(
         mainContext: CoroutineContext,
-        private val ioContext: CoroutineContext,
+        private val ioContext: CoroutineContext
     ) : CoroutineExecutor<SettingsStore.Intent, Unit, SettingsStore.State, Msg, Nothing>(mainContext) {
 
         override fun executeAction(action: Unit, getState: () -> SettingsStore.State) {
@@ -76,7 +78,6 @@ class SettingsStoreFactory(
                 is SettingsStore.Intent.ClearDefaultProject -> {
                     clearDefaultProject()
                 }
-
                 is SettingsStore.Intent.ChangeLanguage -> {
                     changeLanguage(intent.language)
                 }
@@ -95,19 +96,21 @@ class SettingsStoreFactory(
         private fun loadLanguage() {
             scope.launch {
                 settingsRepository.getLanguage().flowOn(ioContext).collect { language ->
-                    getLanguages().find { it.languageCode ==  language }.notNull {
+                    getLanguages().find { it.languageCode == language }.notNull {
                         dispatch(Msg.LanguageUpdated(it))
                     }
                 }
             }
         }
+
         private fun loadCredentialsEmail() {
             val credentials = credentialsRepository.getCredentials()
-                credentials?.let {
-                dispatch(Msg.SettingsEmail(credentials.email)) }
+            credentials?.let {
+                dispatch(Msg.SettingsEmail(credentials.email))
+            }
         }
 
-        private fun loadTheme () {
+        private fun loadTheme() {
             scope.launch {
                 settingsRepository.getTheme().flowOn(ioContext).collectLatest {
                     dispatch(Msg.Theme(it))
@@ -115,7 +118,7 @@ class SettingsStoreFactory(
             }
         }
 
-        private fun loadProjects(){
+        private fun loadProjects() {
             scope.launch {
                 settingsRepository.getDefaultProject().flowOn(ioContext).collectLatest { projectId ->
                     projectRepository.getProjects().flowOn(ioContext).collectLatest { projects ->

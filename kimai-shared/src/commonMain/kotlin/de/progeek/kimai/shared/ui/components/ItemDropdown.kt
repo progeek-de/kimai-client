@@ -37,12 +37,11 @@ fun <T> ItemDropDown(
     required: Boolean,
     placeholder: String,
     mapItemToString: @Composable (T) -> (String),
-    onItemClick: (T) -> Unit,
+    onItemClick: (T) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     var dropDownSize by remember { mutableStateOf(Size.Zero) }
     val density = LocalDensity.current
-
 
     Surface(
         shadowElevation = 8.dp,
@@ -87,12 +86,10 @@ fun <T> ItemDropDown(
                         expanded = false
                         onItemClick(it)
                     }, text = {
-                        Text(mapItemToString(it), color = MaterialTheme.colorScheme.surfaceTint)
-                    })
+                            Text(mapItemToString(it), color = MaterialTheme.colorScheme.surfaceTint)
+                        })
                 }
             }
-
         }
     }
-
 }

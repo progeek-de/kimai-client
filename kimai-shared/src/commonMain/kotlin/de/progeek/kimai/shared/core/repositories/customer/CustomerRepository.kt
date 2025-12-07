@@ -20,16 +20,15 @@ class CustomerRepository(
                 customerClient.getCustomers().getOrThrow()
             },
             sourceOfTruth = SourceOfTruth.of(
-                reader = {_ -> customerDataSource.getAll()},
-                writer = { _, list -> customerDataSource.insert(list)},
-                deleteAll = {customerDataSource.deleteAll()}
-            ),
+                reader = { _ -> customerDataSource.getAll() },
+                writer = { _, list -> customerDataSource.insert(list) },
+                deleteAll = { customerDataSource.deleteAll() }
+            )
         ).build()
 
     fun getCustomers(): Flow<List<Customer>> = store.stream(
-            StoreReadRequest.cached("customers::all", false)
-        ).map { it.dataOrNull() ?: emptyList() }
-
+        StoreReadRequest.cached("customers::all", false)
+    ).map { it.dataOrNull() ?: emptyList() }
 
     @OptIn(ExperimentalStoreApi::class)
     suspend fun invalidateCache() {

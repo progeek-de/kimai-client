@@ -9,8 +9,8 @@ import de.progeek.kimai.shared.core.storage.credentials.AesGCMCipher
 class ProjectClient(
     settings: ObservableSettings,
     aesCipher: AesGCMCipher,
-    private val client: ProjectApi,
-): CredentialsListener(settings, aesCipher, client) {
+    private val client: ProjectApi
+) : CredentialsListener(settings, aesCipher, client) {
 
     suspend fun getProjects(): Result<List<Project>> {
         return kotlin.runCatching {

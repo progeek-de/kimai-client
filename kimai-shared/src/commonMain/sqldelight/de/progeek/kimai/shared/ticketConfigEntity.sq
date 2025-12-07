@@ -1,0 +1,60 @@
+-- Ticket system configuration table for storing multiple provider instances
+CREATE TABLE IF NOT EXISTS ticketConfigEntity (
+    id TEXT PRIMARY KEY NOT NULL,
+    displayName TEXT NOT NULL,
+    provider TEXT NOT NULL,
+    enabled INTEGER NOT NULL DEFAULT 1,
+    baseUrl TEXT NOT NULL,
+    credentialsJson TEXT NOT NULL,
+    syncIntervalMinutes INTEGER NOT NULL DEFAULT 15,
+    defaultProjectKey TEXT,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL,
+    issueFormat TEXT NOT NULL DEFAULT '{key}: {summary}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_ticket_config_provider ON ticketConfigEntity(provider);
+CREATE INDEX IF NOT EXISTS idx_ticket_config_enabled ON ticketConfigEntity(enabled);
+
+getAll:
+SELECT * FROM ticketConfigEntity
+ORDER BY displayName ASC;
+
+getEnabled:
+SELECT * FROM ticketConfigEntity
+WHERE enabled = 1
+ORDER BY displayName ASC;
+
+getById:
+SELECT * FROM ticketConfigEntity
+WHERE id = :id;
+
+getByProvider:
+SELECT * FROM ticketConfigEntity
+WHERE provider = :provider
+ORDER BY displayName ASC;
+
+insert:
+INSERT OR REPLACE INTO ticketConfigEntity VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+delete:
+DELETE FROM ticketConfigEntity WHERE id = :id;
+
+setEnabled:
+UPDATE ticketConfigEntity
+SET enabled = :enabled, updatedAt = :updatedAt
+WHERE id = :id;
+
+updateSyncInterval:
+UPDATE ticketConfigEntity
+SET syncIntervalMinutes = :syncIntervalMinutes, updatedAt = :updatedAt
+WHERE id = :id;
+
+deleteAll:
+DELETE FROM ticketConfigEntity;
+
+count:
+SELECT COUNT(*) FROM ticketConfigEntity;
+
+countEnabled:
+SELECT COUNT(*) FROM ticketConfigEntity WHERE enabled = 1;

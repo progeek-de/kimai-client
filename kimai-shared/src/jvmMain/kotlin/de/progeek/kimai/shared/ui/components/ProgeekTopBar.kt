@@ -28,7 +28,10 @@ actual fun KimaiTopAppBar(
             },
             navigationIcon = { },
             actions = {
-                Button(onClick = onBackClick) {
+                Button(
+                    onClick = onBackClick,
+                    shape = MaterialTheme.shapes.small
+                ) {
                     Text(stringResource(SharedRes.strings.back), color = Color.White)
                 }
             }

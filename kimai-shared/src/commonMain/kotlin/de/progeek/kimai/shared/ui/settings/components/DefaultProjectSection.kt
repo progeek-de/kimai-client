@@ -33,8 +33,7 @@ fun DefaultProjectSection(component: SettingsComponent) {
     val state by component.state.collectAsState()
 
     SettingsField(
-        label = stringResource(SharedRes.strings.default_project),
-        modifier = Modifier.padding(start = 8.dp, top = 12.dp, bottom = 6.dp)
+        label = stringResource(SharedRes.strings.default_project)
     ) {
         state.projects?.let { projects ->
             DefaultProjectDropdown(

@@ -9,7 +9,6 @@ import de.progeek.kimai.shared.core.repositories.credentials.CredentialsReposito
 import de.progeek.kimai.shared.core.repositories.project.ProjectRepository
 import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
-import de.progeek.kimai.shared.utils.Language
 import de.progeek.kimai.shared.utils.getLanguages
 import io.mockk.every
 import io.mockk.mockk

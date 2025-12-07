@@ -35,7 +35,7 @@ internal fun TimesheetInputButton(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun StartStopButton(modifier: Modifier) {
+private fun StartStopButton(modifier: Modifier = Modifier) {
     val component = TimesheetInputComponentLocal.current
     val state by component.state.collectAsState()
 
@@ -45,7 +45,7 @@ private fun StartStopButton(modifier: Modifier) {
 }
 
 @Composable
-private fun StartButton(modifier: Modifier) {
+private fun StartButton(modifier: Modifier = Modifier) {
     val component = TimesheetInputComponentLocal.current
 
     Box(modifier) {
@@ -58,7 +58,7 @@ private fun StartButton(modifier: Modifier) {
 }
 
 @Composable
-private fun StopButton(modifier: Modifier) {
+private fun StopButton(modifier: Modifier = Modifier) {
     val component = TimesheetInputComponentLocal.current
     val state by component.state.collectAsState()
 
@@ -75,7 +75,7 @@ private fun StopButton(modifier: Modifier) {
 
             text = duration.toComponents { hours, minutes, seconds, _ ->
                 "${hours.toString().padStart(2, '0')}:${
-                    minutes.toString().padStart(2, '0')
+                minutes.toString().padStart(2, '0')
                 }:${seconds.toString().padStart(2, '0')}"
             }
             delay(1000L)
@@ -92,7 +92,7 @@ private fun StopButton(modifier: Modifier) {
 }
 
 @Composable
-private fun AddTimeButton(modifier: Modifier) {
+private fun AddTimeButton(modifier: Modifier = Modifier) {
     val component = TimesheetInputComponentLocal.current
 
     Box(modifier) {
@@ -113,17 +113,18 @@ private fun InputButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
 
-    if(running) {
+    if (running) {
         OutlinedButton(
             onClick = onClick,
             interactionSource = interactionSource,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+            shape = MaterialTheme.shapes.small,
             modifier = Modifier
                 .padding(end = 4.dp)
                 .requiredWidthIn(min = 96.dp)
-                .focusProperties { canFocus = false },
+                .focusProperties { canFocus = false }
         ) {
-            Text(if (isHovered) stringResource(SharedRes.strings.stop) else text, color =  MaterialTheme.colorScheme.error)
+            Text(if (isHovered) stringResource(SharedRes.strings.stop) else text, color = MaterialTheme.colorScheme.error)
         }
     } else {
         Button(
@@ -137,7 +138,7 @@ private fun InputButton(
                 .padding(end = 4.dp)
                 .requiredWidthIn(min = 96.dp)
                 .focusProperties { canFocus = false }, // crashes without this
-            shape = MaterialTheme.shapes.extraSmall,
+            shape = MaterialTheme.shapes.small
         ) {
             Text(text, color = Color.White)
         }

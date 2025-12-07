@@ -22,9 +22,8 @@ interface TimesheetListStore : Store<Intent, State, Label> {
         val timesheets: List<GroupedTimesheet> = emptyList(),
         val running: TimesheetForm? = null,
         val page: Instant = Clock.System.now(),
-        val endReached: Boolean = false,
+        val endReached: Boolean = false
     )
 
-    sealed interface Label {
-    }
+    sealed interface Label
 }

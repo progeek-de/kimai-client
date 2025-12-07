@@ -7,6 +7,9 @@ import de.progeek.kimai.shared.core.database.datasource.activity.ActivityDatasou
 import de.progeek.kimai.shared.core.database.datasource.customer.CustomerDatasource
 import de.progeek.kimai.shared.core.database.datasource.project.ProjectDatasource
 import de.progeek.kimai.shared.core.database.datasource.timesheet.TimesheetDatasource
+import de.progeek.kimai.shared.core.storage.credentials.AesGCMCipher
+import de.progeek.kimai.shared.core.ticketsystem.datasource.TicketConfigDatasource
+import de.progeek.kimai.shared.core.ticketsystem.datasource.TicketIssueDatasource
 
 /**
  * Database test utilities for SQLDelight testing.
@@ -41,6 +44,8 @@ fun clearDatabase(database: KimaiDatabase) {
     database.projectEntityQueries.deleteAll()
     database.activityEntityQueries.deleteAll()
     database.customerEntityQueries.deleteAll()
+    database.ticketIssueEntityQueries.deleteAll()
+    database.ticketConfigEntityQueries.deleteAll()
 }
 
 /**
@@ -58,7 +63,9 @@ data class TestDatasources(
     val timesheetDatasource: TimesheetDatasource,
     val projectDatasource: ProjectDatasource,
     val activityDatasource: ActivityDatasource,
-    val customerDatasource: CustomerDatasource
+    val customerDatasource: CustomerDatasource,
+    val ticketIssueDatasource: TicketIssueDatasource,
+    val ticketConfigDatasource: TicketConfigDatasource
 )
 
 /**
@@ -66,13 +73,16 @@ data class TestDatasources(
  */
 fun createTestDatasources(): TestDatasources {
     val database = createTestDatabase()
+    val aesCipher = AesGCMCipher()
 
     return TestDatasources(
         database = database,
         timesheetDatasource = TimesheetDatasource(database),
         projectDatasource = ProjectDatasource(database),
         activityDatasource = ActivityDatasource(database),
-        customerDatasource = CustomerDatasource(database)
+        customerDatasource = CustomerDatasource(database),
+        ticketIssueDatasource = TicketIssueDatasource(database),
+        ticketConfigDatasource = TicketConfigDatasource(database, aesCipher)
     )
 }
 

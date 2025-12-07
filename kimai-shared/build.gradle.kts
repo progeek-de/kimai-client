@@ -5,12 +5,10 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
-    alias(libs.plugins.android.library)
     alias(libs.plugins.multiplatform.resources)
     alias(libs.plugins.jetbrains.compose)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.jlleitschuh.gradle.ktlint)
-    id("kotlin-parcelize")
     id("com.codingfeline.buildkonfig")
     jacoco
 }
@@ -29,26 +27,15 @@ kotlin {
                 jvmTarget = "17"
             }
         }
-    }
-
-    androidTarget {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = libs.versions.jvmTarget.get()
-            }
-        }
-    }
-    
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach {
-        it.binaries.framework {
-            baseName = "shared"
-
-            export(libs.decompose.decompose)
-            export(libs.essenty.lifecycle)
+        testRuns["test"].executionTask.configure {
+            useJUnit()
+            // Configure headless mode for Compose Desktop UI tests
+            // Use software rendering and set AWT to headless mode
+            jvmArgs(
+                "-Djava.awt.headless=true",
+                "-Dskiko.renderApi=SOFTWARE_FAST",
+                "-Dskiko.fps.enabled=false"
+            )
         }
     }
 
@@ -112,7 +99,7 @@ kotlin {
                 implementation(libs.store.core)
                 implementation(libs.jetbrains.kotlinx.atomicfu)
 
-                //napier logging
+                // napier logging
                 implementation(libs.napier)
             }
         }
@@ -149,42 +136,38 @@ kotlin {
             }
         }
 
-        val androidMain by getting {
+        val jvmTest by getting {
             dependencies {
-                dependsOn(commonMain)
-
-                implementation(libs.kotlinx.coroutines.android)
-                implementation(libs.cryptography.jdk)
-
-                implementation(libs.sqldelight.android.driver)
-
-                // Koin
-                implementation(libs.koin.android)
+                implementation(compose.desktop.uiTestJUnit4)
+                implementation(compose.desktop.currentOs) // Include native Skiko binaries
+                implementation(libs.junit)
+                implementation(kotlin("test"))
+                implementation(libs.mockk)
+                implementation(libs.turbine)
+                implementation(libs.kotlinx.coroutines.test)
+                // Provides Dispatchers.Main for JVM tests (using Swing event loop)
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
+                implementation(libs.koin.core)
+                implementation("io.insert-koin:koin-test:3.5.2-RC1")
+                implementation(libs.sqldelight.sqlite.driver)
+                implementation(libs.settings.core)
+                implementation(libs.settings.noarg)
             }
         }
 
-        val iosMain by getting {
-            dependsOn(commonMain)
-
-            dependencies {
-                implementation(libs.sqldelight.native.driver)
-            }
-        }
-        val iosSimulatorArm64Main by getting {
-            dependsOn(iosMain)
-        }
+        // Android and iOS sourceSets removed - focus on desktop only
     }
 }
 
 buildkonfig {
     packageName = "de.progeek.kimai.shared"
 
-    val projectVersion = when(project.hasProperty("projVersion")) {
+    val projectVersion = when (project.hasProperty("projVersion")) {
         true -> project.properties["projVersion"]?.toString()
         false -> libs.versions.project.orNull
     }
 
-    val server = when(project.hasProperty("projServer")) {
+    val server = when (project.hasProperty("projServer")) {
         true -> project.properties["projServer"]?.toString()
         false -> "https://kimai.cloud"
     }
@@ -201,30 +184,11 @@ buildkonfig {
 
     targetConfigs("dev") {
         create("jvm") {
-
         }
     }
 }
 
-android {
-    namespace = "de.progeek.kimai.shared"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-    }
-
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-}
+// Android configuration removed - focus on desktop only
 
 multiplatformResources {
     multiplatformResourcesPackage = "de.progeek.kimai.shared" // required
@@ -274,9 +238,9 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         files(
             fileTree("${layout.buildDirectory.get()}/classes/kotlin/jvm/main") {
                 exclude(
-                    "**/database/**",  // Exclude SQLDelight generated code
-                    "**/buildkonfig/**",  // Exclude BuildKonfig generated code
-                    "**/*\$*",  // Exclude inner classes
+                    "**/database/**", // Exclude SQLDelight generated code
+                    "**/buildkonfig/**", // Exclude BuildKonfig generated code
+                    "**/*\$*" // Exclude inner classes
                 )
             }
         )
@@ -298,7 +262,7 @@ tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
     violationRules {
         rule {
             limit {
-                minimum = "0.60".toBigDecimal()  // 60% minimum coverage
+                minimum = "0.60".toBigDecimal() // 60% minimum coverage
             }
         }
     }
@@ -309,7 +273,7 @@ tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
                 exclude(
                     "**/database/**",
                     "**/buildkonfig/**",
-                    "**/*\$*",
+                    "**/*\$*"
                 )
             }
         )

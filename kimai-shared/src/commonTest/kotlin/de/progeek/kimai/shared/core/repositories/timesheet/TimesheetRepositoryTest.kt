@@ -1,25 +1,21 @@
 package de.progeek.kimai.shared.core.repositories.timesheet
 
 import app.cash.turbine.test
-import arrow.core.left
-import arrow.core.right
 import de.progeek.kimai.openapi.models.TimesheetCollection
-import de.progeek.kimai.openapi.models.TimesheetEntity as ApiTimesheetEntity
 import de.progeek.kimai.shared.TimesheetEntity
 import de.progeek.kimai.shared.core.database.datasource.timesheet.TimesheetDatasource
-import de.progeek.kimai.shared.core.mapper.toTimesheetEntity
 import de.progeek.kimai.shared.core.models.Activity
 import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.models.Timesheet
 import de.progeek.kimai.shared.core.models.TimesheetForm
 import de.progeek.kimai.shared.core.network.client.TimesheetsClient
 import io.mockk.*
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.*
 import kotlin.test.*
 import kotlin.time.Duration.Companion.hours
+import de.progeek.kimai.openapi.models.TimesheetEntity as ApiTimesheetEntity
 
 /**
  * Test suite for TimesheetRepository.
@@ -496,10 +492,8 @@ class TimesheetRepositoryTest {
         val result = repository.addTimesheet(form)
 
         // Then
-        // The implementation wraps the flatMap result in runCatching, which means
-        // Result.failure from flatMap becomes wrapped in Result.success
-        // This is a known issue with the repository implementation
-        assertTrue(result.isSuccess)
+        assertTrue(result.isFailure, "Client error should propagate as failure")
+        assertEquals("Network error", result.exceptionOrNull()?.message)
         // Verify datasource insert was never called since flatMap short-circuits
         coVerify(exactly = 0) { mockDatasource.insert(any<TimesheetEntity>()) }
     }

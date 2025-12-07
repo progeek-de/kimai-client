@@ -8,6 +8,7 @@ import com.arkivanov.mvikotlin.extensions.coroutines.CoroutineExecutor
 import de.progeek.kimai.shared.core.models.Credentials
 import de.progeek.kimai.shared.core.repositories.credentials.CredentialsRepository
 import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
+import de.progeek.kimai.shared.core.ticketsystem.sync.TicketSyncScheduler
 import de.progeek.kimai.shared.ui.root.store.RootStore.State
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import de.progeek.kimai.shared.utils.isNull
@@ -27,15 +28,18 @@ class RootStoreFactory(
 
     private val credentialsRepository by inject<CredentialsRepository>()
     private val settingsRepository by inject<SettingsRepository>()
+    private val ticketSyncScheduler by inject<TicketSyncScheduler>()
 
     fun create(mainContext: CoroutineContext, ioContext: CoroutineContext): RootStore =
-        object : RootStore, Store<Nothing, State, Nothing> by storeFactory.create(
-            name = "RootStore",
-            initialState = State(credentials = null, isLoading = true, theme = ThemeEnum.LIGHT),
-            bootstrapper = SimpleBootstrapper(Unit),
-            executorFactory = { ExecutorImpl(mainContext, ioContext) },
-            reducer = ReducerImpl
-        ) {}
+        object :
+            RootStore,
+            Store<Nothing, State, Nothing> by storeFactory.create(
+                name = "RootStore",
+                initialState = State(credentials = null, isLoading = true, theme = ThemeEnum.LIGHT),
+                bootstrapper = SimpleBootstrapper(Unit),
+                executorFactory = { ExecutorImpl(mainContext, ioContext) },
+                reducer = ReducerImpl
+            ) {}
 
     private sealed class Msg {
         data class Finished(val credentials: Credentials?) : Msg()
@@ -44,21 +48,24 @@ class RootStoreFactory(
 
     private inner class ExecutorImpl(
         mainContext: CoroutineContext,
-        private val ioContext: CoroutineContext,
+        private val ioContext: CoroutineContext
     ) : CoroutineExecutor<Nothing, Unit, State, Msg, Nothing>(mainContext) {
+
         override fun executeAction(action: Unit, getState: () -> State) {
             loadCredentials()
             loadTheme()
             loadLanguage()
+            startTicketSync()
         }
 
         private fun loadCredentials() {
             scope.launch {
-                credentialsRepository.get().flowOn(ioContext).collectLatest{
+                credentialsRepository.get().flowOn(ioContext).collectLatest {
                     dispatch(Msg.Finished(it))
                 }
             }
         }
+
         private fun loadTheme() {
             scope.launch {
                 settingsRepository.getTheme().flowOn(ioContext).collectLatest {
@@ -78,6 +85,11 @@ class RootStoreFactory(
                     }
                 }
             }
+        }
+
+        private fun startTicketSync() {
+            // Start the ticket system sync scheduler
+            ticketSyncScheduler.start()
         }
     }
 

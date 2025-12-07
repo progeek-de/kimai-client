@@ -11,9 +11,9 @@ import de.progeek.kimai.shared.core.repositories.project.ProjectRepository
 import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
 import io.mockk.*
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest

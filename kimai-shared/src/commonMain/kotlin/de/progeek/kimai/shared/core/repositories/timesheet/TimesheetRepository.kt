@@ -15,7 +15,7 @@ import kotlinx.datetime.Instant
 
 class TimesheetRepository(
     private val timesheetsClient: TimesheetsClient,
-    private val timesheetDatasource: TimesheetDatasource,
+    private val timesheetDatasource: TimesheetDatasource
 ) {
 
     fun timesheetsStream(): Flow<List<Timesheet>> =
@@ -35,7 +35,7 @@ class TimesheetRepository(
 
     suspend fun loadTimesheetById(id: Long): Result<Timesheet> =
         timesheetDatasource.getById(id).flatMap { cached ->
-            if(cached != null) {
+            if (cached != null) {
                 Result.success(cached)
             } else {
                 timesheetsClient.getTimesheetById(id).flatMap {
@@ -71,12 +71,8 @@ class TimesheetRepository(
     }
 
     suspend fun addTimesheet(timesheet: TimesheetForm): Result<Unit> {
-        return kotlin.runCatching {
-            timesheetsClient.createTimesheet(timesheet).flatMap {
-                Result.success(
-                    timesheetDatasource.insert(it.toTimesheetEntity())
-                )
-            }
+        return timesheetsClient.createTimesheet(timesheet).flatMap {
+            timesheetDatasource.insert(it.toTimesheetEntity()).map { }
         }
     }
 

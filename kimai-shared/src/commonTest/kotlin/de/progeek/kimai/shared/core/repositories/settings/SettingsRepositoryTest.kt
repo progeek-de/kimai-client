@@ -1,19 +1,15 @@
 package de.progeek.kimai.shared.core.repositories.settings
 
-import app.cash.turbine.test
 import com.russhwolf.settings.ObservableSettings
 import de.progeek.kimai.shared.SharedRes
-import de.progeek.kimai.shared.core.models.Customer
 import de.progeek.kimai.shared.core.models.EntryMode
 import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.storage.credentials.CredentialsConstants.BASE_URL_KEY
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import de.progeek.kimai.shared.utils.Language
 import io.mockk.*
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * Test suite for SettingsRepository.

@@ -7,5 +7,5 @@ import androidx.compose.runtime.remember
 
 @Composable
 actual fun rememberImeState(): State<Boolean?> {
-    return remember { mutableStateOf(false)}
+    return remember { mutableStateOf(false) }
 }

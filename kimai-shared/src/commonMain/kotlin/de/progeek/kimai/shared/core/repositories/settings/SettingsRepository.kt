@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.map
 
 class SettingsRepository(
     private val settings: ObservableSettings
-)   {
+) {
 
     fun saveTheme(theme: ThemeEnum): ThemeEnum {
         settings.putString("THEME", theme.toString())
@@ -24,21 +24,21 @@ class SettingsRepository(
     }
 
     fun saveDefaultProject(project: Project): Project {
-        settings.putLong ("DEFAULT_PROJECT", project.id)
+        settings.putLong("DEFAULT_PROJECT", project.id)
         return project
     }
 
     @OptIn(ExperimentalSettingsApi::class)
     fun getTheme(): Flow<ThemeEnum> {
-        return settings.getStringFlow ("THEME", "LIGHT").map { ThemeEnum.valueOf(it) }
+        return settings.getStringFlow("THEME", "LIGHT").map { ThemeEnum.valueOf(it) }
     }
 
     @OptIn(ExperimentalSettingsApi::class)
     fun getDefaultProject(): Flow<Long?> {
-        return settings.getLongOrNullFlow ("DEFAULT_PROJECT")
+        return settings.getLongOrNullFlow("DEFAULT_PROJECT")
     }
 
-    fun clearDefaultProject(){
+    fun clearDefaultProject() {
         return settings.remove("DEFAULT_PROJECT")
     }
 

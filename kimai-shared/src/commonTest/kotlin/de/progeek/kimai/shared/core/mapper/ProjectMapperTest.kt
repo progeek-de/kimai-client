@@ -7,7 +7,6 @@ import de.progeek.kimai.openapi.models.ProjectExpanded
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 /**
  * Test suite for project mapper functions.

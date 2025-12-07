@@ -24,7 +24,7 @@ class FormComponent(
     componentContext: FormComponentContext,
     storeFactory: StoreFactory,
     dispatchers: KimaiDispatchers,
-    private val output: (Output) -> Unit,
+    private val output: (Output) -> Unit
 ) : FormComponentContext by componentContext {
 
     private val store = instanceKeeper.getStore {
@@ -45,7 +45,7 @@ class FormComponent(
     init {
         bind(lifecycle, BinderLifecycleMode.CREATE_DESTROY) {
             store.labels.bindTo {
-                when(it) {
+                when (it) {
                     FormStore.Label.Close -> output(Output.Close)
                 }
             }
@@ -53,7 +53,7 @@ class FormComponent(
     }
 
     private fun onProjectFieldOutput(output: ProjectFieldComponent.Output) {
-        when(output) {
+        when (output) {
             is UpdatedProject -> {
                 store.accept(ProjectUpdated(output.project))
                 activityInput.tryEmit(
@@ -64,7 +64,7 @@ class FormComponent(
     }
 
     private fun onCustomerFieldOutput(output: CustomerFieldComponent.Output) {
-        when(output) {
+        when (output) {
             is UpdatedCustomer -> {
                 store.accept(FormStore.Intent.CustomerUpdated(output.customer))
                 projectFieldInput.tryEmit(
@@ -75,13 +75,13 @@ class FormComponent(
     }
 
     private fun onActivityFieldOutput(output: ActivityFieldComponent.Output) {
-        when(output) {
+        when (output) {
             is UpdatedActivity -> store.accept(FormStore.Intent.ActivityUpdated(output.activity))
         }
     }
 
     private fun onTimeFieldOutput(output: TimeFieldComponent.Output) {
-        when(output) {
+        when (output) {
             is TimeFieldComponent.Output.BeginChanged -> store.accept(FormStore.Intent.BeginUpdated(output.begin))
             is TimeFieldComponent.Output.EndChanged -> store.accept(FormStore.Intent.EndUpdated(output.end))
         }

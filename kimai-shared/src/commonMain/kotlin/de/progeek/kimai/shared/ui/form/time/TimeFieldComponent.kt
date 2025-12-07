@@ -19,7 +19,7 @@ class TimeFieldComponent(
     componentContext: FormComponentContext,
     storeFactory: StoreFactory,
     dispatchers: KimaiDispatchers,
-    private val output: (Output) -> Unit,
+    private val output: (Output) -> Unit
 ) : ComponentContext by componentContext {
 
     private val store = instanceKeeper.getStore {
@@ -36,7 +36,7 @@ class TimeFieldComponent(
     init {
         bind(lifecycle, BinderLifecycleMode.CREATE_DESTROY) {
             store.labels.bindTo {
-                when(it) {
+                when (it) {
                     is TimeFieldStore.Label.BeginChanged -> output(Output.BeginChanged(it.begin))
                     is TimeFieldStore.Label.EndChanged -> output(Output.EndChanged(it.end))
                 }

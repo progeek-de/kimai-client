@@ -9,7 +9,7 @@ import de.progeek.kimai.shared.core.database.sqlDriverFactory
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
-val databaseModule : () -> Module get() = {
+val databaseModule: () -> Module get() = {
     module {
         factory { sqlDriverFactory() }
         single { createDatabase(driver = get()) }

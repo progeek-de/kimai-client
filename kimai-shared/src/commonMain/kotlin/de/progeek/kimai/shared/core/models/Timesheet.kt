@@ -11,7 +11,7 @@ data class Timesheet(
     val end: LocalDateTime?,
     val duration: Duration?,
     val description: String?,
-    val exported: Boolean
+    val exported: Boolean,
 ) {
     val descriptionOrActivityName: String get() = description ?: activity.name
 }

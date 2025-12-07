@@ -19,14 +19,14 @@ import dev.icerock.moko.resources.compose.stringResource
 
 @Composable
 fun CustomerField(
-    component: CustomerFieldComponent,
+    component: CustomerFieldComponent
 ) {
     val state by component.state.collectAsState()
 
     Column(
         horizontalAlignment = Alignment.Start,
         modifier = Modifier.fillMaxWidth().padding(start = 8.dp, bottom = 6.dp)
-    ){
+    ) {
         Text(
             stringResource(SharedRes.strings.customer),
             style = MaterialTheme.typography.labelLarge,
@@ -34,8 +34,9 @@ fun CustomerField(
         )
     }
 
-    Row(modifier = Modifier.fillMaxWidth()
-        .padding(bottom = 12.dp)
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .padding(bottom = 12.dp)
     ) {
         ItemDropDown(
             state.customers.toTypedArray(),
