@@ -1,0 +1,159 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            installer_task: packageReleaseAppImage
+            portable_archive: tar.gz
+          - os: windows-latest
+            platform: windows
+            installer_task: packageReleaseMsi
+            portable_archive: zip
+          - os: macos-latest
+            platform: macos
+            installer_task: packageReleaseDmg
+            portable_archive: tar.gz
+
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Extract version from tag
+        id: version
+        shell: bash
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Grant execute permission for gradlew
+        if: runner.os != 'Windows'
+        run: chmod +x gradlew
+
+      - name: Build native installer
+        shell: bash
+        run: ./gradlew :kimai-desktop:${{ matrix.installer_task }} -PprojVersion=${{ env.VERSION }} --no-daemon --stacktrace
+
+      - name: Build portable distribution
+        shell: bash
+        run: ./gradlew :kimai-desktop:createReleaseDistributable -PprojVersion=${{ env.VERSION }} --no-daemon --stacktrace
+
+      - name: Prepare artifacts directory
+        shell: bash
+        run: mkdir -p artifacts
+
+      - name: Copy installer artifact (Linux)
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          APPIMAGE=$(find kimai-desktop/build/compose/binaries/main-release -name "*.AppImage" -type f | head -1)
+          if [ -n "$APPIMAGE" ]; then
+            cp "$APPIMAGE" artifacts/kimai-${{ env.VERSION }}-linux.AppImage
+          else
+            echo "AppImage not found!"
+            exit 1
+          fi
+
+      - name: Copy installer artifact (macOS)
+        if: matrix.platform == 'macos'
+        shell: bash
+        run: |
+          DMG=$(find kimai-desktop/build/compose/binaries/main-release -name "*.dmg" -type f | head -1)
+          if [ -n "$DMG" ]; then
+            cp "$DMG" artifacts/kimai-${{ env.VERSION }}-macos.dmg
+          else
+            echo "DMG not found!"
+            exit 1
+          fi
+
+      - name: Copy installer artifact (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $msi = Get-ChildItem -Path "kimai-desktop/build/compose/binaries/main-release" -Filter "*.msi" -Recurse | Select-Object -First 1
+          if ($msi) {
+            Copy-Item $msi.FullName -Destination "artifacts/kimai-${{ env.VERSION }}-windows.msi"
+          } else {
+            Write-Error "MSI not found!"
+            exit 1
+          }
+
+      - name: Create portable archive (Linux)
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          cd kimai-desktop/build/compose/binaries/main-release/app
+          tar -czvf ../../../../../artifacts/kimai-${{ env.VERSION }}-${{ matrix.platform }}-portable.tar.gz kimai/
+
+      - name: Create portable archive (macOS)
+        if: matrix.platform == 'macos'
+        shell: bash
+        run: |
+          cd kimai-desktop/build/compose/binaries/main-release/app
+          tar -czvf ../../../../../artifacts/kimai-${{ env.VERSION }}-${{ matrix.platform }}-portable.tar.gz Kimai.app/
+
+      - name: Create portable archive (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "kimai-desktop/build/compose/binaries/main-release/app/kimai/*" -DestinationPath "artifacts/kimai-${{ env.VERSION }}-${{ matrix.platform }}-portable.zip"
+
+      - name: List artifacts
+        shell: bash
+        run: ls -la artifacts/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimai-${{ matrix.platform }}
+          path: artifacts/*
+          retention-days: 7
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List all artifacts
+        run: ls -la artifacts/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: artifacts/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
