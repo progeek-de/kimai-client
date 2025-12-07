@@ -1,0 +1,197 @@
+name: Build and Release
+
+on:
+  push:
+    banches:
+      - '*'
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            build_script: ./build-linux.sh
+          - os: windows-latest
+            platform: windows
+            build_script: ./build-windows.sh
+          - os: macos-latest
+            platform: macos
+            build_script: ./build-macos-portable.sh
+
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Extract version from tag
+        id: version
+        shell: bash
+        run: |
+          VERSION=1.0.0
+          #VERSION=${GITHUB_REF_NAME#v}
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Grant execute permission for scripts
+        if: runner.os != 'Windows'
+        run: chmod +x gradlew build-linux.sh build-macos-portable.sh build-windows.sh
+
+      - name: Install Linux packaging dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfuse2
+          # Download and extract appimagetool (extract to avoid FUSE issues in CI)
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage -O /tmp/appimagetool.AppImage
+          chmod +x /tmp/appimagetool.AppImage
+          cd /tmp && ./appimagetool.AppImage --appimage-extract
+          # Move entire extracted directory and create symlink
+          sudo mv /tmp/squashfs-root /opt/appimagetool
+          sudo ln -sf /opt/appimagetool/AppRun /usr/local/bin/appimagetool
+          # Verify installation
+          appimagetool --version || echo "appimagetool installed (version check may fail but tool works)"
+
+      - name: Run build script
+        shell: bash
+        env:
+          CI: true
+          VERSION: ${{ env.VERSION }}
+          APPIMAGE_EXTRACT_AND_RUN: 1
+        run: ${{ matrix.build_script }}
+
+      - name: Prepare artifacts directory
+        shell: bash
+        run: mkdir -p artifacts
+
+      - name: List build output (debug)
+        shell: bash
+        run: |
+          echo "=== Build output structure ==="
+          find kimai-desktop/build/compose/binaries -type f 2>/dev/null || echo "No binaries directory found"
+          echo "=== Looking for installers ==="
+          find kimai-desktop/build/compose/binaries -name "*.AppImage" -o -name "*.dmg" -o -name "*.msi" -o -name "*.exe" 2>/dev/null || echo "No installers found"
+
+      - name: Copy installer artifact (Linux)
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          APPIMAGE=$(find kimai-desktop/build/compose/binaries/main-release -name "*.AppImage" -type f 2>/dev/null | head -1)
+          if [ -n "$APPIMAGE" ]; then
+            cp "$APPIMAGE" artifacts/kimai-${{ env.VERSION }}-linux.AppImage
+            echo "AppImage copied: $APPIMAGE"
+          else
+            echo "::warning::AppImage not found - will include portable archive only"
+          fi
+
+      - name: Copy installer artifact (macOS)
+        if: matrix.platform == 'macos'
+        shell: bash
+        run: |
+          DMG=$(find kimai-desktop/build/compose/binaries/main-release -name "*.dmg" -type f 2>/dev/null | head -1)
+          if [ -n "$DMG" ]; then
+            cp "$DMG" artifacts/kimai-${{ env.VERSION }}-macos.dmg
+            echo "DMG copied: $DMG"
+          else
+            echo "::warning::DMG not found - will include portable archive only"
+          fi
+
+      - name: Copy installer artifact (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $msi = Get-ChildItem -Path "kimai-desktop/build/compose/binaries/main-release" -Filter "*.msi" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($msi) {
+            Copy-Item $msi.FullName -Destination "artifacts/kimai-${{ env.VERSION }}-windows.msi"
+            Write-Host "MSI copied: $($msi.FullName)"
+          } else {
+            Write-Host "::warning::MSI not found - will include portable archive only"
+          }
+
+      - name: Create portable archive (Linux)
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          if [ -d "kimai-desktop/build/compose/binaries/main-release/app/kimai" ]; then
+            cd kimai-desktop/build/compose/binaries/main-release/app
+            tar -czvf ../../../../../artifacts/kimai-${{ env.VERSION }}-linux-portable.tar.gz kimai/
+          else
+            echo "::error::Portable app directory not found!"
+            exit 1
+          fi
+
+      - name: Create portable archive (macOS)
+        if: matrix.platform == 'macos'
+        shell: bash
+        run: |
+          if [ -d "kimai-desktop/build/compose/binaries/main-release/app/Kimai.app" ]; then
+            cd kimai-desktop/build/compose/binaries/main-release/app
+            tar -czvf ../../../../../artifacts/kimai-${{ env.VERSION }}-macos-portable.tar.gz Kimai.app/
+          else
+            echo "::error::Portable app directory not found!"
+            exit 1
+          fi
+
+      - name: Create portable archive (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          if (Test-Path "kimai-desktop/build/compose/binaries/main-release/app/kimai") {
+            Compress-Archive -Path "kimai-desktop/build/compose/binaries/main-release/app/kimai/*" -DestinationPath "artifacts/kimai-${{ env.VERSION }}-windows-portable.zip"
+          } else {
+            Write-Error "Portable app directory not found!"
+            exit 1
+          }
+
+      - name: List artifacts
+        shell: bash
+        run: ls -la artifacts/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kimai-${{ matrix.platform }}
+          path: artifacts/*
+          retention-days: 7
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List all artifacts
+        run: ls -la artifacts/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: artifacts/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

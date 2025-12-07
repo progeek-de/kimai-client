@@ -1,89 +1,159 @@
 #!/bin/bash
 
 # Build script for Linux native app with ProGuard optimization
+# Supports CI mode: set CI=true to skip clean, VERSION env var for version
 set -e
 
-echo "🚀 Building Linux native app with ProGuard optimization..."
+echo "=========================================="
+echo "  Kimai Desktop - Linux Build"
+echo "  WITH ProGuard Optimization"
+echo "=========================================="
+echo ""
+
+# Colors for output
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
 
 # Check if required tools are available
-command -v java >/dev/null 2>&1 || { echo "❌ Java is required but not installed. Aborting." >&2; exit 1; }
+command -v java >/dev/null 2>&1 || { echo -e "${RED}Java is required but not installed. Aborting.${NC}" >&2; exit 1; }
 
-# Clean previous builds
-echo "🧹 Cleaning previous builds..."
-./gradlew clean
+# Auto-detect and configure Java 17 (required for ProGuard compatibility)
+# ProGuard 7.2.2 doesn't support Java 21+
+configure_java17() {
+    # Skip if JAVA_HOME is already set to Java 17
+    if [ -n "$JAVA_HOME" ]; then
+        CURRENT_VERSION=$("$JAVA_HOME/bin/java" -version 2>&1 | head -n 1 | cut -d'"' -f2 | cut -d'.' -f1)
+        if [ "$CURRENT_VERSION" = "17" ]; then
+            echo -e "${GREEN}Using Java 17 from JAVA_HOME: $JAVA_HOME${NC}"
+            return 0
+        fi
+    fi
+
+    # Common Java 17 locations
+    JAVA17_PATHS=(
+        "/usr/lib/jvm/java-17-openjdk"           # Arch/Manjaro
+        "/usr/lib/jvm/java-17-openjdk-amd64"     # Ubuntu/Debian
+        "/usr/lib/jvm/temurin-17-jdk"            # Temurin on Linux
+        "/usr/lib/jvm/temurin-17-jdk-amd64"      # Temurin on Ubuntu
+        "/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17"*"/x64"  # GitHub Actions
+    )
+
+    for path in "${JAVA17_PATHS[@]}"; do
+        # Handle glob patterns
+        for expanded_path in $path; do
+            if [ -d "$expanded_path" ] && [ -x "$expanded_path/bin/java" ]; then
+                export JAVA_HOME="$expanded_path"
+                export PATH="$JAVA_HOME/bin:$PATH"
+                echo -e "${GREEN}Auto-detected Java 17: $JAVA_HOME${NC}"
+                return 0
+            fi
+        done
+    done
+
+    # Check current java version
+    CURRENT_VERSION=$(java -version 2>&1 | head -n 1 | cut -d'"' -f2 | cut -d'.' -f1)
+    if [ "$CURRENT_VERSION" = "17" ]; then
+        echo -e "${GREEN}System Java is version 17${NC}"
+        return 0
+    fi
+
+    echo -e "${YELLOW}Warning: Java 17 not found. ProGuard requires Java 17 (current: Java $CURRENT_VERSION)${NC}"
+    echo "   Please install Java 17 or set JAVA_HOME to a Java 17 installation."
+    echo "   On Arch/Manjaro: sudo pacman -S jdk17-openjdk"
+    echo "   On Ubuntu/Debian: sudo apt install openjdk-17-jdk"
+    return 1
+}
+
+configure_java17 || exit 1
+echo ""
+
+# Clean previous builds (skip in CI mode)
+if [ "$CI" != "true" ]; then
+    echo -e "${BLUE}Cleaning previous builds...${NC}"
+    ./gradlew clean
+    echo -e "${GREEN}Clean complete${NC}"
+else
+    echo -e "${BLUE}Skipping clean (CI mode)${NC}"
+fi
+echo ""
 
 # Set build configuration for ProGuard
 export GRADLE_OPTS="-Xmx6g -XX:+UseG1GC -XX:+UseStringDeduplication"
 export JAVA_OPTS="-Xmx6g"
 
-echo "📦 Building with ProGuard optimization..."
-echo "   ✓ Shrinking: Removing unused code"
-echo "   ✓ Optimizing: Code optimization passes"
-echo "   ✓ Debug removal: Removing debug calls"
+echo -e "${BLUE}Building with ProGuard optimization...${NC}"
+echo "   - Shrinking: Removing unused code"
+echo "   - Optimizing: Code optimization passes"
+echo "   - Debug removal: Removing debug calls"
 echo ""
 
-# Build with ProGuard release configuration
+# Build version parameter
+VERSION_PARAM=""
+if [ -n "$VERSION" ]; then
+    VERSION_PARAM="-PprojVersion=$VERSION"
+    echo -e "${BLUE}Building version: $VERSION${NC}"
+fi
+
+START_TIME=$(date +%s)
+
+# Build AppImage installer
+echo -e "${BLUE}Building Linux AppImage...${NC}"
 ./gradlew :kimai-desktop:packageReleaseAppImage \
+    $VERSION_PARAM \
     -Pbuildkonfig.flavor=release \
     --parallel \
     --build-cache \
-    --info
+    --no-daemon \
+    --stacktrace
+
+# Also build portable distribution
+echo ""
+echo -e "${BLUE}Building portable distribution...${NC}"
+./gradlew :kimai-desktop:createReleaseDistributable \
+    $VERSION_PARAM \
+    --no-daemon \
+    --stacktrace
+
+END_TIME=$(date +%s)
+BUILD_TIME=$((END_TIME - START_TIME))
 
 echo ""
-echo "✅ ProGuard build completed!"
+echo -e "${GREEN}Build complete in ${BUILD_TIME}s${NC}"
 echo ""
 
 # Show build results
-echo "📁 Build artifacts location:"
-echo "   Native App: kimai-desktop/build/compose/binaries/main-release/app/kimai/"
+echo -e "${BLUE}Build artifacts:${NC}"
+echo "   AppImage: kimai-desktop/build/compose/binaries/main-release/app/"
+echo "   Portable: kimai-desktop/build/compose/binaries/main-release/app/kimai/"
 echo ""
 
-# Compare sizes if previous build exists
-if [ -d "kimai-desktop/build/compose/binaries/main/app/kimai/" ] && [ -d "kimai-desktop/build/compose/binaries/main-release/app/kimai/" ]; then
-    echo "📊 Size comparison:"
-    
-    # Original size
-    original_size=$(du -sh kimai-desktop/build/compose/binaries/main/app/kimai/ 2>/dev/null | cut -f1 || echo "N/A")
-    echo "   Original build: $original_size"
-    
-    # ProGuard optimized size
-    optimized_size=$(du -sh kimai-desktop/build/compose/binaries/main-release/app/kimai/ 2>/dev/null | cut -f1 || echo "N/A")
-    echo "   ProGuard build: $optimized_size"
-    
-    # Calculate savings if both exist
-    if [ "$original_size" != "N/A" ] && [ "$optimized_size" != "N/A" ]; then
-        original_bytes=$(du -sb kimai-desktop/build/compose/binaries/main/app/kimai/ 2>/dev/null | cut -f1 || echo "0")
-        optimized_bytes=$(du -sb kimai-desktop/build/compose/binaries/main-release/app/kimai/ 2>/dev/null | cut -f1 || echo "0")
-        
-        if [ "$original_bytes" -gt 0 ] && [ "$optimized_bytes" -gt 0 ]; then
-            savings=$(echo "scale=1; (1 - $optimized_bytes / $original_bytes) * 100" | bc -l 2>/dev/null || echo "N/A")
-            if [ "$savings" != "N/A" ]; then
-                echo "   Size reduction: ${savings}%"
-            fi
-        fi
-    fi
-else
-    # Show current build size
-    if [ -d "kimai-desktop/build/compose/binaries/main-release/app/kimai/" ]; then
-        size=$(du -sh kimai-desktop/build/compose/binaries/main-release/app/kimai/ | cut -f1)
-        echo "📊 ProGuard optimized size: $size"
-    fi
+# Show sizes
+if [ -d "kimai-desktop/build/compose/binaries/main-release/app/kimai/" ]; then
+    size=$(du -sh kimai-desktop/build/compose/binaries/main-release/app/kimai/ | cut -f1)
+    echo -e "${GREEN}Portable app size: $size${NC}"
+fi
+
+APPIMAGE=$(find kimai-desktop/build/compose/binaries/main-release -name "*.AppImage" -type f 2>/dev/null | head -1)
+if [ -n "$APPIMAGE" ]; then
+    appimage_size=$(du -sh "$APPIMAGE" | cut -f1)
+    echo -e "${GREEN}AppImage size: $appimage_size${NC}"
 fi
 
 echo ""
-echo "🎉 ProGuard optimized Linux native app ready!"
+echo -e "${GREEN}=========================================="
+echo "  Build Complete!"
+echo "==========================================${NC}"
 echo ""
-echo "💡 To run the optimized app:"
+echo -e "${BLUE}To run the app:${NC}"
 echo "   cd kimai-desktop/build/compose/binaries/main-release/app/kimai/bin/"
 echo "   ./kimai"
 echo ""
-echo "📦 To create optimized portable package:"
-echo "   cd kimai-desktop/build/compose/binaries/main-release/app/"
-echo "   tar -czf kimai-linux.tar.gz kimai/"
+echo -e "${BLUE}ProGuard optimizations applied:${NC}"
+echo "   - Unused code removed"
+echo "   - Code optimization passes"
+echo "   - Debug calls eliminated"
+echo "   - Kotlin intrinsics optimized"
 echo ""
-echo "🚀 ProGuard optimizations applied:"
-echo "   ✓ Unused code removed"
-echo "   ✓ Code optimization passes"
-echo "   ✓ Debug calls eliminated"
-echo "   ✓ Kotlin intrinsics optimized"
-echo "   ✓ Logging calls removed"
