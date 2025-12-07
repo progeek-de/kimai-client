@@ -45,7 +45,7 @@ fun TimesheetTopBar(component: TimesheetTopBarComponent) {
                 navigationIcon = {
                     KimaiLogo(
                         modifier = Modifier.padding(start = 16.dp)
-                            .height(44.dp)
+                            .height(35.dp)
                     )
                 },
                 actions = {

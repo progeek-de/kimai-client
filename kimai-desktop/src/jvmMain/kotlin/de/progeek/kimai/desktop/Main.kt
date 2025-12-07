@@ -49,7 +49,7 @@ fun main() {
         val windowState = rememberWindowState(height = 700.dp)
         var visibleInTray by remember { mutableStateOf(true) }
         val density = LocalDensity.current
-        val icon = painterResource(SharedRes.images.kimai_logo).toAwtImage(
+        val icon = painterResource(SharedRes.images.progeek_icon).toAwtImage(
             density,
             LayoutDirection.Ltr,
             Size(128f, 128f)

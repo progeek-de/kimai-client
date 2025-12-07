@@ -43,7 +43,7 @@ private fun LoginContent() {
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        KimaiLogo(modifier = Modifier.size(125.dp, 125.dp))
+        KimaiLogo(modifier = Modifier.size(200.dp, 50.dp))
         LoginCard()
         Footer()
     }

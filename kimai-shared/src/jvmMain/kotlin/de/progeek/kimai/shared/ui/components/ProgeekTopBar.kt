@@ -23,7 +23,7 @@ actual fun KimaiTopAppBar(
             colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             title = {
                 KimaiLogo(
-                    modifier = Modifier.height(44.dp)
+                    modifier = Modifier.height(35.dp)
                 )
             },
             navigationIcon = { },
