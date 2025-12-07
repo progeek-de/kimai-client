@@ -21,3 +21,14 @@ kotlin {
 kotlin {
     jvmToolchain(17)
 }
+
+// Suppress warnings in auto-generated OpenAPI client code
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi"
+        )
+        // Suppress all warnings for auto-generated code
+        suppressWarnings.set(true)
+    }
+}
