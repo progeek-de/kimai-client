@@ -1,17 +1,24 @@
 name: Update AUR Package
 
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["Build and Release"]
+    types: [completed]
 
 jobs:
   update-aur:
     name: Update AUR Package
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Extract version from release tag
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+        run: |
+          # Get tag from the triggering workflow
+          TAG="${{ github.event.workflow_run.head_branch }}"
+          VERSION="${TAG#v}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Updating AUR package to version: $VERSION"
 
       - name: Setup SSH for AUR
         run: |
