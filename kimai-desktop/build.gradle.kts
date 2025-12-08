@@ -100,7 +100,13 @@ compose.desktop {
         }
 
         nativeDistributions {
-            targetFormats(TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.AppImage, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Dmg, TargetFormat.Pkg)
+            // Set target formats based on current OS (each format is only valid for specific platforms)
+            val currentOs = org.gradle.internal.os.OperatingSystem.current()
+            when {
+                currentOs.isLinux -> targetFormats(TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.AppImage)
+                currentOs.isWindows -> targetFormats(TargetFormat.Msi, TargetFormat.Exe)
+                currentOs.isMacOsX -> targetFormats(TargetFormat.Dmg, TargetFormat.Pkg)
+            }
             packageName = "kimai"
             packageVersion = projectVersion
             description = "Kimai Time Tracking Desktop Client"
