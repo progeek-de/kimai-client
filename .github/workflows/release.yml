@@ -193,6 +193,7 @@ jobs:
 
   update-aur:
     name: Update AUR Package
+    needs: release
     runs-on: ubuntu-latest
 
     steps:
