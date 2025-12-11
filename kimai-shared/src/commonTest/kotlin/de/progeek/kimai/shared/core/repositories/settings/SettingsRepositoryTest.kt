@@ -5,6 +5,7 @@ import de.progeek.kimai.shared.SharedRes
 import de.progeek.kimai.shared.core.models.EntryMode
 import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.storage.credentials.CredentialsConstants.BASE_URL_KEY
+import de.progeek.kimai.shared.ui.theme.BrandingEnum
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import de.progeek.kimai.shared.utils.Language
 import io.mockk.*
@@ -25,6 +26,8 @@ import kotlin.test.*
  * 8. saveLanguage(language) - Saves language preference
  * 9. getLanguage() - Returns Flow<String?>
  * 10. getBaseUrl() - Returns base URL string
+ * 11. saveBranding(branding) - Saves branding preference
+ * 12. getBranding() - Returns Flow<BrandingEnum>
  */
 class SettingsRepositoryTest {
 
@@ -349,5 +352,100 @@ class SettingsRepositoryTest {
         // Then - both saves happened
         verify { mockSettings.putString("THEME", "LIGHT") }
         verify { mockSettings.putString("THEME", "DARK") }
+    }
+
+    // ============================================================
+    // Branding Tests
+    // ============================================================
+
+    @Test
+    fun `saveBranding stores KIMAI branding`() = runTest {
+        // Given
+        every { mockSettings.putString("BRANDING", "KIMAI") } just Runs
+
+        // When
+        val result = repository.saveBranding(BrandingEnum.KIMAI)
+
+        // Then
+        assertEquals(BrandingEnum.KIMAI, result)
+        verify { mockSettings.putString("BRANDING", "KIMAI") }
+    }
+
+    @Test
+    fun `saveBranding stores PROGEEK branding`() = runTest {
+        // Given
+        every { mockSettings.putString("BRANDING", "PROGEEK") } just Runs
+
+        // When
+        val result = repository.saveBranding(BrandingEnum.PROGEEK)
+
+        // Then
+        assertEquals(BrandingEnum.PROGEEK, result)
+        verify { mockSettings.putString("BRANDING", "PROGEEK") }
+    }
+
+    @Test
+    fun `saveBranding can switch between brands`() = runTest {
+        // Given
+        every { mockSettings.putString("BRANDING", any()) } just Runs
+
+        // When
+        val result1 = repository.saveBranding(BrandingEnum.KIMAI)
+        val result2 = repository.saveBranding(BrandingEnum.PROGEEK)
+
+        // Then
+        assertEquals(BrandingEnum.KIMAI, result1)
+        assertEquals(BrandingEnum.PROGEEK, result2)
+        verify { mockSettings.putString("BRANDING", "KIMAI") }
+        verify { mockSettings.putString("BRANDING", "PROGEEK") }
+    }
+
+    @Test
+    fun `saveBranding returns the saved branding value`() = runTest {
+        // Given
+        every { mockSettings.putString("BRANDING", any()) } just Runs
+
+        // When
+        val kimai = repository.saveBranding(BrandingEnum.KIMAI)
+        val progeek = repository.saveBranding(BrandingEnum.PROGEEK)
+
+        // Then
+        assertEquals(BrandingEnum.KIMAI, kimai)
+        assertEquals(BrandingEnum.PROGEEK, progeek)
+    }
+
+    @Test
+    fun `multiple settings including branding can be saved independently`() = runTest {
+        // Given
+        every { mockSettings.putString(any(), any()) } just Runs
+        every { mockSettings.putLong(any(), any()) } just Runs
+
+        // When - save multiple settings including branding
+        repository.saveTheme(ThemeEnum.DARK)
+        repository.saveBranding(BrandingEnum.PROGEEK)
+        repository.saveDefaultProject(testProject)
+        repository.saveEntryMode(EntryMode.TIMER)
+        repository.saveLanguage(Language(SharedRes.strings.english, "en"))
+
+        // Then - all were saved
+        verify { mockSettings.putString("THEME", "DARK") }
+        verify { mockSettings.putString("BRANDING", "PROGEEK") }
+        verify { mockSettings.putLong("DEFAULT_PROJECT", 123) }
+        verify { mockSettings.putString("MODE", "TIMER") }
+        verify { mockSettings.putString("LANGUAGE", "en") }
+    }
+
+    @Test
+    fun `branding can be overwritten`() = runTest {
+        // Given
+        every { mockSettings.putString(any(), any()) } just Runs
+
+        // When - save branding twice with different values
+        repository.saveBranding(BrandingEnum.KIMAI)
+        repository.saveBranding(BrandingEnum.PROGEEK)
+
+        // Then - both saves happened
+        verify { mockSettings.putString("BRANDING", "KIMAI") }
+        verify { mockSettings.putString("BRANDING", "PROGEEK") }
     }
 }
