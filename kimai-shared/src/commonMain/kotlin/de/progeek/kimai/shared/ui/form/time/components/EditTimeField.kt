@@ -12,7 +12,10 @@ import androidx.compose.ui.unit.dp
 import de.progeek.kimai.shared.ui.form.time.TimeFieldComponent
 import de.progeek.kimai.shared.ui.form.time.store.TimeFieldStore
 import kotlinx.datetime.*
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun EditTimeField(
     component: TimeFieldComponent,
@@ -90,7 +93,7 @@ fun EditTimeField(
                 modifier = Modifier.weight(1f).wrapContentHeight(align = Alignment.CenterVertically)
             ) {
                 Text(
-                    duration.toComponents { hours, minutes, seconds, _ ->
+                    duration.toComponents { hours: Long, minutes, seconds, _ ->
                         "${hours.toString().padStart(2, '0')}:${
                         minutes.toString().padStart(2, '0')
                         }:${seconds.toString().padStart(2, '0')}"

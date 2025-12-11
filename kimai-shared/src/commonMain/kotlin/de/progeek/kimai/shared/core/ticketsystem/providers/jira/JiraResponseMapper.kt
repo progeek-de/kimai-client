@@ -1,10 +1,12 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.core.ticketsystem.providers.jira
 
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketIssue
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketProject
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketProvider
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 /**
  * Maps Jira API response models to unified ticket models.

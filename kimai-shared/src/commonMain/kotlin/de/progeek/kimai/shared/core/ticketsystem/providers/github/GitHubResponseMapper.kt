@@ -1,10 +1,12 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.core.ticketsystem.providers.github
 
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketIssue
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketProject
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketProvider
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 /**
  * Maps GitHub API response models to unified ticket models.

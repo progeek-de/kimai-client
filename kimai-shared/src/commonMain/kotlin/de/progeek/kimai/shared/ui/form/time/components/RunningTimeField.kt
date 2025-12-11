@@ -14,8 +14,10 @@ import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun RunningTimeField(
     component: TimeFieldComponent,
@@ -112,7 +114,7 @@ fun RunningTimeField(
                 modifier = Modifier.weight(1f).wrapContentHeight(align = Alignment.CenterVertically)
             ) {
                 Text(
-                    duration.toComponents { hours, minutes, seconds, _ ->
+                    duration.toComponents { hours: Long, minutes, seconds, _ ->
                         "${hours.toString().padStart(2, '0')}:${
                         minutes.toString().padStart(2, '0')
                         }:${seconds.toString().padStart(2, '0')}"

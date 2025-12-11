@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.ui.ticketsystem.picker
 
 import androidx.compose.foundation.clickable
@@ -16,9 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketIssue
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketProvider
-import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Instant
 
 /**
  * Modal dialog for searching and selecting issues from multiple ticket sources.

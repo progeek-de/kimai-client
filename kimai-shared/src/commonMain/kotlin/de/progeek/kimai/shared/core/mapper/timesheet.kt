@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.core.mapper
 
 import de.progeek.kimai.openapi.models.TimesheetCollection

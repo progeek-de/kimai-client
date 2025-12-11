@@ -1,12 +1,14 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.utils
 
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import kotlin.time.Duration
+import kotlin.time.Instant
 
 actual fun Instant.format(pattern: String): String {
     val milliSeconds = this.toEpochMilliseconds()

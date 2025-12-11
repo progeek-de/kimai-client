@@ -17,8 +17,9 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun FormTimeFields(
     begin: LocalDateTime,
@@ -118,7 +119,7 @@ fun FormTimeFields(
 
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f).wrapContentHeight(align = Alignment.CenterVertically)) {
                 Text(
-                    duration.toComponents { hours, minutes, seconds, _ ->
+                    duration.toComponents { hours: Long, minutes, seconds, _ ->
                         "${hours.toString().padStart(2, '0')}:${
                         minutes.toString().padStart(2, '0')
                         }:${seconds.toString().padStart(2, '0')}"
