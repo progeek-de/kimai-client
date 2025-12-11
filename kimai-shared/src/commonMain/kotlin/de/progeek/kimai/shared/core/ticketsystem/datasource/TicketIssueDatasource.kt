@@ -159,6 +159,7 @@ class TicketIssueDatasource(private val database: KimaiDatabase) {
         withContext(kimaiDispatchers.io) {
             runCatching {
                 query.deleteBySource(sourceId)
+                Unit
             }
         }
 
@@ -169,6 +170,7 @@ class TicketIssueDatasource(private val database: KimaiDatabase) {
         withContext(kimaiDispatchers.io) {
             runCatching {
                 query.deleteByKey(key)
+                Unit
             }
         }
 

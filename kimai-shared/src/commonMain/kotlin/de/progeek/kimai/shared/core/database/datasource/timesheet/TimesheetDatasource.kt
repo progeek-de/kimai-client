@@ -88,6 +88,7 @@ class TimesheetDatasource(val database: KimaiDatabase) {
     suspend fun delete(id: Long): Result<Unit> = withContext(kimaiDispatchers.io) {
         kotlin.runCatching {
             query.deleteById(id)
+            Unit
         }
     }
 

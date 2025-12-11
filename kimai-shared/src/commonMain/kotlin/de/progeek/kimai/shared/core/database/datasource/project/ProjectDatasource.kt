@@ -34,6 +34,7 @@ class ProjectDatasource(val database: KimaiDatabase) {
                 if (project.globalActivities) 1 else 0,
                 project.customer?.id ?: -1
             )
+            Unit
         }
     }
 
