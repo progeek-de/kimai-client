@@ -98,7 +98,7 @@ open class TagApi(
         ).wrap<GetGetTagsResponse>().map { value }
     }
 
-    @Serializable
+    @Serializable(GetGetTagsResponse.Companion::class)
     private class GetGetTagsResponse(val value: List<kotlin.String>) {
         @Serializer(GetGetTagsResponse::class)
         companion object : KSerializer<GetGetTagsResponse> {

@@ -67,7 +67,7 @@ class ProjectFieldStoreFactory(
     ) : CoroutineExecutor<Intent, Unit, State, Msg, Label>(
         mainContext
     ) {
-        override fun executeIntent(intent: Intent, getState: () -> State) {
+        override fun executeIntent(intent: Intent) {
             when (intent) {
                 is Intent.SelectedProject -> handleSelectedProject(intent.project)
                 is Intent.CustomerUpdated -> dispatch(Msg.UpdatedCustomer(intent.customer))
@@ -79,9 +79,9 @@ class ProjectFieldStoreFactory(
             publish(Label.ProjectChanged(project))
         }
 
-        override fun executeAction(action: Unit, getState: () -> State) {
+        override fun executeAction(action: Unit) {
             loadProjects()
-            if (getState().selectedProject == null) {
+            if (state().selectedProject == null) {
                 loadDefaultProject()
             }
         }

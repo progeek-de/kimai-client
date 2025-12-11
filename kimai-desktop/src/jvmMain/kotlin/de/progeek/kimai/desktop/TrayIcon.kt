@@ -16,7 +16,7 @@ import dorkbox.systemTray.MenuItem
 import dorkbox.systemTray.Separator
 import dorkbox.systemTray.SystemTray
 import kotlinx.coroutines.launch
-import org.koin.compose.rememberKoinInject
+import org.koin.compose.koinInject
 
 @Composable
 fun TrayIcon(onShow: () -> Unit, shouldExit: () -> Unit) {
@@ -24,9 +24,9 @@ fun TrayIcon(onShow: () -> Unit, shouldExit: () -> Unit) {
     val startTimer = stringResource(SharedRes.strings.start_timer)
     val showApp = stringResource(SharedRes.strings.show)
 
-    val timesheetRepository = rememberKoinInject<TimesheetRepository>()
-    val projectRepository = rememberKoinInject<ProjectRepository>()
-    val settingsRepository = rememberKoinInject<SettingsRepository>()
+    val timesheetRepository = koinInject<TimesheetRepository>()
+    val projectRepository = koinInject<ProjectRepository>()
+    val settingsRepository = koinInject<SettingsRepository>()
     val scope = rememberCoroutineScope()
 
     val density = LocalDensity.current
@@ -71,7 +71,7 @@ fun TrayIcon(onShow: () -> Unit, shouldExit: () -> Unit) {
     }
 
     scope.launch {
-        timesheetRepository.getRunningTimesheetStream().collect { timesheet ->
+        timesheetRepository.getRunningTimesheetStream().collect { timesheet: TimesheetForm? ->
             clearAll()
 
             if (timesheet == null) {

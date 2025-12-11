@@ -70,12 +70,12 @@ class TimesheetTopBarStoreFactory(
     }
 
     private inner class ExecutorImpl(mainContext: CoroutineContext, private val ioContext: CoroutineContext) : CoroutineExecutor<Intent, Unit, State, Msg, Label>(mainContext) {
-        override fun executeIntent(intent: Intent, getState: () -> State) {
+        override fun executeIntent(intent: Intent) {
             when (intent) {
                 is Intent.Logout -> logout()
                 is Intent.Reload -> publish(Label.Reload)
                 is Intent.SetMode -> saveEntryMode(intent.mode)
-                is Intent.ShowDashboard -> browseUrl(getState().baseUrl)
+                is Intent.ShowDashboard -> browseUrl(state().baseUrl)
                 is Intent.ToggleTheme -> saveTheme(intent.theme)
             }
         }
@@ -92,7 +92,7 @@ class TimesheetTopBarStoreFactory(
             }
         }
 
-        override fun executeAction(action: Unit, getState: () -> State) {
+        override fun executeAction(action: Unit) {
             val baseUrl = settingsRepository.getBaseUrl()
             dispatch(Msg.BaseUrl(baseUrl))
 

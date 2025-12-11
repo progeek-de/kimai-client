@@ -4,7 +4,7 @@ import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 
-@Serializable
+@Serializable(Base64ByteArray.Companion::class)
 class Base64ByteArray(val value: ByteArray) {
     @Serializer(Base64ByteArray::class)
     companion object : KSerializer<Base64ByteArray> {

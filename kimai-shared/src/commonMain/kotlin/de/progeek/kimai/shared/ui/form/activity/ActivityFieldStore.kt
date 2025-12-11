@@ -65,7 +65,7 @@ class ActivityFieldStoreFactory(
         private val ioContext: CoroutineContext
     ) : CoroutineExecutor<Intent, Unit, State, Msg, Label>(mainContext) {
 
-        override fun executeIntent(intent: Intent, getState: () -> State) {
+        override fun executeIntent(intent: Intent) {
             when (intent) {
                 is Intent.SelectedActivity -> handleSelectedProject(intent.activity)
                 is Intent.UpdatedProject -> dispatch(Msg.UpdatedProject(intent.project))
@@ -77,7 +77,7 @@ class ActivityFieldStoreFactory(
             publish(Label.ActivityChanged(activity))
         }
 
-        override fun executeAction(action: Unit, getState: () -> State) {
+        override fun executeAction(action: Unit) {
             scope.launch {
                 activityRepository.getActivities().flowOn(ioContext).collect {
                     dispatch(Msg.LoadedActivities(it))

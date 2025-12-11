@@ -121,19 +121,19 @@ class TimesheetInputStoreFactory(
     ) : CoroutineExecutor<Intent, Action, State, Msg, Label>(mainContext) {
         private var ticketSearchJob: Job? = null
 
-        override fun executeIntent(intent: Intent, getState: () -> State) {
+        override fun executeIntent(intent: Intent) {
             when (intent) {
-                Intent.Add -> handleAdd(getState())
-                Intent.Start -> handleStart(getState())
-                Intent.Stop -> handleStop(getState())
-                Intent.Edit -> handleEdit(getState())
+                Intent.Add -> handleAdd(state())
+                Intent.Start -> handleStart(state())
+                Intent.Stop -> handleStop(state())
+                Intent.Edit -> handleEdit(state())
                 is Intent.Description -> handleDescription(intent.description)
-                is Intent.InsertText -> handleInsertText(intent.text, getState())
+                is Intent.InsertText -> handleInsertText(intent.text, state())
                 is Intent.SearchTickets -> handleSearchTickets(intent.query)
                 Intent.DismissTicketSuggestions -> dispatch(Msg.DismissTicketSuggestions)
-                Intent.NavigateUp -> handleNavigateUp(getState())
-                Intent.NavigateDown -> handleNavigateDown(getState())
-                Intent.SelectSuggestion -> handleSelectSuggestion(getState())
+                Intent.NavigateUp -> handleNavigateUp(state())
+                Intent.NavigateDown -> handleNavigateDown(state())
+                Intent.SelectSuggestion -> handleSelectSuggestion(state())
             }
         }
 
@@ -231,7 +231,7 @@ class TimesheetInputStoreFactory(
             return form?.project != null && form.activity != null
         }
 
-        override fun executeAction(action: Action, getState: () -> State) {
+        override fun executeAction(action: Action) {
             when (action) {
                 Action.LoadEntryMode -> loadEntryMode()
                 Action.LoadTimesheetForm -> loadTimesheetForm()

@@ -28,11 +28,13 @@ internal fun DatePicker(
         initialSelectedDateMillis = date.toEpochMilliseconds()
     )
 
-    val dateFormatter = DatePickerFormatter(
-        yearSelectionSkeleton = "MMMM YYYY",
-        selectedDateSkeleton = "dd.MM.YYYY",
-        selectedDateDescriptionSkeleton = "dd.MMMM YYYY"
-    )
+    val dateFormatter = remember {
+        DatePickerDefaults.dateFormatter(
+            yearSelectionSkeleton = "MMMM YYYY",
+            selectedDateSkeleton = "dd.MM.YYYY",
+            selectedDateDescriptionSkeleton = "dd.MMMM YYYY"
+        )
+    }
 
     DatePickerDialog(
         onDismissRequest = {

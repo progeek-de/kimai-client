@@ -1,12 +1,12 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.multiplatform.resources)
     alias(libs.plugins.jetbrains.compose)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.jlleitschuh.gradle.ktlint)
     id("com.codingfeline.buildkonfig")
@@ -17,15 +17,10 @@ dependencies {
     ktlintRuleset(libs.twitter.compose.rules)
 }
 
-@OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
 kotlin {
-    targetHierarchy.default()
-
     jvm {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "17"
-            }
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
         testRuns["test"].executionTask.configure {
             useJUnit()
@@ -64,7 +59,7 @@ kotlin {
                 api(libs.decompose.decompose)
                 api(libs.essenty.lifecycle)
                 implementation(libs.decompose.decompose)
-                implementation(libs.decompose.extensionsComposeJetbrains)
+                implementation(libs.decompose.extensionsCompose)
 
                 // koin
                 api(libs.bundles.koin)
@@ -123,7 +118,7 @@ kotlin {
 
                 // koin for testing
                 implementation(libs.koin.core)
-                implementation("io.insert-koin:koin-test:3.5.2-RC1")
+                implementation("io.insert-koin:koin-test:4.0.0")
             }
         }
 
@@ -146,9 +141,9 @@ kotlin {
                 implementation(libs.turbine)
                 implementation(libs.kotlinx.coroutines.test)
                 // Provides Dispatchers.Main for JVM tests (using Swing event loop)
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
+                implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.koin.core)
-                implementation("io.insert-koin:koin-test:3.5.2-RC1")
+                implementation("io.insert-koin:koin-test:4.0.0")
                 implementation(libs.sqldelight.sqlite.driver)
                 implementation(libs.settings.core)
                 implementation(libs.settings.noarg)
@@ -191,8 +186,8 @@ buildkonfig {
 // Android configuration removed - focus on desktop only
 
 multiplatformResources {
-    multiplatformResourcesPackage = "de.progeek.kimai.shared" // required
-    multiplatformResourcesClassName = "SharedRes"
+    resourcesPackage.set("de.progeek.kimai.shared") // required
+    resourcesClassName.set("SharedRes")
 }
 
 sqldelight {

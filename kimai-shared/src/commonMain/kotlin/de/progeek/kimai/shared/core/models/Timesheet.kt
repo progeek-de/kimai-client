@@ -1,8 +1,10 @@
 package de.progeek.kimai.shared.core.models
 
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.Serializable
 import kotlin.time.Duration
 
+@Serializable
 data class Timesheet(
     val id: Long,
     val project: Project,

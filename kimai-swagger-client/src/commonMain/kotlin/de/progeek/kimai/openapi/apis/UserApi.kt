@@ -107,7 +107,7 @@ open class UserApi(
         ).wrap<GetGetUsersResponse>().map { value }
     }
 
-    @Serializable
+    @Serializable(GetGetUsersResponse.Companion::class)
     private class GetGetUsersResponse(val value: List<UserCollection>) {
         @Serializer(GetGetUsersResponse::class)
         companion object : KSerializer<GetGetUsersResponse> {
