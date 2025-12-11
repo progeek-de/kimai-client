@@ -150,8 +150,8 @@ class JiraTicketProviderTest {
         assertTrue(message.isNotBlank(), "Error message should not be blank")
         assertTrue(
             message.contains("error", ignoreCase = true) ||
-            message.contains("Network error") ||
-            message.contains("connection", ignoreCase = true),
+                message.contains("Network error") ||
+                message.contains("connection", ignoreCase = true),
             "Error message should reference the error type: $message"
         )
     }

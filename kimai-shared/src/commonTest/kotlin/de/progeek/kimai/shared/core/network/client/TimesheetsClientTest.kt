@@ -3,17 +3,35 @@ package de.progeek.kimai.shared.core.network.client
 import com.russhwolf.settings.ObservableSettings
 import de.progeek.kimai.openapi.apis.TimesheetApi
 import de.progeek.kimai.openapi.infrastructure.HttpResponse
-import de.progeek.kimai.openapi.models.*
+import de.progeek.kimai.openapi.models.ActivityExpanded
+import de.progeek.kimai.openapi.models.Customer
+import de.progeek.kimai.openapi.models.ProjectExpanded
+import de.progeek.kimai.openapi.models.TimesheetCollection
+import de.progeek.kimai.openapi.models.TimesheetCollectionExpanded
+import de.progeek.kimai.openapi.models.TimesheetEntity
+import de.progeek.kimai.openapi.models.User
 import de.progeek.kimai.shared.core.models.Activity
 import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.models.TimesheetForm
 import de.progeek.kimai.shared.core.storage.credentials.AesGCMCipher
 import io.ktor.http.*
-import io.mockk.*
+import io.mockk.clearAllMocks
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.*
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import kotlin.time.Clock
-import kotlin.test.*
 
 /**
  * Tests for TimesheetsClient.

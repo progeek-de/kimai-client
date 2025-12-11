@@ -4,10 +4,10 @@ import de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketCredentials
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketProvider
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
-import kotlinx.datetime.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.time.Instant
 
 /**
  * Test suite for JiraResponseMapper.

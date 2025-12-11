@@ -1,6 +1,10 @@
 package de.progeek.kimai.shared.testutils
 
-import de.progeek.kimai.shared.core.models.*
+import de.progeek.kimai.shared.core.models.Activity
+import de.progeek.kimai.shared.core.models.Credentials
+import de.progeek.kimai.shared.core.models.Customer
+import de.progeek.kimai.shared.core.models.Project
+import de.progeek.kimai.shared.core.models.Timesheet
 import kotlinx.datetime.LocalDateTime
 import kotlin.time.Duration.Companion.hours
 

@@ -19,7 +19,7 @@ inline fun Boolean.not(action: () -> Unit): Boolean {
     return this
 }
 
-inline fun<T> Boolean.then(first: T): T? {
+fun<T> Boolean.then(first: T): T? {
     return if (this) first else null
 }
 
@@ -41,13 +41,13 @@ inline fun <E : Any, T : Collection<E>> T.withEmpty(func: () -> T): T {
     return this
 }
 
-inline fun Long.toLocalDatetime(): LocalDateTime {
+fun Long.toLocalDatetime(): LocalDateTime {
     return Instant.fromEpochMilliseconds(this)
         .toLocalDateTime(TimeZone.currentSystemDefault())
 }
 
-inline fun LocalDateTime.removeSeconds(): LocalDateTime {
-    return LocalDateTime(year, monthNumber, dayOfMonth, hour, minute)
+fun LocalDateTime.removeSeconds(): LocalDateTime {
+    return LocalDateTime(year, month, day, hour, minute)
 }
 
 @Composable

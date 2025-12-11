@@ -6,12 +6,10 @@ import de.progeek.kimai.openapi.models.ProjectExpanded
 import de.progeek.kimai.openapi.models.TimesheetCollection
 import de.progeek.kimai.openapi.models.TimesheetCollectionExpanded
 import de.progeek.kimai.openapi.models.User
-import de.progeek.kimai.shared.TimesheetEntity
 import de.progeek.kimai.shared.core.models.Activity
 import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.models.Timesheet
 import de.progeek.kimai.shared.core.models.TimesheetForm
-import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.test.Test
@@ -21,6 +19,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 /**
  * Test suite for timesheet mapper functions.

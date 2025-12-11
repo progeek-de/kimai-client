@@ -5,8 +5,8 @@ import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.value.Value
-import kotlinx.serialization.KSerializer
 import de.progeek.kimai.shared.core.models.Credentials
+import kotlinx.serialization.KSerializer
 
 interface AuthComponentContext : ComponentContext {
     val credentials: Credentials

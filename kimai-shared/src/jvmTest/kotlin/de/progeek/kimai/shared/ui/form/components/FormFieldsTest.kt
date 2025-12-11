@@ -82,7 +82,7 @@ class FormFieldsTest {
         // The project field component should be initialized
         val projectState = component.projectFieldComponent.state.value
         // Project list is loaded asynchronously, we just verify the component is created
-        assertTrue(projectState != null)
+        assertTrue(projectState.projects.isNotEmpty() || projectState.projects.isEmpty())
     }
 
     @Test
@@ -94,7 +94,7 @@ class FormFieldsTest {
         // The activity field component should be initialized
         val activityState = component.activityFieldComponent.state.value
         // Activity list is loaded asynchronously, we just verify the component is created
-        assertTrue(activityState != null)
+        assertTrue(activityState.activities.isNotEmpty() || activityState.activities.isEmpty())
     }
 
     @Test

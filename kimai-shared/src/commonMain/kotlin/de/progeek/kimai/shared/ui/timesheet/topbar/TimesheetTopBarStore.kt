@@ -136,12 +136,12 @@ class TimesheetTopBarStoreFactory(
     }
 
     private object ReducerImpl : Reducer<State, Msg> {
-        override fun State.reduce(message: Msg): State =
-            when (message) {
-                is Msg.LoadedEntryMode -> copy(mode = message.mode)
-                is Msg.RunningTimesheet -> copy(running = message.value)
-                is Msg.BaseUrl -> copy(baseUrl = message.baseUrl)
-                is Msg.ThemeChanged -> copy(theme = message.theme)
+        override fun State.reduce(msg: Msg): State =
+            when (msg) {
+                is Msg.LoadedEntryMode -> copy(mode = msg.mode)
+                is Msg.RunningTimesheet -> copy(running = msg.value)
+                is Msg.BaseUrl -> copy(baseUrl = msg.baseUrl)
+                is Msg.ThemeChanged -> copy(theme = msg.theme)
             }
     }
 }

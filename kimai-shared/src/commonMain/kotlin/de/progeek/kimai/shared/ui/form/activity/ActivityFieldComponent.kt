@@ -16,7 +16,6 @@ import de.progeek.kimai.shared.ui.form.activity.ActivityFieldStore.Label.Activit
 import de.progeek.kimai.shared.ui.form.context.FormComponentContext
 import de.progeek.kimai.shared.ui.timesheet.models.TimesheetFormParams
 import de.progeek.kimai.shared.utils.coroutineScope
-import io.ktor.http.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow

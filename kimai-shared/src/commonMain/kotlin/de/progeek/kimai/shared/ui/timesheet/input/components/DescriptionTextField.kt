@@ -106,7 +106,7 @@ private fun TextFieldDecorationBox(
 }
 
 private fun ticketPickerButton(isRunning: Boolean, ticketSystemEnabled: Boolean, onTicketPickerClick: () -> Unit): @Composable (() -> Unit)? {
-    if(!isRunning && ticketSystemEnabled) {
+    if (!isRunning && ticketSystemEnabled) {
         return { TicketPickerButton(!isRunning, ticketSystemEnabled, onTicketPickerClick) }
     }
 

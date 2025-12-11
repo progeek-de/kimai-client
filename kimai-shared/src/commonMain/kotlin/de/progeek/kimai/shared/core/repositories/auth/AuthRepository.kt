@@ -2,7 +2,11 @@ package de.progeek.kimai.shared.core.repositories.auth
 
 import com.russhwolf.settings.ObservableSettings
 import de.progeek.kimai.shared.core.models.Credentials
-import de.progeek.kimai.shared.core.network.client.*
+import de.progeek.kimai.shared.core.network.client.ActivityClient
+import de.progeek.kimai.shared.core.network.client.AuthClient
+import de.progeek.kimai.shared.core.network.client.CustomerClient
+import de.progeek.kimai.shared.core.network.client.ProjectClient
+import de.progeek.kimai.shared.core.network.client.TimesheetsClient
 import de.progeek.kimai.shared.core.repositories.credentials.CredentialsRepository
 import de.progeek.kimai.shared.core.storage.credentials.CredentialsConstants.BASE_URL_KEY
 import org.koin.core.component.KoinComponent

@@ -8,7 +8,6 @@ import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
 import de.progeek.kimai.shared.utils.createTestDatasources
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.Instant
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -17,6 +16,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Instant
 
 /**
  * Test suite for TicketConfigRepository.

@@ -5,7 +5,12 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
 import de.progeek.kimai.shared.core.mapper.toTimesheetForm
-import de.progeek.kimai.shared.testutils.*
+import de.progeek.kimai.shared.testutils.TestData
+import de.progeek.kimai.shared.testutils.TestKoinModule
+import de.progeek.kimai.shared.testutils.TestTheme
+import de.progeek.kimai.shared.testutils.createTestComponentContext
+import de.progeek.kimai.shared.testutils.createTestDispatchers
+import de.progeek.kimai.shared.testutils.createTestStoreFactory
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
 import org.junit.Before

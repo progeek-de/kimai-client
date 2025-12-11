@@ -8,7 +8,7 @@ import de.progeek.kimai.shared.utils.toLocalDatetime
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-internal inline fun toTimesheet(
+internal fun toTimesheet(
     id: Long,
     begin: Long,
     end: Long?,

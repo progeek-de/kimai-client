@@ -4,7 +4,11 @@ package de.progeek.kimai.shared.core.network.client
 
 import com.russhwolf.settings.ObservableSettings
 import de.progeek.kimai.openapi.apis.TimesheetApi
-import de.progeek.kimai.openapi.models.*
+import de.progeek.kimai.openapi.models.GetRestartTimesheetGetRequest
+import de.progeek.kimai.openapi.models.TimesheetCollection
+import de.progeek.kimai.openapi.models.TimesheetCollectionExpanded
+import de.progeek.kimai.openapi.models.TimesheetEditForm
+import de.progeek.kimai.openapi.models.TimesheetEntity
 import de.progeek.kimai.shared.core.models.TimesheetForm
 import de.progeek.kimai.shared.core.network.NetworkConstants.datetimeFormat
 import de.progeek.kimai.shared.core.storage.credentials.AesGCMCipher

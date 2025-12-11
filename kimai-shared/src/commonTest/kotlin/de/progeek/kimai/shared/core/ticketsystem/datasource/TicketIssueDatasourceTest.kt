@@ -7,7 +7,6 @@ import de.progeek.kimai.shared.utils.TestDatasources
 import de.progeek.kimai.shared.utils.clearDatabase
 import de.progeek.kimai.shared.utils.createTestDatasources
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.Instant
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -16,6 +15,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 /**
  * Test suite for TicketIssueDatasource.

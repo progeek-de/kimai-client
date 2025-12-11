@@ -67,8 +67,10 @@ class JiraTicketProvider : TicketSystemProvider {
         require(config.provider == TicketProvider.JIRA) {
             "Invalid provider type: ${config.provider}"
         }
-        require(config.credentials is TicketCredentials.JiraApiToken ||
-            config.credentials is TicketCredentials.JiraPersonalAccessToken) {
+        require(
+            config.credentials is TicketCredentials.JiraApiToken ||
+                config.credentials is TicketCredentials.JiraPersonalAccessToken
+        ) {
             "Invalid credentials type for Jira provider"
         }
     }

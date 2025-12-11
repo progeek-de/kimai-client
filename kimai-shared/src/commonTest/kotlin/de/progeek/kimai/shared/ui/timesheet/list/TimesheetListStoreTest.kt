@@ -22,9 +22,6 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
@@ -35,7 +32,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
 class TimesheetListStoreTest {
@@ -62,7 +62,7 @@ class TimesheetListStoreTest {
     )
     private val testBegin = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
     private val testEnd = testBegin.let {
-        LocalDateTime(it.year, it.month, it.dayOfMonth, it.hour + 1, it.minute, it.second, it.nanosecond)
+        LocalDateTime(it.year, it.month, it.day, it.hour + 1, it.minute, it.second, it.nanosecond)
     }
     private val testTimesheet = Timesheet(
         id = 1,

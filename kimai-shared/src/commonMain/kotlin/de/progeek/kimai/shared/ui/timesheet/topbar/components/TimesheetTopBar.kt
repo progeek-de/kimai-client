@@ -4,11 +4,33 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.TableRows
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -35,7 +57,7 @@ fun TimesheetTopBar(component: TimesheetTopBarComponent) {
             modifier = Modifier.background(Color.Transparent).padding(bottom = 16.dp)
         ) {
             TopAppBar(
-                colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = MaterialTheme.colorScheme.background),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
                 title = { },
                 navigationIcon = {
                     KimaiLogo(
@@ -89,7 +111,7 @@ private fun TopAppBarDropdownMenu(expanded: Boolean, onDismissRequest: () -> Uni
             onClick = { component.onIntent(Intent.Reload) }
         )
 
-        Divider()
+        HorizontalDivider()
 
         DropdownMenuItem(
             leadingIcon = {
@@ -132,7 +154,7 @@ private fun TopAppBarDropdownMenu(expanded: Boolean, onDismissRequest: () -> Uni
                 onDismissRequest()
             }
         )
-        Divider()
+        HorizontalDivider()
         val isDarkMode = state.theme == ThemeEnum.DARK
         DropdownMenuItem(
             leadingIcon = {
@@ -153,7 +175,7 @@ private fun TopAppBarDropdownMenu(expanded: Boolean, onDismissRequest: () -> Uni
                 onDismissRequest()
             }
         )
-        Divider()
+        HorizontalDivider()
         DropdownMenuItem(
             leadingIcon = {
                 Icon(
@@ -177,7 +199,7 @@ private fun TopAppBarDropdownMenu(expanded: Boolean, onDismissRequest: () -> Uni
             leadingIcon = {
                 Icon(
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    imageVector = Icons.Outlined.OpenInNew,
+                    imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
                     contentDescription = stringResource(SharedRes.strings.refresh)
                 )
             },

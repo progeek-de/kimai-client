@@ -1,0 +1,44 @@
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      kotlin:
+        patterns:
+          - "org.jetbrains.kotlin*"
+          - "org.jetbrains.compose*"
+          - "org.jetbrains.kotlinx*"
+      ktor:
+        patterns:
+          - "io.ktor*"
+      decompose:
+        patterns:
+          - "com.arkivanov.decompose*"
+          - "com.arkivanov.mvikotlin*"
+          - "com.arkivanov.essenty*"
+      koin:
+        patterns:
+          - "io.insert-koin*"
+      arrow:
+        patterns:
+          - "io.arrow-kt*"
+      sqldelight:
+        patterns:
+          - "app.cash.sqldelight*"
+      moko:
+        patterns:
+          - "dev.icerock.moko*"
+      testing:
+        patterns:
+          - "io.mockk*"
+          - "app.cash.turbine*"
+          - "junit*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5

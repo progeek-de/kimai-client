@@ -1,9 +1,13 @@
 package de.progeek.kimai.shared.ui.home
 
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.decompose.router.stack.*
+import com.arkivanov.decompose.DelicateDecomposeApi
+import com.arkivanov.decompose.router.stack.ChildStack
+import com.arkivanov.decompose.router.stack.StackNavigation
+import com.arkivanov.decompose.router.stack.childStack
+import com.arkivanov.decompose.router.stack.pop
+import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.value.Value
-import kotlinx.serialization.Serializable
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
@@ -17,6 +21,7 @@ import de.progeek.kimai.shared.ui.timesheet.TimesheetComponent
 import de.progeek.kimai.shared.ui.timesheet.models.TimesheetFormParams
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.serialization.Serializable
 
 class HomeComponent(
     componentContext: ComponentContext,
@@ -66,6 +71,7 @@ class HomeComponent(
             )
         }
 
+    @OptIn(DelicateDecomposeApi::class)
     private fun onTimesheetOutput(out: TimesheetComponent.Output) {
         when (out) {
             is TimesheetComponent.Output.ShowSettings -> navigation.push(Configuration.Settings)

@@ -9,7 +9,6 @@ import de.progeek.kimai.shared.utils.TestDatasources
 import de.progeek.kimai.shared.utils.clearDatabase
 import de.progeek.kimai.shared.utils.createTestDatasources
 import kotlinx.coroutines.test.runTest
-import kotlin.time.Clock
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -18,6 +17,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -433,7 +433,7 @@ class TicketConfigDatasourceTest {
         datasource.save(jiraConfig)
 
         // Get the initial updatedAt timestamp
-        var initialUpdatedAt: kotlinx.datetime.Instant? = null
+        var initialUpdatedAt: kotlin.time.Instant? = null
         datasource.getById(jiraConfig.id).test(timeout = 5.seconds) {
             val config = awaitItem()
             assertNotNull(config)

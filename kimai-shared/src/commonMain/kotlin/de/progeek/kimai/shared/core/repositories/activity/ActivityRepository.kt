@@ -5,7 +5,11 @@ import de.progeek.kimai.shared.core.models.Activity
 import de.progeek.kimai.shared.core.network.client.ActivityClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import org.mobilenativefoundation.store.store5.*
+import org.mobilenativefoundation.store.store5.ExperimentalStoreApi
+import org.mobilenativefoundation.store.store5.Fetcher
+import org.mobilenativefoundation.store.store5.SourceOfTruth
+import org.mobilenativefoundation.store.store5.StoreBuilder
+import org.mobilenativefoundation.store.store5.StoreReadRequest
 import org.mobilenativefoundation.store.store5.impl.extensions.fresh
 
 class ActivityRepository(
