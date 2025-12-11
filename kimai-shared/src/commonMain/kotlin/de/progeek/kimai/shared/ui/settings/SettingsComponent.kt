@@ -8,6 +8,7 @@ import de.progeek.kimai.shared.KimaiDispatchers
 import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.ui.settings.store.SettingsStore
 import de.progeek.kimai.shared.ui.settings.store.SettingsStoreFactory
+import de.progeek.kimai.shared.ui.theme.BrandingEnum
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import de.progeek.kimai.shared.utils.Language
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,6 +30,10 @@ class SettingsComponent(
 
     fun onThemeChange(theme: ThemeEnum) {
         store.accept(SettingsStore.Intent.ChangeTheme(theme))
+    }
+
+    fun onBrandingChange(branding: BrandingEnum) {
+        store.accept(SettingsStore.Intent.ChangeBranding(branding))
     }
 
     fun onDefaultProjectClick(defaultProject: Project) {

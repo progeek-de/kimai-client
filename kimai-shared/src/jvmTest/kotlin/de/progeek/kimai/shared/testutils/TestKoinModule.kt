@@ -124,7 +124,7 @@ object TestKoinModule {
      * Creates a relaxed mock SettingsRepository with default behavior.
      */
     fun createMockSettingsRepository(
-        theme: ThemeEnum = ThemeEnum.SYSTEM,
+        theme: ThemeEnum = ThemeEnum.LIGHT,
         defaultProjectId: Long? = null,
         baseUrl: String = TestData.TEST_BASE_URL,
         entryMode: EntryMode = EntryMode.TIMER

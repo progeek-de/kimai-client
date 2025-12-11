@@ -1,9 +1,6 @@
 package de.progeek.kimai.shared.ui.login
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -43,7 +40,7 @@ private fun LoginContent() {
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        KimaiLogo(modifier = Modifier.size(200.dp, 50.dp))
+        KimaiLogo(modifier = Modifier.size(150.dp, 150.dp).padding(16.dp))
         LoginCard()
         Footer()
     }

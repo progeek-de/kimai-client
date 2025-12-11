@@ -75,16 +75,16 @@ class SettingsRepositoryTest {
     }
 
     @Test
-    fun `saveTheme handles system theme`() = runTest {
+    fun `saveTheme handles dark theme`() = runTest {
         // Given
-        every { mockSettings.putString("THEME", "SYSTEM") } just Runs
+        every { mockSettings.putString("THEME", "DARK") } just Runs
 
         // When
-        val result = repository.saveTheme(ThemeEnum.SYSTEM)
+        val result = repository.saveTheme(ThemeEnum.DARK)
 
         // Then
-        assertEquals(ThemeEnum.SYSTEM, result)
-        verify { mockSettings.putString("THEME", "SYSTEM") }
+        assertEquals(ThemeEnum.DARK, result)
+        verify { mockSettings.putString("THEME", "DARK") }
     }
 
     // ============================================================

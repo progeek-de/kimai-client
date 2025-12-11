@@ -10,6 +10,7 @@ import de.progeek.kimai.shared.core.repositories.credentials.CredentialsReposito
 import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
 import de.progeek.kimai.shared.core.ticketsystem.sync.TicketSyncScheduler
 import de.progeek.kimai.shared.ui.root.store.RootStore.State
+import de.progeek.kimai.shared.ui.theme.BrandingEnum
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import de.progeek.kimai.shared.utils.isNull
 import de.progeek.kimai.shared.utils.notNull
@@ -44,6 +45,7 @@ class RootStoreFactory(
     private sealed class Msg {
         data class Finished(val credentials: Credentials?) : Msg()
         data class Theme(var theme: ThemeEnum) : Msg()
+        data class Branding(val branding: BrandingEnum) : Msg()
     }
 
     private inner class ExecutorImpl(
@@ -54,6 +56,7 @@ class RootStoreFactory(
         override fun executeAction(action: Unit, getState: () -> State) {
             loadCredentials()
             loadTheme()
+            loadBranding()
             loadLanguage()
             startTicketSync()
         }
@@ -70,6 +73,14 @@ class RootStoreFactory(
             scope.launch {
                 settingsRepository.getTheme().flowOn(ioContext).collectLatest {
                     dispatch(Msg.Theme(it))
+                }
+            }
+        }
+
+        private fun loadBranding() {
+            scope.launch {
+                settingsRepository.getBranding().flowOn(ioContext).collectLatest {
+                    dispatch(Msg.Branding(it))
                 }
             }
         }
@@ -98,6 +109,7 @@ class RootStoreFactory(
             when (msg) {
                 is Msg.Finished -> copy(credentials = msg.credentials, isLoading = false)
                 is Msg.Theme -> copy(theme = msg.theme)
+                is Msg.Branding -> copy(branding = msg.branding)
             }
     }
 }

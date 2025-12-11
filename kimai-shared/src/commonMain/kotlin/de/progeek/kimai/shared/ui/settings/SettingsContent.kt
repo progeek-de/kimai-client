@@ -32,6 +32,7 @@ fun SettingsContent(component: SettingsComponent) {
             UserProfileSection(component)
             DefaultProjectSection(component)
             ThemeSection(component)
+            BrandingSection(component)
             LanguageSection(component)
             TicketSystemSettingsSection()
             VersionInfo()

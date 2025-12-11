@@ -9,13 +9,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import de.progeek.kimai.shared.ui.root.RootComponent
 import de.progeek.kimai.shared.ui.root.RootContent
-import de.progeek.kimai.shared.ui.theme.KimaiTheme
+import de.progeek.kimai.shared.ui.theme.AppTheme
 
 @Composable
 fun ContentView(component: RootComponent) {
     val state by component.state.collectAsState()
 
-    KimaiTheme(state.theme) {
+    AppTheme(state.theme, state.branding) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background

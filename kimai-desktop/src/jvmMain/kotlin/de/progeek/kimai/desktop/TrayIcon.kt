@@ -30,17 +30,18 @@ fun TrayIcon(onShow: () -> Unit, shouldExit: () -> Unit) {
     val scope = rememberCoroutineScope()
 
     val density = LocalDensity.current
-    val icon = painterResource(SharedRes.images.progeek_icon).toAwtImage(
+    // Tray icons are set at startup - use default Kimai branding
+    // The branding setting affects the in-app logo, not the window/tray icons
+    val icon = painterResource(SharedRes.images.kimai_icon_orange).toAwtImage(
         density,
         LayoutDirection.Ltr,
         Size(128f, 128f)
     )
-    val idleIcon =
-        painterResource(SharedRes.images.progeek_icon_weiss).toAwtImage(
-            density,
-            LayoutDirection.Ltr,
-            Size(128f, 128f)
-        )
+    val idleIcon = painterResource(SharedRes.images.kimai_icon_white).toAwtImage(
+        density,
+        LayoutDirection.Ltr,
+        Size(128f, 128f)
+    )
 
     val tray by remember { mutableStateOf(SystemTray.get()) }
 

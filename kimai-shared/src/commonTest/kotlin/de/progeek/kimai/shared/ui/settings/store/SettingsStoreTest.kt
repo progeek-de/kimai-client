@@ -284,17 +284,17 @@ class SettingsStoreTest {
 
     @Test
     fun `theme changes are persisted`() = runTest(testDispatcher) {
-        every { settingsRepository.saveTheme(ThemeEnum.SYSTEM) } returns ThemeEnum.SYSTEM
+        every { settingsRepository.saveTheme(ThemeEnum.DARK) } returns ThemeEnum.DARK
 
         val store = storeFactory.create(
             mainContext = testDispatcher,
             ioContext = testDispatcher
         )
 
-        store.accept(SettingsStore.Intent.ChangeTheme(ThemeEnum.SYSTEM))
+        store.accept(SettingsStore.Intent.ChangeTheme(ThemeEnum.DARK))
         advanceUntilIdle()
 
-        assertEquals(ThemeEnum.SYSTEM, store.stateFlow.value.theme)
-        verify(exactly = 1) { settingsRepository.saveTheme(ThemeEnum.SYSTEM) }
+        assertEquals(ThemeEnum.DARK, store.stateFlow.value.theme)
+        verify(exactly = 1) { settingsRepository.saveTheme(ThemeEnum.DARK) }
     }
 }

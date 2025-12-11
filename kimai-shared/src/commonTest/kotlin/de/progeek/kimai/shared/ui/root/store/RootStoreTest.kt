@@ -165,9 +165,9 @@ class RootStoreTest {
     }
 
     @Test
-    fun `handles system theme enum`() = runTest(testDispatcher) {
+    fun `handles light theme enum`() = runTest(testDispatcher) {
         every { credentialsRepository.get() } returns flowOf(null)
-        every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.SYSTEM)
+        every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.LIGHT)
         every { settingsRepository.getLanguage() } returns flowOf(null)
 
         val store = storeFactory.create(
@@ -178,7 +178,7 @@ class RootStoreTest {
         advanceUntilIdle()
 
         val state = store.stateFlow.value
-        assertEquals(ThemeEnum.SYSTEM, state.theme, "Theme should be SYSTEM")
+        assertEquals(ThemeEnum.LIGHT, state.theme, "Theme should be LIGHT")
     }
 
     @Test
