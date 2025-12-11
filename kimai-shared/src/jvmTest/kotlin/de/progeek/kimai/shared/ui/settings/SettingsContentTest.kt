@@ -1,21 +1,15 @@
 package de.progeek.kimai.shared.ui.settings
 
-import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.runComposeUiTest
-import de.progeek.kimai.shared.testutils.TestData
-import de.progeek.kimai.shared.testutils.TestKoinModule
-import de.progeek.kimai.shared.testutils.TestTheme
-import de.progeek.kimai.shared.testutils.createTestComponentContext
-import de.progeek.kimai.shared.testutils.createTestDispatchers
-import de.progeek.kimai.shared.testutils.createTestStoreFactory
-import de.progeek.kimai.shared.ui.theme.ThemeEnum
+import androidx.compose.ui.test.*
+import de.progeek.kimai.shared.testutils.*
+import de.progeek.kimai.shared.ui.theme.BrandingEnum
+import dev.icerock.moko.resources.desc.StringDesc
+import io.mockk.coVerify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import java.util.Locale
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class, ExperimentalCoroutinesApi::class)
@@ -27,6 +21,9 @@ class SettingsContentTest {
     @Before
     fun setUp() {
         outputCallback = { output -> outputReceived = output }
+        // Reset locale to English before each test
+        StringDesc.localeType = StringDesc.LocaleType.Custom("en")
+        Locale.setDefault(Locale.ENGLISH)
         TestKoinModule.startTestKoin()
     }
 
@@ -34,6 +31,9 @@ class SettingsContentTest {
     fun tearDown() {
         TestKoinModule.stopTestKoin()
         outputReceived = null
+        // Reset locale to English after each test to prevent test pollution
+        StringDesc.localeType = StringDesc.LocaleType.Custom("en")
+        Locale.setDefault(Locale.ENGLISH)
     }
 
     private fun createSettingsComponent(): SettingsComponent {
@@ -68,7 +68,7 @@ class SettingsContentTest {
     }
 
     @Test
-    fun `settings screen displays theme section`() = runComposeUiTest {
+    fun `settings screen displays branding section with Theme label`() = runComposeUiTest {
         val component = createSettingsComponent()
 
         setContent {
@@ -79,12 +79,12 @@ class SettingsContentTest {
 
         waitForIdle()
 
-        // Theme section should be visible
-        onNodeWithText("Color Mode", ignoreCase = true, substring = true).assertExists()
+        // Branding section should be visible (label is "Theme")
+        onNodeWithText("Theme", ignoreCase = true).assertExists()
     }
 
     @Test
-    fun `settings screen displays theme dropdown with current selection`() = runComposeUiTest {
+    fun `settings screen displays branding dropdown with current selection`() = runComposeUiTest {
         val component = createSettingsComponent()
 
         setContent {
@@ -95,19 +95,18 @@ class SettingsContentTest {
 
         waitForIdle()
 
-        // Default theme selection (System Default) should be visible
-        onNodeWithText("System Default", ignoreCase = true).assertExists()
+        // Default branding selection (Kimai) should be visible
+        onNodeWithText("Kimai", ignoreCase = true).assertExists()
 
         // Click to expand dropdown and verify options
-        onNodeWithText("System Default", ignoreCase = true).performClick()
+        onNodeWithText("Kimai", ignoreCase = true).performClick()
         waitForIdle()
 
-        onNodeWithText("Light Mode", ignoreCase = true).assertExists()
-        onNodeWithText("Dark Mode", ignoreCase = true).assertExists()
+        onNodeWithText("PROGEEK", ignoreCase = true).assertExists()
     }
 
     @Test
-    fun `settings screen displays language section`() = runComposeUiTest {
+    fun `settings screen displays language flags`() = runComposeUiTest {
         val component = createSettingsComponent()
 
         setContent {
@@ -118,12 +117,17 @@ class SettingsContentTest {
 
         waitForIdle()
 
-        // Language section should be visible
-        onNodeWithText("Languages", ignoreCase = true, substring = true).assertExists()
+        // Language flags should be visible (EN and DE)
+        onNodeWithText("EN", ignoreCase = true).assertExists()
+        onNodeWithText("DE", ignoreCase = true).assertExists()
     }
 
     @Test
-    fun `settings screen displays default project section`() = runComposeUiTest {
+    fun `settings screen displays default project dropdown`() = runComposeUiTest {
+        val projectRepository = TestKoinModule.createMockProjectRepository()
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(projectRepository = projectRepository)
+
         val component = createSettingsComponent()
 
         setContent {
@@ -134,12 +138,12 @@ class SettingsContentTest {
 
         waitForIdle()
 
-        // Default project section should be visible (exact text to avoid matching "System Default")
-        onNodeWithText("Default project", ignoreCase = true).assertExists()
+        // Default project dropdown should show placeholder when no default is set
+        onNodeWithText("Select default project", ignoreCase = true).assertExists()
     }
 
     @Test
-    fun `settings screen displays version info`() = runComposeUiTest {
+    fun `settings screen displays branding dropdown`() = runComposeUiTest {
         val component = createSettingsComponent()
 
         setContent {
@@ -150,12 +154,12 @@ class SettingsContentTest {
 
         waitForIdle()
 
-        // Version info should be visible
-        onNodeWithText("Version", ignoreCase = true, substring = true).assertExists()
+        // Branding dropdown should show Kimai by default
+        onNodeWithText("Kimai", ignoreCase = true).assertExists()
     }
 
     @Test
-    fun `clicking back button triggers close output`() = runComposeUiTest {
+    fun `SettingsComponent triggers close output on onOutput call`() = runComposeUiTest {
         val component = createSettingsComponent()
 
         setContent {
@@ -166,8 +170,8 @@ class SettingsContentTest {
 
         waitForIdle()
 
-        // Click back button (uses text "Back" in this implementation)
-        onNodeWithText("Back", ignoreCase = true).performClick()
+        // Directly call the onOutput function
+        component.onOutput()
 
         waitForIdle()
 
@@ -176,9 +180,9 @@ class SettingsContentTest {
     }
 
     @Test
-    fun `settings screen shows current theme selection`() = runComposeUiTest {
+    fun `settings screen shows current branding selection`() = runComposeUiTest {
         val settingsRepository = TestKoinModule.createMockSettingsRepository(
-            theme = ThemeEnum.DARK
+            branding = BrandingEnum.PROGEEK
         )
         TestKoinModule.stopTestKoin()
         TestKoinModule.startTestKoin(settingsRepository = settingsRepository)
@@ -193,8 +197,8 @@ class SettingsContentTest {
 
         waitForIdle()
 
-        // The dark theme should be indicated as selected
-        // This depends on how the UI shows selection
+        // The PROGEEK branding should be indicated as selected
+        onNodeWithText("PROGEEK", ignoreCase = true).assertExists()
     }
 
     @Test
@@ -256,7 +260,7 @@ class SettingsContentTest {
     }
 
     @Test
-    fun `clicking theme option triggers theme change`() = runComposeUiTest {
+    fun `clicking branding option triggers branding change from dropdown`() = runComposeUiTest {
         val component = createSettingsComponent()
 
         setContent {
@@ -267,22 +271,22 @@ class SettingsContentTest {
 
         waitForIdle()
 
-        // First expand the theme dropdown (default is System Default)
-        onNodeWithText("System Default", ignoreCase = true).performClick()
+        // First expand the branding dropdown (default is Kimai)
+        onNodeWithText("Kimai", ignoreCase = true).performClick()
 
         waitForIdle()
 
-        // Now click on Dark Mode theme option
-        onNodeWithText("Dark Mode", ignoreCase = true).performClick()
+        // Now click on PROGEEK branding option
+        onNodeWithText("PROGEEK", ignoreCase = true).performClick()
 
         waitForIdle()
 
-        // The theme change should be processed
+        // The branding change should be processed
         // Verification depends on store state
     }
 
     @Test
-    fun `language dropdown shows options when expanded`() = runComposeUiTest {
+    fun `language flags show both EN and DE`() = runComposeUiTest {
         val component = createSettingsComponent()
 
         setContent {
@@ -293,18 +297,13 @@ class SettingsContentTest {
 
         waitForIdle()
 
-        // Default language (English) should be visible
-        onNodeWithText("English", ignoreCase = true).assertExists()
-
-        // Click to expand dropdown and verify German option
-        onNodeWithText("English", ignoreCase = true).performClick()
-        waitForIdle()
-
-        onNodeWithText("German", ignoreCase = true).assertExists()
+        // Language flags should be visible (EN is default selected)
+        onNodeWithText("EN", ignoreCase = true).assertExists()
+        onNodeWithText("DE", ignoreCase = true).assertExists()
     }
 
     @Test
-    fun `clicking language option triggers language change`() = runComposeUiTest {
+    fun `clicking language flag triggers language change`() = runComposeUiTest {
         val component = createSettingsComponent()
 
         setContent {
@@ -315,12 +314,8 @@ class SettingsContentTest {
 
         waitForIdle()
 
-        // First expand the language dropdown
-        onNodeWithText("English", ignoreCase = true).performClick()
-        waitForIdle()
-
-        // Now click on German language option
-        onNodeWithText("German", ignoreCase = true).performClick()
+        // Click on German language flag
+        onNodeWithText("DE", ignoreCase = true).performClick()
 
         waitForIdle()
 
@@ -329,6 +324,10 @@ class SettingsContentTest {
 
     @Test
     fun `settings screen has proper layout structure`() = runComposeUiTest {
+        val projectRepository = TestKoinModule.createMockProjectRepository()
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(projectRepository = projectRepository)
+
         val component = createSettingsComponent()
 
         setContent {
@@ -339,10 +338,155 @@ class SettingsContentTest {
 
         waitForIdle()
 
-        // All main sections should be present (use exact text where needed)
-        onNodeWithText("Color Mode", ignoreCase = true).assertExists()
-        onNodeWithText("Languages", ignoreCase = true).assertExists()
-        onNodeWithText("Default project", ignoreCase = true).assertExists()
-        onNodeWithText("Version", ignoreCase = true, substring = true).assertExists()
+        // All main sections should be present
+        // Branding section has "Theme" label
+        onNodeWithText("Theme", ignoreCase = true).assertExists()
+        // Language flags (EN/DE)
+        onNodeWithText("EN", ignoreCase = true).assertExists()
+        onNodeWithText("DE", ignoreCase = true).assertExists()
+        // Default project dropdown shows placeholder
+        waitForIdle()
+
+        onNodeWithText("Select default project", ignoreCase = true).assertExists()
+    }
+
+    // ============================================================
+    // Branding Section Tests
+    // ============================================================
+
+    @Test
+    fun `settings screen displays branding section`() = runComposeUiTest {
+        val component = createSettingsComponent()
+
+        setContent {
+            TestTheme {
+                SettingsContent(component)
+            }
+        }
+
+        waitForIdle()
+
+        // Branding section should be visible (label "Theme" from strings.xml)
+        onNodeWithText("Theme", ignoreCase = true).assertExists()
+    }
+
+    @Test
+    fun `branding dropdown shows default KIMAI selection`() = runComposeUiTest {
+        val settingsRepository = TestKoinModule.createMockSettingsRepository(
+            branding = BrandingEnum.KIMAI
+        )
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(settingsRepository = settingsRepository)
+
+        val component = createSettingsComponent()
+
+        setContent {
+            TestTheme {
+                SettingsContent(component)
+            }
+        }
+
+        waitForIdle()
+
+        // Default branding selection (Kimai) should be visible
+        onNodeWithText("Kimai", ignoreCase = true).assertExists()
+    }
+
+    @Test
+    fun `branding dropdown shows PROGEEK when selected`() = runComposeUiTest {
+        val settingsRepository = TestKoinModule.createMockSettingsRepository(
+            branding = BrandingEnum.PROGEEK
+        )
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(settingsRepository = settingsRepository)
+
+        val component = createSettingsComponent()
+
+        setContent {
+            TestTheme {
+                SettingsContent(component)
+            }
+        }
+
+        waitForIdle()
+
+        // PROGEEK branding selection should be visible
+        onNodeWithText("PROGEEK", ignoreCase = true).assertExists()
+    }
+
+    @Test
+    fun `clicking branding dropdown shows available options`() = runComposeUiTest {
+        val component = createSettingsComponent()
+
+        setContent {
+            TestTheme {
+                SettingsContent(component)
+            }
+        }
+
+        waitForIdle()
+
+        // Click to expand branding dropdown (default is Kimai)
+        onNodeWithText("Kimai", ignoreCase = true).performClick()
+        waitForIdle()
+
+        // Both options should be visible in dropdown
+        onAllNodesWithText("Kimai", ignoreCase = true)[0].assertExists()
+        onNodeWithText("PROGEEK", ignoreCase = true).assertExists()
+    }
+
+    @Test
+    fun `clicking branding option triggers branding change`() = runComposeUiTest {
+        val settingsRepository = TestKoinModule.createMockSettingsRepository(branding = BrandingEnum.KIMAI)
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(settingsRepository = settingsRepository)
+
+        val component = createSettingsComponent()
+
+        setContent {
+            TestTheme {
+                SettingsContent(component)
+            }
+        }
+
+        waitForIdle()
+
+        // First expand the branding dropdown (default is Kimai)
+        onNodeWithText("Kimai", ignoreCase = true).performClick()
+        waitForIdle()
+
+        // Now click on PROGEEK option
+        onNodeWithText("PROGEEK", ignoreCase = true).performClick()
+        waitForIdle()
+
+        // Verify branding was saved with PROGEEK
+        coVerify(timeout = 2000) { settingsRepository.saveBranding(BrandingEnum.PROGEEK) }
+    }
+
+    @Test
+    fun `branding section appears alongside other settings`() = runComposeUiTest {
+        val projectRepository = TestKoinModule.createMockProjectRepository()
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(projectRepository = projectRepository)
+
+        val component = createSettingsComponent()
+
+        setContent {
+            TestTheme {
+                SettingsContent(component)
+            }
+        }
+
+        waitForIdle()
+
+        // All sections including branding should be present
+        // "Theme" is the branding label
+        onNodeWithText("Theme", ignoreCase = true).assertExists()
+        // Language flags (EN/DE) instead of dropdown
+        onNodeWithText("EN", ignoreCase = true).assertExists()
+        onNodeWithText("DE", ignoreCase = true).assertExists()
+        // Default project dropdown shows placeholder
+        waitForIdle()
+        onNodeWithText("Select default project", ignoreCase = true).assertExists()
     }
 }

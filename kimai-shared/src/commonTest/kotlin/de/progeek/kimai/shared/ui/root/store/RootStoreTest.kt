@@ -6,6 +6,7 @@ import de.progeek.kimai.shared.core.models.Credentials
 import de.progeek.kimai.shared.core.repositories.credentials.CredentialsRepository
 import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
 import de.progeek.kimai.shared.core.ticketsystem.sync.TicketSyncScheduler
+import de.progeek.kimai.shared.ui.theme.BrandingEnum
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import io.mockk.every
 import io.mockk.mockk
@@ -71,8 +72,13 @@ class RootStoreTest {
             kotlinx.coroutines.delay(1)
             emit(ThemeEnum.LIGHT)
         }
+        val brandingFlow = kotlinx.coroutines.flow.flow {
+            kotlinx.coroutines.delay(1)
+            emit(BrandingEnum.KIMAI)
+        }
         every { credentialsRepository.get() } returns credentialsFlow
         every { settingsRepository.getTheme() } returns themeFlow
+        every { settingsRepository.getBranding() } returns brandingFlow
         every { settingsRepository.getLanguage() } returns flowOf(null)
 
         val store = storeFactory.create(
@@ -85,6 +91,7 @@ class RootStoreTest {
         assertNull(state.credentials, "Initial credentials should be null")
         assertTrue(state.isLoading, "Initial isLoading should be true")
         assertEquals(ThemeEnum.LIGHT, state.theme, "Initial theme should be LIGHT")
+        assertEquals(BrandingEnum.KIMAI, state.branding, "Initial branding should be KIMAI")
     }
 
     @Test
@@ -96,6 +103,7 @@ class RootStoreTest {
 
         every { credentialsRepository.get() } returns flowOf(testCredentials)
         every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.LIGHT)
+        every { settingsRepository.getBranding() } returns flowOf(BrandingEnum.KIMAI)
         every { settingsRepository.getLanguage() } returns flowOf(null)
 
         val store = storeFactory.create(
@@ -115,6 +123,7 @@ class RootStoreTest {
     fun `bootstrapper loads theme from settings repository`() = runTest(testDispatcher) {
         every { credentialsRepository.get() } returns flowOf(null)
         every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.DARK)
+        every { settingsRepository.getBranding() } returns flowOf(BrandingEnum.KIMAI)
         every { settingsRepository.getLanguage() } returns flowOf(null)
 
         val store = storeFactory.create(
@@ -132,6 +141,7 @@ class RootStoreTest {
     fun `isLoading becomes false when credentials are loaded`() = runTest(testDispatcher) {
         every { credentialsRepository.get() } returns flowOf(null)
         every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.LIGHT)
+        every { settingsRepository.getBranding() } returns flowOf(BrandingEnum.KIMAI)
         every { settingsRepository.getLanguage() } returns flowOf(null)
 
         val store = storeFactory.create(
@@ -150,6 +160,7 @@ class RootStoreTest {
     fun `handles null credentials gracefully`() = runTest(testDispatcher) {
         every { credentialsRepository.get() } returns flowOf(null)
         every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.LIGHT)
+        every { settingsRepository.getBranding() } returns flowOf(BrandingEnum.KIMAI)
         every { settingsRepository.getLanguage() } returns flowOf(null)
 
         val store = storeFactory.create(
@@ -165,9 +176,10 @@ class RootStoreTest {
     }
 
     @Test
-    fun `handles system theme enum`() = runTest(testDispatcher) {
+    fun `handles light theme enum`() = runTest(testDispatcher) {
         every { credentialsRepository.get() } returns flowOf(null)
-        every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.SYSTEM)
+        every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.LIGHT)
+        every { settingsRepository.getBranding() } returns flowOf(BrandingEnum.KIMAI)
         every { settingsRepository.getLanguage() } returns flowOf(null)
 
         val store = storeFactory.create(
@@ -178,13 +190,14 @@ class RootStoreTest {
         advanceUntilIdle()
 
         val state = store.stateFlow.value
-        assertEquals(ThemeEnum.SYSTEM, state.theme, "Theme should be SYSTEM")
+        assertEquals(ThemeEnum.LIGHT, state.theme, "Theme should be LIGHT")
     }
 
     @Test
     fun `handles dark theme`() = runTest(testDispatcher) {
         every { credentialsRepository.get() } returns flowOf(null)
         every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.DARK)
+        every { settingsRepository.getBranding() } returns flowOf(BrandingEnum.KIMAI)
         every { settingsRepository.getLanguage() } returns flowOf(null)
 
         val store = storeFactory.create(
@@ -202,6 +215,7 @@ class RootStoreTest {
         val testCredentials = Credentials("user@test.com", "password")
         every { credentialsRepository.get() } returns flowOf(testCredentials)
         every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.DARK)
+        every { settingsRepository.getBranding() } returns flowOf(BrandingEnum.KIMAI)
         every { settingsRepository.getLanguage() } returns flowOf(null)
 
         val store = storeFactory.create(
@@ -214,6 +228,84 @@ class RootStoreTest {
         val state = store.stateFlow.value
         assertEquals(testCredentials, state.credentials)
         assertEquals(ThemeEnum.DARK, state.theme)
+        assertFalse(state.isLoading)
+    }
+
+    // ============================================================
+    // Branding Tests
+    // ============================================================
+
+    @Test
+    fun `bootstrapper loads branding from settings repository`() = runTest(testDispatcher) {
+        every { credentialsRepository.get() } returns flowOf(null)
+        every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.LIGHT)
+        every { settingsRepository.getBranding() } returns flowOf(BrandingEnum.PROGEEK)
+        every { settingsRepository.getLanguage() } returns flowOf(null)
+
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        advanceUntilIdle()
+
+        val state = store.stateFlow.value
+        assertEquals(BrandingEnum.PROGEEK, state.branding, "Branding should be PROGEEK from settings")
+    }
+
+    @Test
+    fun `handles KIMAI branding`() = runTest(testDispatcher) {
+        every { credentialsRepository.get() } returns flowOf(null)
+        every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.LIGHT)
+        every { settingsRepository.getBranding() } returns flowOf(BrandingEnum.KIMAI)
+        every { settingsRepository.getLanguage() } returns flowOf(null)
+
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        advanceUntilIdle()
+
+        assertEquals(BrandingEnum.KIMAI, store.stateFlow.value.branding, "Branding should be KIMAI")
+    }
+
+    @Test
+    fun `handles PROGEEK branding`() = runTest(testDispatcher) {
+        every { credentialsRepository.get() } returns flowOf(null)
+        every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.LIGHT)
+        every { settingsRepository.getBranding() } returns flowOf(BrandingEnum.PROGEEK)
+        every { settingsRepository.getLanguage() } returns flowOf(null)
+
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        advanceUntilIdle()
+
+        assertEquals(BrandingEnum.PROGEEK, store.stateFlow.value.branding, "Branding should be PROGEEK")
+    }
+
+    @Test
+    fun `loads credentials, theme, and branding together`() = runTest(testDispatcher) {
+        val testCredentials = Credentials("user@test.com", "password")
+        every { credentialsRepository.get() } returns flowOf(testCredentials)
+        every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.DARK)
+        every { settingsRepository.getBranding() } returns flowOf(BrandingEnum.PROGEEK)
+        every { settingsRepository.getLanguage() } returns flowOf(null)
+
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        advanceUntilIdle()
+
+        val state = store.stateFlow.value
+        assertEquals(testCredentials, state.credentials)
+        assertEquals(ThemeEnum.DARK, state.theme)
+        assertEquals(BrandingEnum.PROGEEK, state.branding)
         assertFalse(state.isLoading)
     }
 }

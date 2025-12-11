@@ -11,13 +11,12 @@ import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import dev.icerock.moko.resources.compose.stringResource
 
 /**
- * Section for selecting the app theme (light/dark/system mode)
+ * Section for selecting the app theme (light/dark mode)
  */
 @Composable
 fun ThemeSection(component: SettingsComponent) {
     val state by component.state.collectAsState()
     val colorOptions = arrayOf(
-        ColorOption(stringResource(SharedRes.strings.system_mode), ThemeEnum.SYSTEM),
         ColorOption(stringResource(SharedRes.strings.light_mode), ThemeEnum.LIGHT),
         ColorOption(stringResource(SharedRes.strings.dark_mode), ThemeEnum.DARK)
     )

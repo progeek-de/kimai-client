@@ -19,6 +19,10 @@
     <string name="system_mode">System Default</string>
     <string name="color_mode">Color Mode</string>
     <string name="select_theme">Select theme</string>
+    <string name="branding">Theme</string>
+    <string name="select_branding">Select branding</string>
+    <string name="branding_kimai">Kimai</string>
+    <string name="branding_progeek">PROGEEK</string>
     <string name="add_time">Add Time</string>
     <string name="version">Version: %s</string>
     <string name="stop">STOP</string>

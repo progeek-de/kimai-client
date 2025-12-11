@@ -9,6 +9,7 @@ import de.progeek.kimai.shared.BuildKonfig
 import de.progeek.kimai.shared.core.models.EntryMode
 import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.storage.credentials.CredentialsConstants.BASE_URL_KEY
+import de.progeek.kimai.shared.ui.theme.BrandingEnum
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import de.progeek.kimai.shared.utils.Language
 import kotlinx.coroutines.flow.Flow
@@ -66,5 +67,15 @@ class SettingsRepository(
 
     fun getBaseUrl(): String {
         return settings.getString(BASE_URL_KEY, BuildKonfig.KIMAI_SERVER)
+    }
+
+    fun saveBranding(branding: BrandingEnum): BrandingEnum {
+        settings.putString("BRANDING", branding.toString())
+        return branding
+    }
+
+    @OptIn(ExperimentalSettingsApi::class)
+    fun getBranding(): Flow<BrandingEnum> {
+        return settings.getStringFlow("BRANDING", "KIMAI").map { BrandingEnum.valueOf(it) }
     }
 }

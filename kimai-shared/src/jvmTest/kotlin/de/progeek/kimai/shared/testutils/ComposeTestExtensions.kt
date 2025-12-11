@@ -19,7 +19,8 @@ import com.arkivanov.essenty.lifecycle.resume
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
 import de.progeek.kimai.shared.KimaiDispatchers
-import de.progeek.kimai.shared.ui.theme.KimaiTheme
+import de.progeek.kimai.shared.ui.theme.AppTheme
+import de.progeek.kimai.shared.ui.theme.BrandingEnum
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -30,15 +31,16 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
  */
 
 /**
- * Wraps composable content with KimaiTheme for testing.
- * Defaults to LIGHT theme for consistent test behavior.
+ * Wraps composable content with AppTheme for testing.
+ * Defaults to LIGHT theme and KIMAI branding for consistent test behavior.
  */
 @Composable
 fun TestTheme(
     theme: ThemeEnum = ThemeEnum.LIGHT,
+    branding: BrandingEnum = BrandingEnum.KIMAI,
     content: @Composable () -> Unit
 ) {
-    KimaiTheme(theme = theme, content = content)
+    AppTheme(theme = theme, branding = branding, content = content)
 }
 
 /**

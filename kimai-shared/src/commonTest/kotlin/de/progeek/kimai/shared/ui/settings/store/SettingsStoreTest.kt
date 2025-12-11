@@ -8,6 +8,7 @@ import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.repositories.credentials.CredentialsRepository
 import de.progeek.kimai.shared.core.repositories.project.ProjectRepository
 import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
+import de.progeek.kimai.shared.ui.theme.BrandingEnum
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import de.progeek.kimai.shared.utils.getLanguages
 import io.mockk.every
@@ -58,6 +59,7 @@ class SettingsStoreTest {
         // Setup default return values
         every { credentialsRepository.getCredentials() } returns null
         every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.LIGHT)
+        every { settingsRepository.getBranding() } returns flowOf(BrandingEnum.KIMAI)
         every { settingsRepository.getDefaultProject() } returns flowOf(null)
         every { settingsRepository.getLanguage() } returns flowOf(null)
         every { projectRepository.getProjects() } returns flowOf(emptyList())
@@ -93,6 +95,7 @@ class SettingsStoreTest {
         val state = store.stateFlow.value
         assertEquals("", state.email, "Initial email should be empty")
         assertEquals(ThemeEnum.LIGHT, state.theme, "Theme should be LIGHT after loading")
+        assertEquals(BrandingEnum.KIMAI, state.branding, "Branding should be KIMAI by default")
         assertNull(state.defaultProject, "Default project should be null")
         assertNotNull(state.projects, "Projects list should not be null")
         assertEquals(testLanguage, state.language, "Language should be first available language")
@@ -284,17 +287,116 @@ class SettingsStoreTest {
 
     @Test
     fun `theme changes are persisted`() = runTest(testDispatcher) {
-        every { settingsRepository.saveTheme(ThemeEnum.SYSTEM) } returns ThemeEnum.SYSTEM
+        every { settingsRepository.saveTheme(ThemeEnum.DARK) } returns ThemeEnum.DARK
 
         val store = storeFactory.create(
             mainContext = testDispatcher,
             ioContext = testDispatcher
         )
 
-        store.accept(SettingsStore.Intent.ChangeTheme(ThemeEnum.SYSTEM))
+        store.accept(SettingsStore.Intent.ChangeTheme(ThemeEnum.DARK))
         advanceUntilIdle()
 
-        assertEquals(ThemeEnum.SYSTEM, store.stateFlow.value.theme)
-        verify(exactly = 1) { settingsRepository.saveTheme(ThemeEnum.SYSTEM) }
+        assertEquals(ThemeEnum.DARK, store.stateFlow.value.theme)
+        verify(exactly = 1) { settingsRepository.saveTheme(ThemeEnum.DARK) }
+    }
+
+    // ============================================================
+    // Branding Tests
+    // ============================================================
+
+    @Test
+    fun `bootstrapper loads branding from settings`() = runTest(testDispatcher) {
+        every { settingsRepository.getBranding() } returns flowOf(BrandingEnum.PROGEEK)
+
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        advanceUntilIdle()
+
+        assertEquals(BrandingEnum.PROGEEK, store.stateFlow.value.branding, "Branding should be loaded from settings")
+    }
+
+    @Test
+    fun `ChangeBranding intent updates branding to PROGEEK`() = runTest(testDispatcher) {
+        every { settingsRepository.saveBranding(any()) } returns BrandingEnum.PROGEEK
+
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        store.accept(SettingsStore.Intent.ChangeBranding(BrandingEnum.PROGEEK))
+        advanceUntilIdle()
+
+        assertEquals(BrandingEnum.PROGEEK, store.stateFlow.value.branding, "Branding should be updated to PROGEEK")
+        verify { settingsRepository.saveBranding(BrandingEnum.PROGEEK) }
+    }
+
+    @Test
+    fun `ChangeBranding intent updates branding to KIMAI`() = runTest(testDispatcher) {
+        // Start with PROGEEK
+        every { settingsRepository.getBranding() } returns flowOf(BrandingEnum.PROGEEK)
+        every { settingsRepository.saveBranding(any()) } returns BrandingEnum.KIMAI
+
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        advanceUntilIdle()
+        assertEquals(BrandingEnum.PROGEEK, store.stateFlow.value.branding, "Initial branding should be PROGEEK")
+
+        store.accept(SettingsStore.Intent.ChangeBranding(BrandingEnum.KIMAI))
+        advanceUntilIdle()
+
+        assertEquals(BrandingEnum.KIMAI, store.stateFlow.value.branding, "Branding should be updated to KIMAI")
+        verify { settingsRepository.saveBranding(BrandingEnum.KIMAI) }
+    }
+
+    @Test
+    fun `branding changes are persisted`() = runTest(testDispatcher) {
+        every { settingsRepository.saveBranding(BrandingEnum.PROGEEK) } returns BrandingEnum.PROGEEK
+
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        store.accept(SettingsStore.Intent.ChangeBranding(BrandingEnum.PROGEEK))
+        advanceUntilIdle()
+
+        assertEquals(BrandingEnum.PROGEEK, store.stateFlow.value.branding)
+        verify(exactly = 1) { settingsRepository.saveBranding(BrandingEnum.PROGEEK) }
+    }
+
+    @Test
+    fun `loads all settings including branding on initialization`() = runTest(testDispatcher) {
+        val credentials = Credentials(email = testEmail, password = "password")
+        val germanLanguage = getLanguages().find { it.languageCode == "de" }!!
+
+        every { credentialsRepository.getCredentials() } returns credentials
+        every { settingsRepository.getTheme() } returns flowOf(ThemeEnum.DARK)
+        every { settingsRepository.getBranding() } returns flowOf(BrandingEnum.PROGEEK)
+        every { settingsRepository.getDefaultProject() } returns flowOf(testProject.id.toLong())
+        every { settingsRepository.getLanguage() } returns flowOf("de")
+        every { projectRepository.getProjects() } returns flowOf(testProjects)
+
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        advanceUntilIdle()
+
+        val state = store.stateFlow.value
+        assertEquals(testEmail, state.email)
+        assertEquals(ThemeEnum.DARK, state.theme)
+        assertEquals(BrandingEnum.PROGEEK, state.branding)
+        assertEquals(testProject, state.defaultProject)
+        assertEquals(testProjects, state.projects)
+        assertEquals(germanLanguage, state.language)
     }
 }

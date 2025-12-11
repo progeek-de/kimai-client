@@ -9,10 +9,13 @@ import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.repositories.credentials.CredentialsRepository
 import de.progeek.kimai.shared.core.repositories.project.ProjectRepository
 import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
+import de.progeek.kimai.shared.ui.theme.BrandingEnum
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import de.progeek.kimai.shared.utils.Language
 import de.progeek.kimai.shared.utils.getLanguages
 import de.progeek.kimai.shared.utils.notNull
+import de.progeek.kimai.shared.utils.setDefaultLocale
+import dev.icerock.moko.resources.desc.StringDesc
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -36,7 +39,7 @@ class SettingsStoreFactory(
                 name = "SettingsStore",
                 initialState = SettingsStore.State(
                     email = "",
-                    theme = ThemeEnum.SYSTEM,
+                    theme = ThemeEnum.LIGHT,
                     defaultProject = null,
                     projects = emptyList(),
                     language = getLanguages().first()
@@ -49,6 +52,7 @@ class SettingsStoreFactory(
     private sealed class Msg {
         data class SettingsEmail(val email: String) : Msg()
         data class Theme(val theme: ThemeEnum) : Msg()
+        data class Branding(val branding: BrandingEnum) : Msg()
         data class DefaultProject(val project: Project) : Msg()
         data class ProjectsUpdated(val projects: List<Project>) : Msg()
         data class ClearDefaultProject(val project: Project?) : Msg()
@@ -63,6 +67,7 @@ class SettingsStoreFactory(
         override fun executeAction(action: Unit, getState: () -> SettingsStore.State) {
             loadCredentialsEmail()
             loadTheme()
+            loadBranding()
             loadProjects()
             loadLanguage()
         }
@@ -71,6 +76,9 @@ class SettingsStoreFactory(
             when (intent) {
                 is SettingsStore.Intent.ChangeTheme -> {
                     changeTheme(intent.theme)
+                }
+                is SettingsStore.Intent.ChangeBranding -> {
+                    changeBranding(intent.branding)
                 }
                 is SettingsStore.Intent.UpdateDefaultProject -> {
                     updateDefaultProject(intent.defaultProject)
@@ -88,6 +96,10 @@ class SettingsStoreFactory(
                 withContext(ioContext) {
                     settingsRepository.saveLanguage(language)
                 }
+
+                // Update the locale immediately for live UI updates
+                StringDesc.localeType = StringDesc.LocaleType.Custom(language.languageCode)
+                setDefaultLocale(language.languageCode)
 
                 dispatch(Msg.LanguageUpdated(language))
             }
@@ -118,6 +130,14 @@ class SettingsStoreFactory(
             }
         }
 
+        private fun loadBranding() {
+            scope.launch {
+                settingsRepository.getBranding().flowOn(ioContext).collectLatest {
+                    dispatch(Msg.Branding(it))
+                }
+            }
+        }
+
         private fun loadProjects() {
             scope.launch {
                 settingsRepository.getDefaultProject().flowOn(ioContext).collectLatest { projectId ->
@@ -140,6 +160,16 @@ class SettingsStoreFactory(
                 }
 
                 dispatch(Msg.Theme(res))
+            }
+        }
+
+        private fun changeBranding(branding: BrandingEnum) {
+            scope.launch {
+                val res = withContext(ioContext) {
+                    settingsRepository.saveBranding(branding)
+                }
+
+                dispatch(Msg.Branding(res))
             }
         }
 
@@ -168,6 +198,7 @@ class SettingsStoreFactory(
             when (msg) {
                 is Msg.SettingsEmail -> copy(email = msg.email)
                 is Msg.Theme -> copy(theme = msg.theme)
+                is Msg.Branding -> copy(branding = msg.branding)
                 is Msg.DefaultProject -> copy(defaultProject = msg.project)
                 is Msg.ProjectsUpdated -> copy(projects = msg.projects)
                 is Msg.ClearDefaultProject -> copy(defaultProject = msg.project)

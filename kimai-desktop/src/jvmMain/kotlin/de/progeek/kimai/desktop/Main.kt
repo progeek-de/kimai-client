@@ -49,7 +49,9 @@ fun main() {
         val windowState = rememberWindowState(height = 700.dp)
         var visibleInTray by remember { mutableStateOf(true) }
         val density = LocalDensity.current
-        val icon = painterResource(SharedRes.images.kimai_logo).toAwtImage(
+        // Window icon is set at startup - uses default Kimai branding
+        // The branding setting affects the in-app logo, not the window/tray icons
+        val icon = painterResource(SharedRes.images.kimai_icon_orange).toAwtImage(
             density,
             LayoutDirection.Ltr,
             Size(128f, 128f)

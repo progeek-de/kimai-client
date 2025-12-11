@@ -1,6 +1,11 @@
-package de.progeek.kimai.shared.ui.theme
+package de.progeek.kimai.shared.ui.theme.progeek
 
 import androidx.compose.ui.graphics.Color
+
+/**
+ * Progeek Color Palette
+ * Custom theme colors for Progeek branding
+ */
 
 val md_theme_light_primary = Color(0xFFED6B1C)
 val md_theme_light_onPrimary = Color(0xFFFFFFFF)

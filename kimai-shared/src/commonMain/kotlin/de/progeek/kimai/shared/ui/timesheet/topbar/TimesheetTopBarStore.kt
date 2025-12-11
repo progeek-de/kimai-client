@@ -10,6 +10,7 @@ import de.progeek.kimai.shared.core.models.EntryMode
 import de.progeek.kimai.shared.core.repositories.auth.AuthRepository
 import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
 import de.progeek.kimai.shared.core.repositories.timesheet.TimesheetRepository
+import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import de.progeek.kimai.shared.ui.timesheet.topbar.TimesheetTopBarStore.*
 import de.progeek.kimai.shared.utils.browseUrl
 import kotlinx.coroutines.flow.collectLatest
@@ -24,6 +25,7 @@ interface TimesheetTopBarStore : Store<Intent, State, Label> {
 
     sealed class Intent {
         data class SetMode(val mode: EntryMode) : Intent()
+        data class ToggleTheme(val theme: ThemeEnum) : Intent()
         data object Logout : Intent()
         data object ShowDashboard : Intent()
         data object Reload : Intent()
@@ -32,7 +34,8 @@ interface TimesheetTopBarStore : Store<Intent, State, Label> {
     data class State(
         val baseUrl: String = BuildKonfig.KIMAI_SERVER,
         val mode: EntryMode = EntryMode.TIMER,
-        val running: Boolean = false
+        val running: Boolean = false,
+        val theme: ThemeEnum = ThemeEnum.LIGHT
     )
 
     sealed class Label {
@@ -63,6 +66,7 @@ class TimesheetTopBarStoreFactory(
         data class BaseUrl(val baseUrl: String) : Msg()
         data class LoadedEntryMode(val mode: EntryMode) : Msg()
         data class RunningTimesheet(val value: Boolean) : Msg()
+        data class ThemeChanged(val theme: ThemeEnum) : Msg()
     }
 
     private inner class ExecutorImpl(mainContext: CoroutineContext, private val ioContext: CoroutineContext) : CoroutineExecutor<Intent, Unit, State, Msg, Label>(mainContext) {
@@ -72,6 +76,7 @@ class TimesheetTopBarStoreFactory(
                 is Intent.Reload -> publish(Label.Reload)
                 is Intent.SetMode -> saveEntryMode(intent.mode)
                 is Intent.ShowDashboard -> browseUrl(getState().baseUrl)
+                is Intent.ToggleTheme -> saveTheme(intent.theme)
             }
         }
 
@@ -106,11 +111,26 @@ class TimesheetTopBarStoreFactory(
                     dispatch(Msg.LoadedEntryMode(it))
                 }
             }
+
+            scope.launch {
+                settingsRepository.getTheme().flowOn(ioContext).collectLatest {
+                    dispatch(Msg.ThemeChanged(it))
+                }
+            }
         }
 
         private fun saveEntryMode(mode: EntryMode) {
             scope.launch(ioContext) {
                 settingsRepository.saveEntryMode(mode)
+            }
+        }
+
+        private fun saveTheme(theme: ThemeEnum) {
+            scope.launch {
+                val result = withContext(ioContext) {
+                    settingsRepository.saveTheme(theme)
+                }
+                dispatch(Msg.ThemeChanged(result))
             }
         }
     }
@@ -121,6 +141,7 @@ class TimesheetTopBarStoreFactory(
                 is Msg.LoadedEntryMode -> copy(mode = message.mode)
                 is Msg.RunningTimesheet -> copy(running = message.value)
                 is Msg.BaseUrl -> copy(baseUrl = message.baseUrl)
+                is Msg.ThemeChanged -> copy(theme = message.theme)
             }
     }
 }

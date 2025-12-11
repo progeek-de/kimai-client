@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.outlined.OpenInNew
-import androidx.compose.material.icons.outlined.TableRows
-import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -18,7 +16,7 @@ import androidx.compose.ui.unit.sp
 import de.progeek.kimai.shared.SharedRes
 import de.progeek.kimai.shared.core.models.EntryMode
 import de.progeek.kimai.shared.ui.components.KimaiLogo
-import de.progeek.kimai.shared.ui.theme.ThemeLocal
+import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import de.progeek.kimai.shared.ui.timesheet.topbar.TimesheetTopBarComponent
 import de.progeek.kimai.shared.ui.timesheet.topbar.TimesheetTopBarComponent.Output
 import de.progeek.kimai.shared.ui.timesheet.topbar.TimesheetTopBarStore.Intent
@@ -32,9 +30,6 @@ val TimesheetTopBarComponentLocal = compositionLocalOf<TimesheetTopBarComponent>
 @Composable
 fun TimesheetTopBar(component: TimesheetTopBarComponent) {
     CompositionLocalProvider(TimesheetTopBarComponentLocal provides component) {
-        val state by component.state.collectAsState()
-        val theme = ThemeLocal.current
-
         Surface(
             shadowElevation = 4.dp,
             modifier = Modifier.background(Color.Transparent).padding(bottom = 16.dp)
@@ -45,7 +40,7 @@ fun TimesheetTopBar(component: TimesheetTopBarComponent) {
                 navigationIcon = {
                     KimaiLogo(
                         modifier = Modifier.padding(start = 16.dp)
-                            .height(44.dp)
+                            .height(35.dp)
                     )
                 },
                 actions = {
@@ -94,6 +89,8 @@ private fun TopAppBarDropdownMenu(expanded: Boolean, onDismissRequest: () -> Uni
             onClick = { component.onIntent(Intent.Reload) }
         )
 
+        Divider()
+
         DropdownMenuItem(
             leadingIcon = {
                 Icon(
@@ -136,7 +133,34 @@ private fun TopAppBarDropdownMenu(expanded: Boolean, onDismissRequest: () -> Uni
             }
         )
         Divider()
+        val isDarkMode = state.theme == ThemeEnum.DARK
         DropdownMenuItem(
+            leadingIcon = {
+                Icon(
+                    imageVector = if (isDarkMode) Icons.Outlined.LightMode else Icons.Outlined.DarkMode,
+                    contentDescription = if (isDarkMode) stringResource(SharedRes.strings.light_mode) else stringResource(SharedRes.strings.dark_mode)
+                )
+            },
+            text = {
+                Text(
+                    if (isDarkMode) stringResource(SharedRes.strings.light_mode) else stringResource(SharedRes.strings.dark_mode),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            },
+            onClick = {
+                val newTheme = if (isDarkMode) ThemeEnum.LIGHT else ThemeEnum.DARK
+                component.onIntent(Intent.ToggleTheme(newTheme))
+                onDismissRequest()
+            }
+        )
+        Divider()
+        DropdownMenuItem(
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Outlined.Settings,
+                    contentDescription = if (isDarkMode) stringResource(SharedRes.strings.light_mode) else stringResource(SharedRes.strings.dark_mode)
+                )
+            },
             text = {
                 Text(
                     stringResource(SharedRes.strings.settings),
@@ -150,9 +174,8 @@ private fun TopAppBarDropdownMenu(expanded: Boolean, onDismissRequest: () -> Uni
             }
         )
         DropdownMenuItem(
-            trailingIcon = {
+            leadingIcon = {
                 Icon(
-                    modifier = Modifier.padding(12.dp),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     imageVector = Icons.Outlined.OpenInNew,
                     contentDescription = stringResource(SharedRes.strings.refresh)

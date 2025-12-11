@@ -16,6 +16,7 @@ import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
 import de.progeek.kimai.shared.core.repositories.timesheet.TimesheetRepository
 import de.progeek.kimai.shared.core.ticketsystem.repository.TicketConfigRepository
 import de.progeek.kimai.shared.core.ticketsystem.repository.TicketSystemRepository
+import de.progeek.kimai.shared.ui.theme.BrandingEnum
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import io.mockk.coEvery
 import io.mockk.every
@@ -124,17 +125,20 @@ object TestKoinModule {
      * Creates a relaxed mock SettingsRepository with default behavior.
      */
     fun createMockSettingsRepository(
-        theme: ThemeEnum = ThemeEnum.SYSTEM,
+        theme: ThemeEnum = ThemeEnum.LIGHT,
+        branding: BrandingEnum = BrandingEnum.KIMAI,
         defaultProjectId: Long? = null,
         baseUrl: String = TestData.TEST_BASE_URL,
         entryMode: EntryMode = EntryMode.TIMER
     ): SettingsRepository = mockk(relaxed = true) {
         every { getTheme() } returns flowOf(theme)
+        every { getBranding() } returns flowOf(branding)
         every { getDefaultProject() } returns flowOf(defaultProjectId)
         every { getBaseUrl() } returns baseUrl
         every { getLanguage() } returns flowOf(null)
         every { getEntryMode() } returns flowOf(entryMode)
         coEvery { saveTheme(any()) } answers { firstArg() }
+        coEvery { saveBranding(any()) } answers { firstArg() }
         coEvery { saveDefaultProject(any()) } answers { firstArg() }
     }
 
