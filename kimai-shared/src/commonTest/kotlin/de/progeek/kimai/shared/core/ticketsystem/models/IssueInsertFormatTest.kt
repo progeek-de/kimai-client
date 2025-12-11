@@ -1,9 +1,9 @@
 package de.progeek.kimai.shared.core.ticketsystem.models
 
-import kotlinx.datetime.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.time.Instant
 
 /**
  * Test suite for IssueInsertFormat utility.

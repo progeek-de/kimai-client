@@ -1,7 +1,16 @@
 package de.progeek.kimai.shared.ui.settings
 
-import androidx.compose.ui.test.*
-import de.progeek.kimai.shared.testutils.*
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.runComposeUiTest
+import de.progeek.kimai.shared.testutils.TestData
+import de.progeek.kimai.shared.testutils.TestKoinModule
+import de.progeek.kimai.shared.testutils.TestTheme
+import de.progeek.kimai.shared.testutils.createTestComponentContext
+import de.progeek.kimai.shared.testutils.createTestDispatchers
+import de.progeek.kimai.shared.testutils.createTestStoreFactory
 import de.progeek.kimai.shared.ui.theme.BrandingEnum
 import dev.icerock.moko.resources.desc.StringDesc
 import io.mockk.coVerify
@@ -9,7 +18,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import java.util.Locale
+import java.util.*
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class, ExperimentalCoroutinesApi::class)

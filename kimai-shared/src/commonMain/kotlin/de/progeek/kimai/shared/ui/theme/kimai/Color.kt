@@ -16,12 +16,12 @@ import androidx.compose.ui.graphics.Color
 
 object TablerColors {
     // Main Status Colors
-    val Primary = Color(0xFF206BC4)      // Primary Blue
-    val Secondary = Color(0xFF616876)    // Secondary Gray
-    val Success = Color(0xFF2FB344)      // Success Green
-    val Danger = Color(0xFFD63939)       // Danger Red
-    val Warning = Color(0xFFF76707)      // Warning Orange
-    val Info = Color(0xFF4299E1)         // Info Cyan
+    val Primary = Color(0xFF206BC4) // Primary Blue
+    val Secondary = Color(0xFF616876) // Secondary Gray
+    val Success = Color(0xFF2FB344) // Success Green
+    val Danger = Color(0xFFD63939) // Danger Red
+    val Warning = Color(0xFFF76707) // Warning Orange
+    val Info = Color(0xFF4299E1) // Info Cyan
 
     // Extended Palette
     val Blue = Color(0xFF206BC4)
@@ -38,7 +38,7 @@ object TablerColors {
     val Cyan = Color(0xFF17A2B8)
 
     // Chart Colors
-    val ChartBackground = Color(0xFF0073B7)  // rgba(0,115,183,0.7)
+    val ChartBackground = Color(0xFF0073B7) // rgba(0,115,183,0.7)
     val ChartBorder = Color(0xFF3B8BBA)
 }
 
@@ -197,24 +197,24 @@ val kimai_theme_dark_scrim = Color(0xFF000000)
 
 object KimaiSemanticColors {
     // Tabler Status colors
-    val Success = Color(0xFF2FB344)      // Tabler Success Green
-    val Warning = Color(0xFFF76707)      // Tabler Warning Orange
-    val Error = Color(0xFFD63939)        // Tabler Danger Red
-    val Info = Color(0xFF4299E1)         // Tabler Info Cyan
+    val Success = Color(0xFF2FB344) // Tabler Success Green
+    val Warning = Color(0xFFF76707) // Tabler Warning Orange
+    val Error = Color(0xFFD63939) // Tabler Danger Red
+    val Info = Color(0xFF4299E1) // Tabler Info Cyan
 
     // Activity states
-    val Running = Color(0xFF2FB344)      // Green - active timesheet
-    val Stopped = Color(0xFF616876)      // Secondary Gray - stopped timesheet
-    val Billable = Color(0xFFF59F00)     // Tabler Yellow - billable indicator
-    val NonBillable = Color(0xFFC0C0C0)  // Silver - non-billable
+    val Running = Color(0xFF2FB344) // Green - active timesheet
+    val Stopped = Color(0xFF616876) // Secondary Gray - stopped timesheet
+    val Billable = Color(0xFFF59F00) // Tabler Yellow - billable indicator
+    val NonBillable = Color(0xFFC0C0C0) // Silver - non-billable
 
     // Entity type colors (matching Kimai defaults)
-    val Customer = Color(0xFF4299E1)     // Azure
-    val Project = Color(0xFF0CA678)      // Teal
-    val Activity = Color(0xFF74B816)     // Lime
-    val Tag = Color(0xFFAE3EC9)          // Purple
-    val Team = Color(0xFF4263EB)         // Indigo
-    val User = Color(0xFF616876)         // Secondary Gray
+    val Customer = Color(0xFF4299E1) // Azure
+    val Project = Color(0xFF0CA678) // Teal
+    val Activity = Color(0xFF74B816) // Lime
+    val Tag = Color(0xFFAE3EC9) // Purple
+    val Team = Color(0xFF4263EB) // Indigo
+    val User = Color(0xFF616876) // Secondary Gray
 }
 
 // Seed color for Material You dynamic theming (Tabler Primary Blue)

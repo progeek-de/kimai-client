@@ -2,12 +2,30 @@ package de.progeek.kimai.shared.core.repositories.auth
 
 import com.russhwolf.settings.ObservableSettings
 import de.progeek.kimai.shared.core.models.Credentials
-import de.progeek.kimai.shared.core.network.client.*
+import de.progeek.kimai.shared.core.network.client.ActivityClient
+import de.progeek.kimai.shared.core.network.client.AuthClient
+import de.progeek.kimai.shared.core.network.client.CustomerClient
+import de.progeek.kimai.shared.core.network.client.ProjectClient
+import de.progeek.kimai.shared.core.network.client.TimesheetsClient
 import de.progeek.kimai.shared.core.repositories.credentials.CredentialsRepository
 import de.progeek.kimai.shared.core.storage.credentials.CredentialsConstants.BASE_URL_KEY
-import io.mockk.*
+import io.mockk.Runs
+import io.mockk.clearAllMocks
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.confirmVerified
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * Test suite for AuthRepository.

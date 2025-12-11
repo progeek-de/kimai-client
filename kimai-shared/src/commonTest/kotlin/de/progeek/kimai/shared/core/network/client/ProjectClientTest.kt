@@ -5,9 +5,17 @@ import de.progeek.kimai.openapi.apis.ProjectApi
 import de.progeek.kimai.openapi.infrastructure.HttpResponse
 import de.progeek.kimai.openapi.models.ProjectCollection
 import de.progeek.kimai.shared.core.storage.credentials.AesGCMCipher
-import io.mockk.*
+import io.mockk.clearAllMocks
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /**
  * Tests for ProjectClient.

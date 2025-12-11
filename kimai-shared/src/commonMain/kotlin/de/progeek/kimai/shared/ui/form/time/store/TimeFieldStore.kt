@@ -10,9 +10,9 @@ import de.progeek.kimai.shared.ui.timesheet.models.TimesheetFormParams
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Clock
 import org.koin.core.component.KoinComponent
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Clock
 
 interface TimeFieldStore : Store<Intent, State, Label> {
     data class State(

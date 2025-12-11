@@ -30,6 +30,7 @@ class CredentialsStorageImplTest {
     fun setup() {
         mockSettings = mockk(relaxed = true)
         mockCipher = mockk(relaxed = true)
+        @OptIn(com.russhwolf.settings.ExperimentalSettingsApi::class)
         repository = CredentialsStorageImpl(mockSettings, mockCipher)
     }
 

@@ -7,10 +7,19 @@ import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.network.client.ProjectClient
 import de.progeek.kimai.shared.utils.clearDatabase
 import de.progeek.kimai.shared.utils.createTestDatasources
-import io.mockk.*
+import io.mockk.clearAllMocks
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
-import kotlin.test.*
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
 /**

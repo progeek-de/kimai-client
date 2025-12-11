@@ -11,7 +11,7 @@ import kotlinx.coroutines.withContext
 class CustomerDatasource(val database: KimaiDatabase) {
     private val query get() = database.customerEntityQueries
 
-    private inline fun toCustomer(id: Long, name: String): Customer =
+    private fun toCustomer(id: Long, name: String): Customer =
         Customer(id, name)
 
     fun getAll(): Flow<List<Customer>> =

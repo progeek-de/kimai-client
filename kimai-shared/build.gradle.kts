@@ -14,17 +14,18 @@ plugins {
 }
 
 dependencies {
-    ktlintRuleset(libs.twitter.compose.rules)
+    ktlintRuleset(libs.compose.rules.ktlint)
 }
 
 kotlin {
     compilerOptions {
         optIn.add("kotlin.time.ExperimentalTime")
+        freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
     jvm {
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
         }
         testRuns["test"].executionTask.configure {
             useJUnit()
@@ -128,8 +129,6 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                dependsOn(commonMain)
-
                 implementation(libs.cryptography.jdk)
                 implementation(libs.sqldelight.sqlite.driver)
             }
@@ -161,9 +160,9 @@ kotlin {
 buildkonfig {
     packageName = "de.progeek.kimai.shared"
 
-    val projectVersion = when (project.hasProperty("projVersion")) {
-        true -> project.properties["projVersion"]?.toString()
-        false -> libs.versions.project.orNull
+    val projectVersion: String = when (project.hasProperty("projVersion")) {
+        true -> project.properties["projVersion"].toString()
+        false -> libs.versions.project.orElse("1.0.0").get()
     }
 
     val server = when (project.hasProperty("projServer")) {
@@ -205,11 +204,11 @@ sqldelight {
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
     debug.set(true)
     verbose.set(true)
-    ignoreFailures.set(true)
+    ignoreFailures.set(false)
     outputToConsole.set(true)
     filter {
-        exclude { entry ->
-            entry.file.toString().contains("build/generated")
+        exclude { element ->
+            element.file.path.contains("build")
         }
     }
     reporters {

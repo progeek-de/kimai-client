@@ -13,7 +13,7 @@ class ActivityDatasource(val database: KimaiDatabase) {
 
     private val query get() = database.activityEntityQueries
 
-    private inline fun toActivity(id: Long, name: String, project: Long?): Activity =
+    private fun toActivity(id: Long, name: String, project: Long?): Activity =
         Activity(id, name, project)
 
     fun getAll(): Flow<List<Activity>> =

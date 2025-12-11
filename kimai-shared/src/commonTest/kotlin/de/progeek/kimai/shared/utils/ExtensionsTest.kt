@@ -219,8 +219,8 @@ class ExtensionsTest {
         val result = original.removeSeconds()
 
         assertEquals(2025, result.year, "Year should be preserved")
-        assertEquals(1, result.monthNumber, "Month should be preserved")
-        assertEquals(15, result.dayOfMonth, "Day should be preserved")
+        assertEquals(kotlinx.datetime.Month.JANUARY, result.month, "Month should be preserved")
+        assertEquals(15, result.day, "Day should be preserved")
         assertEquals(14, result.hour, "Hour should be preserved")
         assertEquals(30, result.minute, "Minute should be preserved")
         assertEquals(0, result.second, "Seconds should be zero")

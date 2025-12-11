@@ -2,7 +2,6 @@ package de.progeek.kimai.shared.ui.ticketsystem.picker
 
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.main.store.DefaultStoreFactory
-import de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketCredentials
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketIssue
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketProvider
@@ -18,7 +17,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.Instant
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
@@ -29,6 +27,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Instant
 
 /**
  * Test suite for TicketPickerStore.
@@ -122,10 +121,12 @@ class TicketPickerStoreTest {
         every { mockConfigRepository.getAllConfigs() } returns flowOf(listOf(testConfig1, testConfig2))
 
         startKoin {
-            modules(module {
-                single { mockTicketRepository }
-                single { mockConfigRepository }
-            })
+            modules(
+                module {
+                    single { mockTicketRepository }
+                    single { mockConfigRepository }
+                }
+            )
         }
     }
 

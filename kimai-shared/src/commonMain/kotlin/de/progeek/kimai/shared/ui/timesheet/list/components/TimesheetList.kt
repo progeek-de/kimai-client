@@ -81,7 +81,7 @@ fun TimesheetList(component: TimesheetListComponent) {
                                 },
                                 snackbarHostState = snackbarHostState
                             )
-                            Divider(modifier = Modifier.fillMaxWidth())
+                            HorizontalDivider(modifier = Modifier.fillMaxWidth())
                         }
                     }
                 }
@@ -96,7 +96,7 @@ fun TimesheetList(component: TimesheetListComponent) {
                         }
                     }
                 }
-            } 
+            }
         }
     }
 }

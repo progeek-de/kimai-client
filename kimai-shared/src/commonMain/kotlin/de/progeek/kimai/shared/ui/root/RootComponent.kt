@@ -6,7 +6,6 @@ import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.Value
-import kotlinx.serialization.Serializable
 import com.arkivanov.mvikotlin.core.binder.BinderLifecycleMode
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.core.store.StoreFactory
@@ -22,6 +21,7 @@ import de.progeek.kimai.shared.utils.isNull
 import de.progeek.kimai.shared.utils.notNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.serialization.Serializable
 
 class RootComponent(
     componentContext: ComponentContext,

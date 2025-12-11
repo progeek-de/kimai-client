@@ -34,9 +34,9 @@ val KimaiShapes = Shapes(
  */
 object KimaiComponentShapes {
     // Avatar shapes
-    val AvatarSmall = RoundedCornerShape(50)  // Circular
+    val AvatarSmall = RoundedCornerShape(50) // Circular
     val AvatarMedium = RoundedCornerShape(50) // Circular
-    val AvatarLarge = RoundedCornerShape(50)  // Circular
+    val AvatarLarge = RoundedCornerShape(50) // Circular
 
     // Card shapes
     val Card = RoundedCornerShape(8.dp)

@@ -16,11 +16,11 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.*
-import kotlin.time.Clock
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import kotlin.test.*
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 
 /**

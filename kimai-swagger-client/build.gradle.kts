@@ -19,7 +19,7 @@ kotlin {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 // Suppress warnings in auto-generated OpenAPI client code

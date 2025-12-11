@@ -97,8 +97,11 @@ fun TicketSystemConfigDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                if (existingConfig != null) "Edit ${provider.displayName}"
-                else "Add ${provider.displayName}"
+                if (existingConfig != null) {
+                    "Edit ${provider.displayName}"
+                } else {
+                    "Add ${provider.displayName}"
+                }
             )
         },
         text = {
@@ -238,8 +241,11 @@ fun TicketSystemConfigDialog(
                         Text(
                             result,
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (isSuccess) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.error,
+                            color = if (isSuccess) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.error
+                            },
                             modifier = Modifier.weight(1f).padding(start = 8.dp)
                         )
                     }

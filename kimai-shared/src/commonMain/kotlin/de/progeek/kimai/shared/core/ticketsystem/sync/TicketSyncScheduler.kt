@@ -5,8 +5,14 @@ import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
 import de.progeek.kimai.shared.core.ticketsystem.repository.TicketConfigRepository
 import de.progeek.kimai.shared.core.ticketsystem.repository.TicketSystemRepository
 import io.github.aakira.napier.Napier
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.minutes
 
 /**

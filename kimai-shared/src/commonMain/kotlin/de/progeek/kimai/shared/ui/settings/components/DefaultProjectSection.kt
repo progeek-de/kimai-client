@@ -189,7 +189,7 @@ private fun ProjectMenuItem(
 
 @Composable
 private fun DeleteProjectMenuItem(onClick: () -> Unit) {
-    Divider(
+    HorizontalDivider(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),

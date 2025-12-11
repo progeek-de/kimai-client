@@ -39,8 +39,6 @@ kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref 
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-android-application = { id = "com.android.application", version.ref = "agp" }
-android-library = { id = "com.android.library", version.ref = "agp" }
 jetbrains-compose = { id = "org.jetbrains.compose", version.ref = "compose-jetbrains" }
 multiplatform-resources = { id = "dev.icerock.mobile.multiplatform-resources", version.ref = "moko-resources" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight"}
@@ -108,7 +106,7 @@ arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 
 dorkbox-systemTray = { module = "com.dorkbox:SystemTray", version.ref = "systemTray" }
 dorkbox-os = { module = "com.dorkbox:OS", version.ref = "dorkboxOs" }
-twitter-compose-rules = { module = "com.twitter.compose.rules:ktlint", version = "0.0.26" }
+compose-rules-ktlint = { module = "io.nlopez.compose.rules:ktlint", version = "0.5.1" }
 
 # napier
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
