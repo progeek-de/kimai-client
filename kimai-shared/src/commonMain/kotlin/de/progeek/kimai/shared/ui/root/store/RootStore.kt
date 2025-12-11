@@ -11,6 +11,7 @@ interface RootStore : Store<Nothing, State, Nothing> {
         val credentials: Credentials?,
         val isLoading: Boolean,
         val theme: ThemeEnum,
-        val branding: BrandingEnum = BrandingEnum.KIMAI
+        val branding: BrandingEnum = BrandingEnum.KIMAI,
+        val languageCode: String = "en"
     )
 }

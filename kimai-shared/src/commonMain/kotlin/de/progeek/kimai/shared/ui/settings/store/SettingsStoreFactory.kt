@@ -14,6 +14,8 @@ import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import de.progeek.kimai.shared.utils.Language
 import de.progeek.kimai.shared.utils.getLanguages
 import de.progeek.kimai.shared.utils.notNull
+import de.progeek.kimai.shared.utils.setDefaultLocale
+import dev.icerock.moko.resources.desc.StringDesc
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
@@ -94,6 +96,10 @@ class SettingsStoreFactory(
                 withContext(ioContext) {
                     settingsRepository.saveLanguage(language)
                 }
+
+                // Update the locale immediately for live UI updates
+                StringDesc.localeType = StringDesc.LocaleType.Custom(language.languageCode)
+                setDefaultLocale(language.languageCode)
 
                 dispatch(Msg.LanguageUpdated(language))
             }

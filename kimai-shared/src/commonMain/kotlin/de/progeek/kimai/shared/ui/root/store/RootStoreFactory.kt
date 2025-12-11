@@ -46,6 +46,7 @@ class RootStoreFactory(
         data class Finished(val credentials: Credentials?) : Msg()
         data class Theme(var theme: ThemeEnum) : Msg()
         data class Branding(val branding: BrandingEnum) : Msg()
+        data class LanguageChanged(val languageCode: String) : Msg()
     }
 
     private inner class ExecutorImpl(
@@ -87,12 +88,14 @@ class RootStoreFactory(
 
         private fun loadLanguage() {
             scope.launch {
-                settingsRepository.getLanguage().flowOn(ioContext).collect {
-                    it.notNull {
+                settingsRepository.getLanguage().flowOn(ioContext).collect { languageCode ->
+                    languageCode.notNull {
                         StringDesc.localeType = StringDesc.LocaleType.Custom(it)
                         setDefaultLocale(it)
+                        dispatch(Msg.LanguageChanged(it))
                     }.isNull {
                         StringDesc.localeType = StringDesc.LocaleType.System
+                        dispatch(Msg.LanguageChanged("en"))
                     }
                 }
             }
@@ -110,6 +113,7 @@ class RootStoreFactory(
                 is Msg.Finished -> copy(credentials = msg.credentials, isLoading = false)
                 is Msg.Theme -> copy(theme = msg.theme)
                 is Msg.Branding -> copy(branding = msg.branding)
+                is Msg.LanguageChanged -> copy(languageCode = msg.languageCode)
             }
     }
 }
