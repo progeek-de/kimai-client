@@ -32,3 +32,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
         suppressWarnings.set(true)
     }
 }
+
+// Configure test task to not fail when no tests are discovered (auto-generated module)
+tasks.withType<Test>().configureEach {
+    failOnNoDiscoveredTests = false
+}
