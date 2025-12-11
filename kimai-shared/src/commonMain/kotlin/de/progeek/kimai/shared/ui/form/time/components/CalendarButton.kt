@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.ui.form.time.components
 
 import androidx.compose.foundation.layout.Column

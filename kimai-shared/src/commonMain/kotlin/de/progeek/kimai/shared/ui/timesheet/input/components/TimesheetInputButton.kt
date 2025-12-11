@@ -19,9 +19,10 @@ import de.progeek.kimai.shared.utils.isNull
 import de.progeek.kimai.shared.utils.notNull
 import dev.icerock.moko.resources.compose.stringResource
 import kotlinx.coroutines.delay
-import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 @Composable
 internal fun TimesheetInputButton(modifier: Modifier = Modifier) {
@@ -57,6 +58,7 @@ private fun StartButton(modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalTime::class)
 @Composable
 private fun StopButton(modifier: Modifier = Modifier) {
     val component = TimesheetInputComponentLocal.current
@@ -73,7 +75,7 @@ private fun StopButton(modifier: Modifier = Modifier) {
                 timesheet.begin.toInstant(TimeZone.currentSystemDefault())
             )
 
-            text = duration.toComponents { hours, minutes, seconds, _ ->
+            text = duration.toComponents { hours: Long, minutes, seconds, _ ->
                 "${hours.toString().padStart(2, '0')}:${
                 minutes.toString().padStart(2, '0')
                 }:${seconds.toString().padStart(2, '0')}"

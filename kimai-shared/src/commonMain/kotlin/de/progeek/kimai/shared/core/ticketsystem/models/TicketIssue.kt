@@ -1,6 +1,8 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.core.ticketsystem.models
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 /**
  * Unified issue model representing a ticket from any supported provider.

@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.core.network.client
 
 import com.russhwolf.settings.ObservableSettings
@@ -8,8 +10,8 @@ import de.progeek.kimai.shared.core.network.NetworkConstants.datetimeFormat
 import de.progeek.kimai.shared.core.storage.credentials.AesGCMCipher
 import de.progeek.kimai.shared.utils.format
 import io.ktor.http.*
-import kotlinx.datetime.Instant
 import kotlin.time.DurationUnit
+import kotlin.time.Instant
 import kotlin.time.toDuration
 
 class TimesheetsClient(

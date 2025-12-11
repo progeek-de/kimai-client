@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.core.repositories.timesheet
 
 import arrow.core.flatMap
@@ -11,7 +13,7 @@ import de.progeek.kimai.shared.utils.fromISOTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 class TimesheetRepository(
     private val timesheetsClient: TimesheetsClient,

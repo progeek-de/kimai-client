@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.core.ticketsystem.datasource
 
 import app.cash.sqldelight.coroutines.asFlow
@@ -9,7 +11,7 @@ import de.progeek.kimai.shared.kimaiDispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 /**
  * Datasource for unified ticket issue database operations.

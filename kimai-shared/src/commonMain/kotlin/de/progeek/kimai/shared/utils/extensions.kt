@@ -1,11 +1,13 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.utils
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Instant
 
 inline fun Boolean.ok(action: () -> Unit): Boolean {
     if (this) action()

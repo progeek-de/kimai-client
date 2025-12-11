@@ -1,7 +1,7 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.utils
 
-import kotlinx.datetime.Instant
-import kotlinx.datetime.Instant.Companion.fromEpochMilliseconds
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -9,6 +9,8 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.time.Instant
+import kotlin.time.Instant.Companion.fromEpochMilliseconds
 
 actual fun String.fromISOTime(): Instant {
     TimeZone.currentSystemDefault()

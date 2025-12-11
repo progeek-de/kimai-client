@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, kotlin.time.ExperimentalTime::class)
 
 package de.progeek.kimai.shared.ui.ticketsystem.settings
 
@@ -22,9 +22,9 @@ import de.progeek.kimai.shared.core.ticketsystem.models.TicketProvider
 import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
 import de.progeek.kimai.shared.core.ticketsystem.repository.TicketSystemRepository
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import org.koin.compose.koinInject
 import kotlin.random.Random
+import kotlin.time.Clock
 
 /**
  * Dialog for configuring a ticket system instance.

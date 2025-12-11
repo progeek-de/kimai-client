@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.core.ticketsystem.repository
 
 import de.progeek.kimai.shared.core.ticketsystem.api.TicketSystemRegistry

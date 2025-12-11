@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.ui.timesheet.list
 
 import com.arkivanov.mvikotlin.core.store.Store
@@ -6,8 +8,8 @@ import de.progeek.kimai.shared.core.models.TimesheetForm
 import de.progeek.kimai.shared.ui.timesheet.list.TimesheetListStore.Intent
 import de.progeek.kimai.shared.ui.timesheet.list.TimesheetListStore.Label
 import de.progeek.kimai.shared.ui.timesheet.list.TimesheetListStore.State
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 interface TimesheetListStore : Store<Intent, State, Label> {
 

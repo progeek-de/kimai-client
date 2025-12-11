@@ -1,8 +1,11 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.core.ticketsystem.models
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 /**
  * Configuration for a single ticket system instance.
@@ -57,11 +60,13 @@ data class TicketSystemConfig(
     /**
      * Timestamp when this configuration was created.
      */
+    @Contextual
     val createdAt: Instant = Clock.System.now(),
 
     /**
      * Timestamp when this configuration was last updated.
      */
+    @Contextual
     val updatedAt: Instant = Clock.System.now(),
 
     /**

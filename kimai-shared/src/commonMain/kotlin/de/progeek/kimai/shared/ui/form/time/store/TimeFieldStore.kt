@@ -1,3 +1,5 @@
+@file:OptIn(kotlin.time.ExperimentalTime::class)
+
 package de.progeek.kimai.shared.ui.form.time.store
 
 import com.arkivanov.mvikotlin.core.store.Store
@@ -5,10 +7,10 @@ import com.arkivanov.mvikotlin.core.store.StoreFactory
 import de.progeek.kimai.shared.ui.form.time.TimeFieldMode
 import de.progeek.kimai.shared.ui.form.time.store.TimeFieldStore.*
 import de.progeek.kimai.shared.ui.timesheet.models.TimesheetFormParams
-import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
 import org.koin.core.component.KoinComponent
 import kotlin.coroutines.CoroutineContext
 
