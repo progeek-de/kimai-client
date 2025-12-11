@@ -30,11 +30,14 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 /**
  * Test Koin module configuration for UI tests.
  * Provides mock implementations of all repositories and dependencies.
  */
+@OptIn(ExperimentalTime::class)
 object TestKoinModule {
 
     /**
@@ -59,7 +62,7 @@ object TestKoinModule {
     ): TimesheetRepository = mockk(relaxed = true) {
         every { timesheetsStream() } returns MutableStateFlow(timesheets)
         every { getRunningTimesheetStream() } returns MutableStateFlow(runningTimesheet)
-        coEvery { loadNewTimesheets(any(), any()) } returns Result.success(null)
+        coEvery { loadNewTimesheets(any(), any()) } returns Result.success(null as Instant?)
         coEvery { updateTimesheet(any()) } answers {
             val form = firstArg<TimesheetForm>()
             Result.success(TestData.createTimesheet(id = form.id ?: 1L))

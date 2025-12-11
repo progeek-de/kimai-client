@@ -9,7 +9,7 @@ import de.progeek.kimai.shared.utils.TestDatasources
 import de.progeek.kimai.shared.utils.clearDatabase
 import de.progeek.kimai.shared.utils.createTestDatasources
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
