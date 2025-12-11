@@ -95,6 +95,7 @@ class TicketConfigDatasource(
         withContext(kimaiDispatchers.io) {
             runCatching {
                 query.delete(id)
+                Unit
             }
         }
 
@@ -109,6 +110,7 @@ class TicketConfigDatasource(
                     updatedAt = Clock.System.now().toEpochMilliseconds(),
                     id = id
                 )
+                Unit
             }
         }
 
@@ -123,6 +125,7 @@ class TicketConfigDatasource(
                     updatedAt = Clock.System.now().toEpochMilliseconds(),
                     id = id
                 )
+                Unit
             }
         }
 
