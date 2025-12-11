@@ -6,8 +6,7 @@ import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.Value
-import com.arkivanov.essenty.parcelable.Parcelable
-import com.arkivanov.essenty.parcelable.Parcelize
+import kotlinx.serialization.Serializable
 import com.arkivanov.mvikotlin.core.binder.BinderLifecycleMode
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.core.store.StoreFactory
@@ -53,6 +52,7 @@ class RootComponent(
     private val stack =
         childStack(
             source = navigation,
+            serializer = Configuration.serializer(),
             initialConfiguration = Configuration.Loading,
             childFactory = ::createChild
         )
@@ -69,14 +69,15 @@ class RootComponent(
     private fun onLoginOutput(output: LoginComponent.Output): Unit =
         println("Login $output")
 
-    private sealed class Configuration : Parcelable {
-        @Parcelize
+    @Serializable
+    private sealed class Configuration {
+        @Serializable
         data object Login : Configuration()
 
-        @Parcelize
+        @Serializable
         data object Home : Configuration()
 
-        @Parcelize
+        @Serializable
         data object Loading : Configuration()
     }
 

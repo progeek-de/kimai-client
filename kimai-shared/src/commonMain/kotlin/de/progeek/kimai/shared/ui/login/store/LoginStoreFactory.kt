@@ -54,14 +54,14 @@ internal class LoginStoreFactory(
         private val ioContext: CoroutineContext
     ) : CoroutineExecutor<Intent, Unit, State, Msg, Nothing>(mainContext) {
 
-        override fun executeAction(action: Unit, getState: () -> State) {
+        override fun executeAction(action: Unit) {
             val baseUrl = settingsRepository.getBaseUrl()
             dispatch(Msg.BaseUrl(baseUrl))
         }
 
-        override fun executeIntent(intent: Intent, getState: () -> State): Unit =
+        override fun executeIntent(intent: Intent): Unit =
             when (intent) {
-                is Intent.Login -> login(intent.email, intent.password, getState().baseUrl)
+                is Intent.Login -> login(intent.email, intent.password, state().baseUrl)
                 is Intent.BaseUrl -> dispatch(Msg.BaseUrl(intent.baseUrl))
             }
 

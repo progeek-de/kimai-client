@@ -129,7 +129,7 @@ open class DefaultApi(
         ).wrap<GetAppApiStatusPluginResponse>().map { value }
     }
 
-    @Serializable
+    @Serializable(GetAppApiStatusPluginResponse.Companion::class)
     private class GetAppApiStatusPluginResponse(val value: List<Plugin>) {
         @Serializer(GetAppApiStatusPluginResponse::class)
         companion object : KSerializer<GetAppApiStatusPluginResponse> {

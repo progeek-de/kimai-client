@@ -1,24 +1,18 @@
 import com.codingfeline.buildkonfig.compiler.FieldSpec
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.jetbrains.compose)
+    alias(libs.plugins.compose.compiler)
     id("com.codingfeline.buildkonfig")
 }
 
 kotlin {
-    jvm {
-        jvmToolchain(17)
-        withJava()
+    jvmToolchain(17)
 
-        // Compile with Java 17 for ProGuard compatibility
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "17"
-            }
-        }
+    jvm {
+        withJava()
     }
 
     sourceSets {
@@ -27,7 +21,7 @@ kotlin {
                 implementation(project(":kimai-shared"))
 
                 implementation(compose.desktop.currentOs)
-                implementation(libs.decompose.extensionsComposeJetbrains)
+                implementation(libs.decompose.extensionsCompose)
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.dorkbox.systemTray)
                 implementation(libs.dorkbox.os)
@@ -55,9 +49,9 @@ tasks {
 
     // Optimize compilation
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = "17"
-            freeCompilerArgs += listOf(
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            freeCompilerArgs.addAll(
                 "-opt-in=kotlin.RequiresOptIn",
                 "-Xjsr305=strict",
                 "-Xjvm-default=all",

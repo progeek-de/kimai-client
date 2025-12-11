@@ -58,19 +58,19 @@ class TimesheetListStoreFactory(
         mainContext: CoroutineContext,
         private val ioContext: CoroutineContext
     ) : CoroutineExecutor<Intent, Unit, State, Msg, Label>(mainContext) {
-        override fun executeIntent(intent: Intent, getState: () -> State) {
+        override fun executeIntent(intent: Intent) {
             when (intent) {
                 is Intent.LoadNextItems -> {
-                    loadTimesheets(getState().page)
+                    loadTimesheets(state().page)
                 }
                 is Intent.Refresh -> refresh()
                 is Intent.Restart -> restartTimesheet(intent.id)
             }
         }
 
-        override fun executeAction(action: Unit, getState: () -> State) {
+        override fun executeAction(action: Unit) {
             loadTimesheetsStream()
-            loadTimesheets(getState().page)
+            loadTimesheets(state().page)
         }
 
         private fun loadTimesheetsStream() {

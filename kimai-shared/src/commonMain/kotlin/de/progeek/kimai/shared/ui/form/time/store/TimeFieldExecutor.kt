@@ -7,7 +7,7 @@ import kotlin.coroutines.CoroutineContext
 
 class TimeFieldExecutor(mainContext: CoroutineContext, ioContext: CoroutineContext) :
     CoroutineExecutor<Intent, Unit, State, Message, Label>(mainContext) {
-    override fun executeIntent(intent: Intent, getState: () -> State) {
+    override fun executeIntent(intent: Intent) {
         when (intent) {
             is Intent.BeginChanged -> beginChanged(intent.begin)
             is Intent.EndChanged -> endChanged(intent.end)

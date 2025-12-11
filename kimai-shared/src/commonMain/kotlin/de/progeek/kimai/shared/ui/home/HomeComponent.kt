@@ -3,8 +3,7 @@ package de.progeek.kimai.shared.ui.home
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.*
 import com.arkivanov.decompose.value.Value
-import com.arkivanov.essenty.parcelable.Parcelable
-import com.arkivanov.essenty.parcelable.Parcelize
+import kotlinx.serialization.Serializable
 import com.arkivanov.mvikotlin.core.instancekeeper.getStore
 import com.arkivanov.mvikotlin.core.store.StoreFactory
 import com.arkivanov.mvikotlin.extensions.coroutines.stateFlow
@@ -37,6 +36,7 @@ class HomeComponent(
     private val stack =
         childStack(
             source = navigation,
+            serializer = Configuration.serializer(),
             initialConfiguration = Configuration.Timesheet,
             childFactory = ::createChild
         )
@@ -84,14 +84,15 @@ class HomeComponent(
         is SettingsComponent.Output.Close -> navigation.pop()
     }
 
-    private sealed class Configuration : Parcelable {
-        @Parcelize
+    @Serializable
+    private sealed class Configuration {
+        @Serializable
         data class Form(val data: TimesheetFormParams) : Configuration()
 
-        @Parcelize
+        @Serializable
         data object Timesheet : Configuration()
 
-        @Parcelize
+        @Serializable
         data object Settings : Configuration()
     }
 

@@ -64,7 +64,7 @@ class SettingsStoreFactory(
         private val ioContext: CoroutineContext
     ) : CoroutineExecutor<SettingsStore.Intent, Unit, SettingsStore.State, Msg, Nothing>(mainContext) {
 
-        override fun executeAction(action: Unit, getState: () -> SettingsStore.State) {
+        override fun executeAction(action: Unit) {
             loadCredentialsEmail()
             loadTheme()
             loadBranding()
@@ -72,7 +72,7 @@ class SettingsStoreFactory(
             loadLanguage()
         }
 
-        override fun executeIntent(intent: SettingsStore.Intent, getState: () -> SettingsStore.State): Unit =
+        override fun executeIntent(intent: SettingsStore.Intent): Unit =
             when (intent) {
                 is SettingsStore.Intent.ChangeTheme -> {
                     changeTheme(intent.theme)

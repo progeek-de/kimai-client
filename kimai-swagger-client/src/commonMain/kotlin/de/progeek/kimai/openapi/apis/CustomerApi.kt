@@ -135,7 +135,7 @@ open class CustomerApi(
         ).wrap<GetGetCustomerRatesResponse>().map { value }
     }
 
-    @Serializable
+    @Serializable(GetGetCustomerRatesResponse.Companion::class)
     private class GetGetCustomerRatesResponse(val value: List<CustomerRate>) {
         @Serializer(GetGetCustomerRatesResponse::class)
         companion object : KSerializer<GetGetCustomerRatesResponse> {
@@ -185,7 +185,7 @@ open class CustomerApi(
         ).wrap<GetGetCustomersResponse>().map { value }
     }
 
-    @Serializable
+    @Serializable(GetGetCustomersResponse.Companion::class)
     private class GetGetCustomersResponse(val value: List<CustomerCollection>) {
         @Serializer(GetGetCustomersResponse::class)
         companion object : KSerializer<GetGetCustomersResponse> {

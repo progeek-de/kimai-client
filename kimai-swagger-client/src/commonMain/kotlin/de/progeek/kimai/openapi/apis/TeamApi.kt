@@ -266,7 +266,7 @@ open class TeamApi(
         ).wrap<GetGetTeamsResponse>().map { value }
     }
 
-    @Serializable
+    @Serializable(GetGetTeamsResponse.Companion::class)
     private class GetGetTeamsResponse(val value: List<TeamCollection>) {
         @Serializer(GetGetTeamsResponse::class)
         companion object : KSerializer<GetGetTeamsResponse> {

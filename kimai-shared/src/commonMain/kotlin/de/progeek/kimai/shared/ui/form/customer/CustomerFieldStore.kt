@@ -56,7 +56,7 @@ class CustomerFieldStoreFactory(
         mainContext: CoroutineContext,
         private val ioContext: CoroutineContext
     ) : CoroutineExecutor<Intent, Unit, State, Msg, Label>(mainContext) {
-        override fun executeIntent(intent: Intent, getState: () -> State) {
+        override fun executeIntent(intent: Intent) {
             when (intent) {
                 is Intent.SelectedCustomer -> handleSelectedProject(intent.customer)
             }
@@ -67,7 +67,7 @@ class CustomerFieldStoreFactory(
             publish(Label.CustomerChanged(customer))
         }
 
-        override fun executeAction(action: Unit, getState: () -> State) {
+        override fun executeAction(action: Unit) {
             loadCustomers()
         }
 

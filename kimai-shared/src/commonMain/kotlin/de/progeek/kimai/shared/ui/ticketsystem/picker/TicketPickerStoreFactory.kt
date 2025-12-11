@@ -57,8 +57,8 @@ class TicketPickerStoreFactory(
     ) {
         private var searchJob: Job? = null
 
-        override fun executeAction(action: Unit, getState: () -> TicketPickerStore.State) {
-            loadIssues(getState)
+        override fun executeAction(action: Unit) {
+            loadIssues()
             loadConfigs()
         }
 
@@ -70,19 +70,16 @@ class TicketPickerStoreFactory(
             }
         }
 
-        override fun executeIntent(
-            intent: TicketPickerStore.Intent,
-            getState: () -> TicketPickerStore.State
-        ) {
+        override fun executeIntent(intent: TicketPickerStore.Intent) {
             when (intent) {
-                is TicketPickerStore.Intent.SearchQueryUpdated -> handleSearchQuery(intent.query, getState)
-                is TicketPickerStore.Intent.IssueSelected -> handleIssueSelected(intent.issue, getState)
-                is TicketPickerStore.Intent.Refresh -> refreshIssues(getState)
+                is TicketPickerStore.Intent.SearchQueryUpdated -> handleSearchQuery(intent.query)
+                is TicketPickerStore.Intent.IssueSelected -> handleIssueSelected(intent.issue)
+                is TicketPickerStore.Intent.Refresh -> refreshIssues()
                 is TicketPickerStore.Intent.Dismiss -> publish(TicketPickerStore.Label.Dismissed)
             }
         }
 
-        private fun loadIssues(getState: () -> TicketPickerStore.State) {
+        private fun loadIssues() {
             scope.launch {
                 try {
                     val hasSources = withContext(ioContext) {
@@ -97,7 +94,7 @@ class TicketPickerStoreFactory(
 
                     ticketRepository.getAllIssues().collect { issues ->
                         dispatch(Msg.IssuesLoaded(issues))
-                        dispatch(Msg.FilteredIssuesUpdated(filterIssues(issues, getState().searchQuery)))
+                        dispatch(Msg.FilteredIssuesUpdated(filterIssues(issues, state().searchQuery)))
                         dispatch(Msg.SyncTimeUpdated(Clock.System.now().toEpochMilliseconds()))
                     }
                 } catch (e: Exception) {
@@ -107,13 +104,13 @@ class TicketPickerStoreFactory(
             }
         }
 
-        private fun handleSearchQuery(query: String, getState: () -> TicketPickerStore.State) {
+        private fun handleSearchQuery(query: String) {
             searchJob?.cancel()
             searchJob = scope.launch {
                 delay(300) // Debounce
 
                 if (query.isBlank()) {
-                    dispatch(Msg.FilteredIssuesUpdated(getState().allIssues))
+                    dispatch(Msg.FilteredIssuesUpdated(state().allIssues))
                 } else {
                     val result = withContext(ioContext) {
                         ticketRepository.searchWithFallback(query, 100)
@@ -121,21 +118,21 @@ class TicketPickerStoreFactory(
                     result.onSuccess { issues ->
                         dispatch(Msg.FilteredIssuesUpdated(issues))
                     }.onFailure {
-                        dispatch(Msg.FilteredIssuesUpdated(filterIssues(getState().allIssues, query)))
+                        dispatch(Msg.FilteredIssuesUpdated(filterIssues(state().allIssues, query)))
                     }
                 }
             }
         }
 
-        private fun handleIssueSelected(issue: TicketIssue, getState: () -> TicketPickerStore.State) {
+        private fun handleIssueSelected(issue: TicketIssue) {
             // Get the format from the config that matches this issue's sourceId
-            val config = getState().ticketConfigs.find { it.id == issue.sourceId }
+            val config = state().ticketConfigs.find { it.id == issue.sourceId }
             val formatPattern = config?.issueFormat ?: IssueInsertFormat.DEFAULT_FORMAT
             val formattedText = issue.format(formatPattern)
             publish(TicketPickerStore.Label.IssueSelected(formattedText))
         }
 
-        private fun refreshIssues(getState: () -> TicketPickerStore.State) {
+        private fun refreshIssues() {
             scope.launch {
                 dispatch(Msg.LoadingChanged(true))
                 dispatch(Msg.ErrorUpdated(null))
@@ -151,7 +148,7 @@ class TicketPickerStoreFactory(
                     // Reload issues
                     val issues = ticketRepository.getAllIssues().first()
                     dispatch(Msg.IssuesLoaded(issues))
-                    dispatch(Msg.FilteredIssuesUpdated(filterIssues(issues, getState().searchQuery)))
+                    dispatch(Msg.FilteredIssuesUpdated(filterIssues(issues, state().searchQuery)))
                 }.onFailure { e ->
                     dispatch(Msg.ErrorUpdated(e.message))
                 }

@@ -100,7 +100,7 @@ open class TimesheetApi(
         ).wrap<GetActiveTimesheetResponse>().map { value }
     }
 
-    @Serializable
+    @Serializable(GetActiveTimesheetResponse.Companion::class)
     private class GetActiveTimesheetResponse(val value: List<TimesheetCollectionExpanded>) {
         @Serializer(GetActiveTimesheetResponse::class)
         companion object : KSerializer<GetActiveTimesheetResponse> {
@@ -217,7 +217,7 @@ open class TimesheetApi(
         ).wrap<GetGetTimesheetsResponse>().map { value }
     }
 
-    @Serializable
+    @Serializable(GetGetTimesheetsResponse.Companion::class)
     private class GetGetTimesheetsResponse(val value: List<TimesheetCollection>) {
         @Serializer(GetGetTimesheetsResponse::class)
         companion object : KSerializer<GetGetTimesheetsResponse> {
@@ -263,7 +263,7 @@ open class TimesheetApi(
         ).wrap<GetRecentTimesheetResponse>().map { value }
     }
 
-    @Serializable
+    @Serializable(GetRecentTimesheetResponse.Companion::class)
     private class GetRecentTimesheetResponse(val value: List<TimesheetCollectionExpanded>) {
         @Serializer(GetRecentTimesheetResponse::class)
         companion object : KSerializer<GetRecentTimesheetResponse> {

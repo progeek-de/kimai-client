@@ -123,16 +123,16 @@ internal class FormStoreFactory(
     ) :
         CoroutineExecutor<Intent, Unit, State, Msg, Label>(mainContext) {
 
-        override fun executeIntent(intent: Intent, getState: () -> State) {
+        override fun executeIntent(intent: Intent) {
             when (intent) {
                 is Intent.ActivityUpdated -> dispatch(Msg.ActivityUpdated(intent.activity))
                 is Intent.BeginUpdated -> dispatch(Msg.BeginUpdated(intent.begin))
                 is Intent.CustomerUpdated -> dispatch(Msg.CustomerUpdated(intent.customer))
-                is Intent.Delete -> deleteTimesheet(getState().id)
+                is Intent.Delete -> deleteTimesheet(state().id)
                 is Intent.DescriptionUpdated -> dispatch(Msg.DescriptionUpdated(intent.description))
                 is Intent.EndUpdated -> dispatch(Msg.EndUpdated(intent.end))
                 is Intent.ProjectUpdated -> dispatch(Msg.ProjectUpdated(intent.project))
-                is Intent.Save -> save(getState())
+                is Intent.Save -> save(state())
             }
         }
 

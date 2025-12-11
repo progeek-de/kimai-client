@@ -2,10 +2,10 @@ package de.progeek.kimai.shared.ui.home.context
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.ChildStack
-import com.arkivanov.decompose.router.stack.StackNavigationSource
+import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.value.Value
-import com.arkivanov.essenty.parcelable.Parcelable
+import kotlinx.serialization.KSerializer
 import de.progeek.kimai.shared.core.models.Credentials
 
 interface AuthComponentContext : ComponentContext {
@@ -13,19 +13,19 @@ interface AuthComponentContext : ComponentContext {
     val baseUrl: String
 }
 
-inline fun <reified C : Parcelable, T : Any> AuthComponentContext.formChildStack(
-    source: StackNavigationSource<C>,
-    noinline initialStack: () -> List<C>,
+fun <C : Any, T : Any> AuthComponentContext.formChildStack(
+    source: StackNavigation<C>,
+    serializer: KSerializer<C>,
+    initialStack: () -> List<C>,
     key: String = "DefaultStack",
-    persistent: Boolean = true,
     handleBackButton: Boolean = false,
-    noinline childFactory: (configuration: C, AuthComponentContext) -> T
+    childFactory: (configuration: C, AuthComponentContext) -> T
 ): Value<ChildStack<C, T>> =
     childStack(
         source = source,
+        serializer = serializer,
         initialStack = initialStack,
         key = key,
-        persistent = persistent,
         handleBackButton = handleBackButton
     ) { configuration, componentContext ->
         childFactory(

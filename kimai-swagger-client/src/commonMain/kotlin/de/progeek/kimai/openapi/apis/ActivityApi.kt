@@ -115,7 +115,7 @@ open class ActivityApi(
         ).wrap<GetGetActivitiesResponse>().map { value }
     }
 
-    @Serializable
+    @Serializable(GetGetActivitiesResponse.Companion::class)
     private class GetGetActivitiesResponse(val value: List<ActivityCollection>) {
         @Serializer(GetGetActivitiesResponse::class)
         companion object : KSerializer<GetGetActivitiesResponse> {
@@ -191,7 +191,7 @@ open class ActivityApi(
         ).wrap<GetGetActivityRatesResponse>().map { value }
     }
 
-    @Serializable
+    @Serializable(GetGetActivityRatesResponse.Companion::class)
     private class GetGetActivityRatesResponse(val value: List<ActivityRate>) {
         @Serializer(GetGetActivityRatesResponse::class)
         companion object : KSerializer<GetGetActivityRatesResponse> {

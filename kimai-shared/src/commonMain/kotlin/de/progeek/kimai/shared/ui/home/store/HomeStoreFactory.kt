@@ -53,7 +53,7 @@ class HomeStoreFactory(
         private val ioContext: CoroutineContext
     ) : CoroutineExecutor<Unit, Action, State, Msg, Unit>(mainContext) {
 
-        override fun executeAction(action: Action, getState: () -> State) {
+        override fun executeAction(action: Action) {
             dispatch(Msg.Loading(true))
             when (action) {
                 Action.Sync -> sync()

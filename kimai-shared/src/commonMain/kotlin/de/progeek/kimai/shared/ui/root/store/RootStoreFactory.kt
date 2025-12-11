@@ -54,7 +54,7 @@ class RootStoreFactory(
         private val ioContext: CoroutineContext
     ) : CoroutineExecutor<Nothing, Unit, State, Msg, Nothing>(mainContext) {
 
-        override fun executeAction(action: Unit, getState: () -> State) {
+        override fun executeAction(action: Unit) {
             loadCredentials()
             loadTheme()
             loadBranding()
