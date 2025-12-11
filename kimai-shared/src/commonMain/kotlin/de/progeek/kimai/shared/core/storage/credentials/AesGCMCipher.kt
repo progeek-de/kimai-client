@@ -2,8 +2,8 @@ package de.progeek.kimai.shared.core.storage.credentials
 
 import de.progeek.kimai.shared.core.models.Credentials
 import dev.whyoleg.cryptography.CryptographyProvider
-import dev.whyoleg.cryptography.algorithms.symmetric.AES
-import dev.whyoleg.cryptography.operations.cipher.AuthenticatedCipher
+import dev.whyoleg.cryptography.algorithms.AES
+import dev.whyoleg.cryptography.operations.AuthenticatedCipher
 
 class AesGCMCipher {
 
@@ -18,21 +18,21 @@ class AesGCMCipher {
         return CryptographyProvider.Default
             .get(AES.GCM)
             .keyDecoder()
-            .decodeFromBlocking(AES.Key.Format.RAW, encryptedKey.hexToByteArray())
+            .decodeFromByteArrayBlocking(AES.Key.Format.RAW, encryptedKey.hexToByteArray())
             .cipher()
     }
 
     @OptIn(ExperimentalStdlibApi::class)
     fun encrypt(credentials: Credentials): String {
         val raw = "${credentials.email}:${credentials.password}"
-        return cipher.encryptBlocking(plaintextInput = raw.encodeToByteArray())
+        return cipher.encryptBlocking(plaintext = raw.encodeToByteArray())
             .toHexString(HexFormat.Default)
     }
 
     @OptIn(ExperimentalStdlibApi::class)
     fun decrypt(str: String?): Credentials? {
         return str?.let {
-            val raw = cipher.decryptBlocking(ciphertextInput = it.hexToByteArray()).decodeToString()
+            val raw = cipher.decryptBlocking(ciphertext = it.hexToByteArray()).decodeToString()
             val credentialsParts = raw.split(":")
             if (credentialsParts.size == 2) {
                 val login = credentialsParts[0]
@@ -49,7 +49,7 @@ class AesGCMCipher {
      */
     @OptIn(ExperimentalStdlibApi::class)
     fun encryptString(plaintext: String): String {
-        return cipher.encryptBlocking(plaintextInput = plaintext.encodeToByteArray())
+        return cipher.encryptBlocking(plaintext = plaintext.encodeToByteArray())
             .toHexString(HexFormat.Default)
     }
 
@@ -59,7 +59,7 @@ class AesGCMCipher {
     @OptIn(ExperimentalStdlibApi::class)
     fun decryptString(encrypted: String): String? {
         return try {
-            cipher.decryptBlocking(ciphertextInput = encrypted.hexToByteArray()).decodeToString()
+            cipher.decryptBlocking(ciphertext = encrypted.hexToByteArray()).decodeToString()
         } catch (e: Exception) {
             null
         }

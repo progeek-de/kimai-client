@@ -1,7 +1,7 @@
 package de.progeek.kimai.openapi.auth
 
-import io.ktor.util.InternalAPI
 import io.ktor.util.encodeBase64
+import io.ktor.utils.io.InternalAPI
 
 class HttpBasicAuth : Authentication {
     var username: String? = null

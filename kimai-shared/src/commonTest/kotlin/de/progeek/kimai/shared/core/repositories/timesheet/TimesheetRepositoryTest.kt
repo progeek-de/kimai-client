@@ -13,6 +13,7 @@ import io.mockk.*
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.*
+import kotlin.time.Clock
 import kotlin.test.*
 import kotlin.time.Duration.Companion.hours
 import de.progeek.kimai.openapi.models.TimesheetEntity as ApiTimesheetEntity
