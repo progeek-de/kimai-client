@@ -16,6 +16,7 @@ interface LoginStore : Store<Intent, State, Nothing> {
         val version: String,
         val isLoggedIn: Boolean,
         val isLoading: Boolean,
-        val isError: Boolean
+        val isError: Boolean,
+        val isBaseUrlValid: Boolean = true
     )
 }

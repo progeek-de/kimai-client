@@ -11,14 +11,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -38,7 +43,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import de.progeek.kimai.shared.SharedRes
@@ -53,12 +61,13 @@ fun LoginCard() {
     var password by remember { mutableStateOf("") }
 
     var isEmailValid by remember { mutableStateOf(true) }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     val emailFocusRequester = remember { FocusRequester() }
     val passwordFocusRequester = remember { FocusRequester() }
 
     Card(
-        modifier = Modifier.padding(32.dp).shadow(
+        modifier = Modifier.padding(24.dp).shadow(
             elevation = 4.dp,
             shape = MaterialTheme.shapes.small
         ),
@@ -68,38 +77,36 @@ fun LoginCard() {
         Column(modifier = Modifier.width(400.dp).padding(30.dp, 50.dp)) {
             OutlinedTextField(
                 value = email,
-                onValueChange = {
-                    if (it.contains('\t')) {
-                        passwordFocusRequester.requestFocus()
-                    } else if (it.contains('\n')) {
-                        if (isEmailValid && email.isNotEmpty() && password.isNotEmpty()) {
-                            component.onLoginClick(email, password)
-                        }
-                    } else {
-                        email = it
-                        isEmailValid = isValidEmail(it)
-                    }
-                },
+                onValueChange = { email = it; isEmailValid = isValidEmail(it) },
                 label = { Text(stringResource(SharedRes.strings.email)) },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).focusRequester(emailFocusRequester).testTag("email_input_field")
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).focusRequester(emailFocusRequester).testTag("email_input_field"),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { passwordFocusRequester.requestFocus() })
             )
 
             OutlinedTextField(
                 value = password,
-                onValueChange = {
-                    if (it.contains('\t')) {
-                        emailFocusRequester.requestFocus()
-                    } else if (it.contains('\n')) {
-                        if (isEmailValid && email.isNotEmpty() && password.isNotEmpty()) {
-                            component.onLoginClick(email, password)
-                        }
-                    } else {
-                        password = it
-                    }
-                },
+                onValueChange = { password = it },
                 label = { Text(stringResource(SharedRes.strings.password)) },
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).focusRequester(passwordFocusRequester).testTag("password_input_field"),
-                visualTransformation = PasswordVisualTransformation()
+                singleLine = true,
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {
+                    if (isEmailValid && email.isNotEmpty() && password.isNotEmpty()) {
+                        component.onLoginClick(email, password)
+                    }
+
+                }),
+                trailingIcon = {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
+                            contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                        )
+                    }
+                }
             )
 
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -228,6 +235,7 @@ fun ChangeBaseUrlDialog(
     onChange: (baseUrl: String) -> Unit
 ) {
     var host by remember { mutableStateOf(baseUrl) }
+    val isValid = remember(host) { isValidUrl(host) }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -242,7 +250,14 @@ fun ChangeBaseUrlDialog(
                         modifier = Modifier.fillMaxWidth().padding(16.dp).testTag("dialog_host_input"),
                         value = host,
                         onValueChange = { host = it },
-                        label = { Text("Host") }
+                        label = { Text("Host") },
+                        singleLine = true,
+                        isError = !isValid,
+                        supportingText = if (!isValid) {
+                            { Text(stringResource(SharedRes.strings.invalid_url)) }
+                        } else null,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = { if (isValid) onChange(host) })
                     )
                 }
 
@@ -262,6 +277,7 @@ fun ChangeBaseUrlDialog(
                         modifier = Modifier.padding(start = 8.dp),
                         shape = MaterialTheme.shapes.small,
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                        enabled = isValid,
                         onClick = { onChange(host) }
                     ) {
                         Text(
@@ -273,4 +289,13 @@ fun ChangeBaseUrlDialog(
             }
         }
     }
+}
+
+private fun isValidUrl(url: String): Boolean {
+    val urlPattern = Regex(
+        "^https?://([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}(:\\d{1,5})?(/.*)?$|" +
+            "^https?://localhost(:\\d{1,5})?(/.*)?$|" +
+            "^https?://\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(:\\d{1,5})?(/.*)?$"
+    )
+    return url.isNotBlank() && urlPattern.matches(url.trim())
 }

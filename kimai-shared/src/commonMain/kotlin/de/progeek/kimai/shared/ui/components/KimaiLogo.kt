@@ -13,11 +13,12 @@ import dev.icerock.moko.resources.compose.painterResource
 
 @Composable
 fun KimaiLogo(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    useBranding: Boolean = true
 ) {
     val theme = ThemeLocal.current
     val branding = BrandingLocal.current
-    val useProgeek = branding == BrandingEnum.PROGEEK
+    val useProgeek = useBranding && branding == BrandingEnum.PROGEEK
 
     val resource = when {
         useProgeek && theme == ThemeEnum.LIGHT -> SharedRes.images.progeek_logo_dark

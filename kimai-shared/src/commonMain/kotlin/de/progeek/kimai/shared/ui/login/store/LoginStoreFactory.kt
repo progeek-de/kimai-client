@@ -46,7 +46,19 @@ internal class LoginStoreFactory(
         data object LoginSuccess : Msg()
         data object LoginFailed : Msg()
         data object LoginLoading : Msg()
-        data class BaseUrl(val baseUrl: String) : Msg()
+        data class BaseUrl(val baseUrl: String, val isValid: Boolean) : Msg()
+    }
+
+    companion object {
+        private val URL_PATTERN = Regex(
+            "^https?://([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}(:\\d{1,5})?(/.*)?$|" +
+                "^https?://localhost(:\\d{1,5})?(/.*)?$|" +
+                "^https?://\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(:\\d{1,5})?(/.*)?$"
+        )
+
+        fun isValidUrl(url: String): Boolean {
+            return url.isNotBlank() && URL_PATTERN.matches(url.trim())
+        }
     }
 
     private inner class ExecutorImpl(
@@ -56,14 +68,19 @@ internal class LoginStoreFactory(
 
         override fun executeAction(action: Unit) {
             val baseUrl = settingsRepository.getBaseUrl()
-            dispatch(Msg.BaseUrl(baseUrl))
+            dispatch(Msg.BaseUrl(baseUrl, isValidUrl(baseUrl)))
         }
 
         override fun executeIntent(intent: Intent): Unit =
             when (intent) {
                 is Intent.Login -> login(intent.email, intent.password, state().baseUrl)
-                is Intent.BaseUrl -> dispatch(Msg.BaseUrl(intent.baseUrl))
+                is Intent.BaseUrl -> onChangeBaseUrl(intent.baseUrl)
             }
+
+        private fun onChangeBaseUrl(baseUrl: String) {
+            val url= baseUrl.replace("\\s".toRegex(), "")
+            dispatch(Msg.BaseUrl(url, isValidUrl(url)))
+        }
 
         private fun login(email: String, password: String, baseUrl: String) {
             scope.launch {
@@ -86,7 +103,7 @@ internal class LoginStoreFactory(
                 is Msg.LoginSuccess -> copy(isLoggedIn = true, isLoading = false, isError = false)
                 is Msg.LoginFailed -> copy(isLoggedIn = false, isLoading = false, isError = true)
                 is Msg.LoginLoading -> copy(isLoading = true, isError = false)
-                is Msg.BaseUrl -> copy(baseUrl = msg.baseUrl)
+                is Msg.BaseUrl -> copy(baseUrl = msg.baseUrl, isBaseUrlValid = msg.isValid)
             }
     }
 }
