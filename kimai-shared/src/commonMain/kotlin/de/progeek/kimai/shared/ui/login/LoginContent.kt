@@ -23,6 +23,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -41,7 +42,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -67,7 +67,7 @@ fun LoginCard() {
     val passwordFocusRequester = remember { FocusRequester() }
 
     Card(
-        modifier = Modifier.padding(32.dp).shadow(
+        modifier = Modifier.padding(24.dp).shadow(
             elevation = 4.dp,
             shape = MaterialTheme.shapes.small
         ),
@@ -235,6 +235,7 @@ fun ChangeBaseUrlDialog(
     onChange: (baseUrl: String) -> Unit
 ) {
     var host by remember { mutableStateOf(baseUrl) }
+    val isValid = remember(host) { isValidUrl(host) }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -251,8 +252,12 @@ fun ChangeBaseUrlDialog(
                         onValueChange = { host = it },
                         label = { Text("Host") },
                         singleLine = true,
+                        isError = !isValid,
+                        supportingText = if (!isValid) {
+                            { Text(stringResource(SharedRes.strings.invalid_url)) }
+                        } else null,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { onChange(host) })
+                        keyboardActions = KeyboardActions(onDone = { if (isValid) onChange(host) })
                     )
                 }
 
@@ -272,6 +277,7 @@ fun ChangeBaseUrlDialog(
                         modifier = Modifier.padding(start = 8.dp),
                         shape = MaterialTheme.shapes.small,
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                        enabled = isValid,
                         onClick = { onChange(host) }
                     ) {
                         Text(
@@ -283,4 +289,13 @@ fun ChangeBaseUrlDialog(
             }
         }
     }
+}
+
+private fun isValidUrl(url: String): Boolean {
+    val urlPattern = Regex(
+        "^https?://([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}(:\\d{1,5})?(/.*)?$|" +
+            "^https?://localhost(:\\d{1,5})?(/.*)?$|" +
+            "^https?://\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(:\\d{1,5})?(/.*)?$"
+    )
+    return url.isNotBlank() && urlPattern.matches(url.trim())
 }
