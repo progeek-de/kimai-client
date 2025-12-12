@@ -29,7 +29,7 @@ dorkboxOs = "1.11"
 napier = "2.7.1"
 
 # testing
-mockk = "1.13.17"
+mockk = "1.14.7"
 turbine = "1.2.1"
 junit = "4.13.2"
 
