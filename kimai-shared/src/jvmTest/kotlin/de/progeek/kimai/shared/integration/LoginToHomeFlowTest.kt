@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runComposeUiTest
 import de.progeek.kimai.shared.testutils.TestKoinModule
@@ -159,10 +160,11 @@ class LoginToHomeFlowTest {
         waitForIdle()
 
         // Dialog should open with Host field
-        onNodeWithText("Host", ignoreCase = true).assertExists()
+        onNodeWithTag("dialog_host_input").assertExists()
 
-        // Change the URL
-        onNodeWithText("Host", ignoreCase = true).performTextInput("https://my-kimai.example.com")
+        // Clear existing URL and enter new one
+        onNodeWithTag("dialog_host_input").performTextClearance()
+        onNodeWithTag("dialog_host_input").performTextInput("https://my-kimai.example.com")
 
         // Click OK to save
         onNodeWithText("OK", ignoreCase = true).performClick()
@@ -170,7 +172,7 @@ class LoginToHomeFlowTest {
         waitForIdle()
 
         // Dialog should close
-        onNodeWithText("Host", ignoreCase = true).assertDoesNotExist()
+        onNodeWithTag("dialog_host_input").assertDoesNotExist()
 
         // Verify new URL is displayed in the server info
         onNodeWithText("my-kimai.example.com", substring = true).assertExists()

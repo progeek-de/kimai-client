@@ -15,7 +15,12 @@ import kotlinx.coroutines.test.runTest
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
-import kotlin.test.*
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LoginStoreTest {
@@ -214,8 +219,9 @@ class LoginStoreTest {
 
         val updatedState = store.stateFlow.value
 
-        // Only baseUrl should change
+        // Only baseUrl and isBaseUrlValid should change
         assertEquals(newBaseUrl, updatedState.baseUrl)
+        assertTrue(updatedState.isBaseUrlValid, "Valid URL should set isBaseUrlValid to true")
         assertEquals(initialState.isLoggedIn, updatedState.isLoggedIn)
         assertEquals(initialState.isLoading, updatedState.isLoading)
         assertEquals(initialState.isError, updatedState.isError)
@@ -243,5 +249,140 @@ class LoginStoreTest {
         advanceUntilIdle()
 
         assertTrue(store.stateFlow.value.isLoggedIn, "Login should succeed with custom baseUrl")
+    }
+
+    @Test
+    fun `initial state has valid baseUrl`() = runTest(testDispatcher) {
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        advanceUntilIdle()
+
+        assertTrue(store.stateFlow.value.isBaseUrlValid, "Initial state should have valid baseUrl")
+    }
+
+    @Test
+    fun `BaseUrl intent with valid url sets isBaseUrlValid to true`() = runTest(testDispatcher) {
+        val validUrl = "https://valid.kimai.cloud"
+
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        store.accept(LoginStore.Intent.BaseUrl(validUrl))
+        advanceUntilIdle()
+
+        assertTrue(store.stateFlow.value.isBaseUrlValid, "isBaseUrlValid should be true for valid URL")
+        assertEquals(validUrl, store.stateFlow.value.baseUrl)
+    }
+
+    @Test
+    fun `BaseUrl intent with invalid url sets isBaseUrlValid to false`() = runTest(testDispatcher) {
+        val invalidUrl = "not-a-valid-url"
+
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        store.accept(LoginStore.Intent.BaseUrl(invalidUrl))
+        advanceUntilIdle()
+
+        assertFalse(store.stateFlow.value.isBaseUrlValid, "isBaseUrlValid should be false for invalid URL")
+        assertEquals(invalidUrl, store.stateFlow.value.baseUrl)
+    }
+
+    @Test
+    fun `BaseUrl intent with empty url sets isBaseUrlValid to false`() = runTest(testDispatcher) {
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        store.accept(LoginStore.Intent.BaseUrl(""))
+        advanceUntilIdle()
+
+        assertFalse(store.stateFlow.value.isBaseUrlValid, "isBaseUrlValid should be false for empty URL")
+    }
+
+    @Test
+    fun `BaseUrl intent with url missing protocol sets isBaseUrlValid to false`() = runTest(testDispatcher) {
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        store.accept(LoginStore.Intent.BaseUrl("example.com"))
+        advanceUntilIdle()
+
+        assertFalse(store.stateFlow.value.isBaseUrlValid, "isBaseUrlValid should be false for URL without protocol")
+    }
+
+    @Test
+    fun `BaseUrl intent with localhost url sets isBaseUrlValid to true`() = runTest(testDispatcher) {
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        store.accept(LoginStore.Intent.BaseUrl("http://localhost:8080"))
+        advanceUntilIdle()
+
+        assertTrue(store.stateFlow.value.isBaseUrlValid, "isBaseUrlValid should be true for localhost URL")
+    }
+
+    @Test
+    fun `BaseUrl intent with IP address url sets isBaseUrlValid to true`() = runTest(testDispatcher) {
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        store.accept(LoginStore.Intent.BaseUrl("http://192.168.1.100:8080"))
+        advanceUntilIdle()
+
+        assertTrue(store.stateFlow.value.isBaseUrlValid, "isBaseUrlValid should be true for IP address URL")
+    }
+
+    @Test
+    fun `isBaseUrlValid updates correctly when switching between valid and invalid urls`() = runTest(testDispatcher) {
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        // Start with valid URL
+        store.accept(LoginStore.Intent.BaseUrl("https://valid.kimai.cloud"))
+        advanceUntilIdle()
+        assertTrue(store.stateFlow.value.isBaseUrlValid, "Should be valid after setting valid URL")
+
+        // Switch to invalid URL
+        store.accept(LoginStore.Intent.BaseUrl("invalid"))
+        advanceUntilIdle()
+        assertFalse(store.stateFlow.value.isBaseUrlValid, "Should be invalid after setting invalid URL")
+
+        // Switch back to valid URL
+        store.accept(LoginStore.Intent.BaseUrl("https://another-valid.com"))
+        advanceUntilIdle()
+        assertTrue(store.stateFlow.value.isBaseUrlValid, "Should be valid after setting valid URL again")
+    }
+
+    @Test
+    fun `bootstrapper validates baseUrl from settings repository`() = runTest(testDispatcher) {
+        val invalidBaseUrl = "not-a-url"
+        every { settingsRepository.getBaseUrl() } returns invalidBaseUrl
+
+        val store = storeFactory.create(
+            mainContext = testDispatcher,
+            ioContext = testDispatcher
+        )
+
+        advanceUntilIdle()
+
+        assertEquals(invalidBaseUrl, store.stateFlow.value.baseUrl)
+        assertFalse(store.stateFlow.value.isBaseUrlValid, "isBaseUrlValid should be false for invalid URL from settings")
     }
 }
