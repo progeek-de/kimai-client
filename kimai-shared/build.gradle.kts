@@ -123,7 +123,7 @@ kotlin {
 
                 // koin for testing
                 implementation(libs.koin.core)
-                implementation("io.insert-koin:koin-test:4.0.0")
+                implementation("io.insert-koin:koin-test:4.1.1")
             }
         }
 
@@ -146,7 +146,7 @@ kotlin {
                 // Provides Dispatchers.Main for JVM tests (using Swing event loop)
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.koin.core)
-                implementation("io.insert-koin:koin-test:4.0.0")
+                implementation("io.insert-koin:koin-test:4.1.1")
                 implementation(libs.sqldelight.sqlite.driver)
                 implementation(libs.settings.core)
                 implementation(libs.settings.noarg)
