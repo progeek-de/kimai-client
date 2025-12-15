@@ -38,20 +38,21 @@ fi
 echo -e "${BLUE}Building macOS installers with ProGuard optimization${NC}"
 echo ""
 
-# Check Java 17
+# Check Java 21
 echo -e "${BLUE}Checking Java configuration...${NC}"
 if [ -f "gradle.properties" ] && grep -q "org.gradle.java.home" gradle.properties; then
     GRADLE_JAVA=$(grep "org.gradle.java.home" gradle.properties | cut -d'=' -f2)
     echo -e "${GREEN}✓ Gradle configured to use: $GRADLE_JAVA${NC}"
 else
     JAVA_VERSION=$(java -version 2>&1 | head -n 1 | cut -d'"' -f2 | cut -d'.' -f1)
-    if [ "$JAVA_VERSION" != "17" ]; then
-        echo -e "${YELLOW}Warning: Java 17 is required for ProGuard compatibility${NC}"
+    if [ "$JAVA_VERSION" != "21" ]; then
+        echo -e "${YELLOW}Warning: Java 21 is required for build${NC}"
         echo "Current Java version: $JAVA_VERSION"
-        echo "Please set JAVA_HOME to Java 17 or configure gradle.properties"
+        echo "Please set JAVA_HOME to Java 21 or configure gradle.properties"
+        echo "On macOS: brew install openjdk@21"
         exit 1
     fi
-    echo -e "${GREEN}✓ Java 17 detected${NC}"
+    echo -e "${GREEN}✓ Java 21 detected${NC}"
 fi
 echo ""
 
@@ -130,7 +131,7 @@ echo "  ✅ Resource optimization (duplicates removed)"
 echo "  ✅ ~5-10% smaller than non-ProGuard build"
 echo ""
 echo -e "${YELLOW}Note:${NC}"
-echo "  - Includes embedded Java 17 runtime"
+echo "  - Includes embedded Java 21 runtime"
 echo "  - Works on macOS 10.15 (Catalina) and later"
 echo "  - ProGuard optimized for production use"
 echo ""

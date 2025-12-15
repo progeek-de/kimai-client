@@ -20,34 +20,33 @@ NC='\033[0m' # No Color
 # Check if required tools are available
 command -v java >/dev/null 2>&1 || { echo -e "${RED}Java is required but not installed. Aborting.${NC}" >&2; exit 1; }
 
-# Auto-detect and configure Java 17 (required for ProGuard compatibility)
-# ProGuard 7.2.2 doesn't support Java 21+
-configure_java17() {
-    # Skip if JAVA_HOME is already set to Java 17
+# Auto-detect and configure Java 21 (required for build)
+configure_java21() {
+    # Skip if JAVA_HOME is already set to Java 21
     if [ -n "$JAVA_HOME" ]; then
         CURRENT_VERSION=$("$JAVA_HOME/bin/java" -version 2>&1 | head -n 1 | cut -d'"' -f2 | cut -d'.' -f1)
-        if [ "$CURRENT_VERSION" = "17" ]; then
-            echo -e "${GREEN}Using Java 17 from JAVA_HOME: $JAVA_HOME${NC}"
+        if [ "$CURRENT_VERSION" = "21" ]; then
+            echo -e "${GREEN}Using Java 21 from JAVA_HOME: $JAVA_HOME${NC}"
             return 0
         fi
     fi
 
-    # Common Java 17 locations
-    JAVA17_PATHS=(
-        "/usr/lib/jvm/java-17-openjdk"           # Arch/Manjaro
-        "/usr/lib/jvm/java-17-openjdk-amd64"     # Ubuntu/Debian
-        "/usr/lib/jvm/temurin-17-jdk"            # Temurin on Linux
-        "/usr/lib/jvm/temurin-17-jdk-amd64"      # Temurin on Ubuntu
-        "/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17"*"/x64"  # GitHub Actions
+    # Common Java 21 locations
+    JAVA21_PATHS=(
+        "/usr/lib/jvm/java-21-openjdk"           # Arch/Manjaro
+        "/usr/lib/jvm/java-21-openjdk-amd64"     # Ubuntu/Debian
+        "/usr/lib/jvm/temurin-21-jdk"            # Temurin on Linux
+        "/usr/lib/jvm/temurin-21-jdk-amd64"      # Temurin on Ubuntu
+        "/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21"*"/x64"  # GitHub Actions
     )
 
-    for path in "${JAVA17_PATHS[@]}"; do
+    for path in "${JAVA21_PATHS[@]}"; do
         # Handle glob patterns
         for expanded_path in $path; do
             if [ -d "$expanded_path" ] && [ -x "$expanded_path/bin/java" ]; then
                 export JAVA_HOME="$expanded_path"
                 export PATH="$JAVA_HOME/bin:$PATH"
-                echo -e "${GREEN}Auto-detected Java 17: $JAVA_HOME${NC}"
+                echo -e "${GREEN}Auto-detected Java 21: $JAVA_HOME${NC}"
                 return 0
             fi
         done
@@ -55,19 +54,19 @@ configure_java17() {
 
     # Check current java version
     CURRENT_VERSION=$(java -version 2>&1 | head -n 1 | cut -d'"' -f2 | cut -d'.' -f1)
-    if [ "$CURRENT_VERSION" = "17" ]; then
-        echo -e "${GREEN}System Java is version 17${NC}"
+    if [ "$CURRENT_VERSION" = "21" ]; then
+        echo -e "${GREEN}System Java is version 21${NC}"
         return 0
     fi
 
-    echo -e "${YELLOW}Warning: Java 17 not found. ProGuard requires Java 17 (current: Java $CURRENT_VERSION)${NC}"
-    echo "   Please install Java 17 or set JAVA_HOME to a Java 17 installation."
-    echo "   On Arch/Manjaro: sudo pacman -S jdk17-openjdk"
-    echo "   On Ubuntu/Debian: sudo apt install openjdk-17-jdk"
+    echo -e "${YELLOW}Warning: Java 21 not found. Build requires Java 21 (current: Java $CURRENT_VERSION)${NC}"
+    echo "   Please install Java 21 or set JAVA_HOME to a Java 21 installation."
+    echo "   On Arch/Manjaro: sudo pacman -S jdk21-openjdk"
+    echo "   On Ubuntu/Debian: sudo apt install openjdk-21-jdk"
     return 1
 }
 
-configure_java17 || exit 1
+configure_java21 || exit 1
 echo ""
 
 # Clean previous builds (skip in CI mode)
@@ -156,4 +155,5 @@ echo "   - Unused code removed"
 echo "   - Code optimization passes"
 echo "   - Debug calls eliminated"
 echo "   - Kotlin intrinsics optimized"
+echo "   - Built with Java 21 runtime"
 echo ""

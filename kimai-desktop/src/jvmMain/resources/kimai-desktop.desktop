@@ -1,12 +1,12 @@
 [Desktop Entry]
-Version=1.0
+Version=pkgver
 Type=Application
-Name=Kimai Desktop
-Comment=Time tracking desktop application
-Exec=kimai-desktop
-Icon=kimai-desktop
+Name=Kimai
+Comment=Desktop client for Kimai Time Tracking
+Exec=/usr/bin/kimai
+Icon=kimai
 Terminal=false
 Categories=Office;ProjectManagement;
-StartupWMClass=kimai-desktop
 MimeType=application/x-kimai;
 Keywords=time;tracking;timesheet;project;management;
+StartupWMClass=de-progeek-kimai-desktop-MainKt

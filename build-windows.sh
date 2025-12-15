@@ -24,37 +24,36 @@ NC='\033[0m' # No Color
 echo -e "${BLUE}Building Windows app with ProGuard optimization${NC}"
 echo ""
 
-# Auto-detect and configure Java 17 (required for ProGuard compatibility)
-# ProGuard 7.2.2 doesn't support Java 21+
-configure_java17() {
-    # Skip if JAVA_HOME is already set to Java 17
+# Auto-detect and configure Java 21 (required for build)
+configure_java21() {
+    # Skip if JAVA_HOME is already set to Java 21
     if [ -n "$JAVA_HOME" ]; then
         CURRENT_VERSION=$("$JAVA_HOME/bin/java" -version 2>&1 | head -n 1 | cut -d'"' -f2 | cut -d'.' -f1)
-        if [ "$CURRENT_VERSION" = "17" ]; then
-            echo -e "${GREEN}Using Java 17 from JAVA_HOME: $JAVA_HOME${NC}"
+        if [ "$CURRENT_VERSION" = "21" ]; then
+            echo -e "${GREEN}Using Java 21 from JAVA_HOME: $JAVA_HOME${NC}"
             return 0
         fi
     fi
 
-    # Common Java 17 locations
-    JAVA17_PATHS=(
-        "/usr/lib/jvm/java-17-openjdk"           # Arch/Manjaro
-        "/usr/lib/jvm/java-17-openjdk-amd64"     # Ubuntu/Debian
-        "/usr/lib/jvm/temurin-17-jdk"            # Temurin on Linux
-        "/usr/lib/jvm/temurin-17-jdk-amd64"      # Temurin on Ubuntu
-        "/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17"*"/x64"  # GitHub Actions Linux
-        "/c/hostedtoolcache/windows/Java_Temurin-Hotspot_jdk/17"*"/x64"  # GitHub Actions Windows
-        "/c/Program Files/Eclipse Adoptium/jdk-17"*  # Windows Temurin
-        "/c/Program Files/Java/jdk-17"*          # Windows Oracle JDK
+    # Common Java 21 locations
+    JAVA21_PATHS=(
+        "/usr/lib/jvm/java-21-openjdk"           # Arch/Manjaro
+        "/usr/lib/jvm/java-21-openjdk-amd64"     # Ubuntu/Debian
+        "/usr/lib/jvm/temurin-21-jdk"            # Temurin on Linux
+        "/usr/lib/jvm/temurin-21-jdk-amd64"      # Temurin on Ubuntu
+        "/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21"*"/x64"  # GitHub Actions Linux
+        "/c/hostedtoolcache/windows/Java_Temurin-Hotspot_jdk/21"*"/x64"  # GitHub Actions Windows
+        "/c/Program Files/Eclipse Adoptium/jdk-21"*  # Windows Temurin
+        "/c/Program Files/Java/jdk-21"*          # Windows Oracle JDK
     )
 
-    for path in "${JAVA17_PATHS[@]}"; do
+    for path in "${JAVA21_PATHS[@]}"; do
         # Handle glob patterns
         for expanded_path in $path; do
             if [ -d "$expanded_path" ] && [ -x "$expanded_path/bin/java" ]; then
                 export JAVA_HOME="$expanded_path"
                 export PATH="$JAVA_HOME/bin:$PATH"
-                echo -e "${GREEN}Auto-detected Java 17: $JAVA_HOME${NC}"
+                echo -e "${GREEN}Auto-detected Java 21: $JAVA_HOME${NC}"
                 return 0
             fi
         done
@@ -62,17 +61,17 @@ configure_java17() {
 
     # Check current java version
     CURRENT_VERSION=$(java -version 2>&1 | head -n 1 | cut -d'"' -f2 | cut -d'.' -f1)
-    if [ "$CURRENT_VERSION" = "17" ]; then
-        echo -e "${GREEN}System Java is version 17${NC}"
+    if [ "$CURRENT_VERSION" = "21" ]; then
+        echo -e "${GREEN}System Java is version 21${NC}"
         return 0
     fi
 
-    echo -e "${YELLOW}Warning: Java 17 not found. ProGuard requires Java 17 (current: Java $CURRENT_VERSION)${NC}"
-    echo "   Please install Java 17 or set JAVA_HOME to a Java 17 installation."
+    echo -e "${YELLOW}Warning: Java 21 not found. Build requires Java 21 (current: Java $CURRENT_VERSION)${NC}"
+    echo "   Please install Java 21 or set JAVA_HOME to a Java 21 installation."
     return 1
 }
 
-configure_java17 || exit 1
+configure_java21 || exit 1
 echo ""
 
 # Clean previous builds (skip in CI mode)
@@ -182,7 +181,7 @@ echo "  - Resource optimization (duplicates removed)"
 echo ""
 echo -e "${YELLOW}Note:${NC}"
 echo "  - This is a PORTABLE version (no installer)"
-echo "  - Includes embedded Java 17 runtime"
+echo "  - Includes embedded Java 21 runtime"
 echo "  - Works on any Windows 10/11 system"
 echo "  - No admin rights needed"
 echo ""
