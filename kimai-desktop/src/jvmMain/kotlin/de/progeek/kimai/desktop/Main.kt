@@ -27,6 +27,27 @@ import java.awt.Dimension
 import java.awt.Toolkit
 import javax.imageio.ImageIO
 import javax.swing.SwingUtilities
+import java.awt.Window as AwtWindow
+
+// Reference to the main application window for activation from other instances
+private var mainWindow: AwtWindow? = null
+
+// Single instance manager
+private var singleInstanceManager: SingleInstanceManager? = null
+
+/**
+ * Activates (brings to foreground) the main application window.
+ * Called when another instance of the application tries to start.
+ */
+private fun activateWindow() {
+    mainWindow?.let { window ->
+        if (!window.isVisible) {
+            window.isVisible = true
+        }
+        window.toFront()
+        window.requestFocus()
+    }
+}
 
 // Pre-load icon from resources for AWT (before Compose initialization)
 private val appIcon by lazy {
@@ -52,6 +73,19 @@ fun main() {
         awtAppClassNameField.set(toolkit, "kimai")
     } catch (_: Exception) {
         // Ignore - not all JVMs support this
+    }
+
+    // Check if another instance is already running
+    if (SingleInstanceManager.tryActivateExistingInstance()) {
+        // Another instance is running and has been activated
+        println("Another instance of Kimai is already running. Activating existing window.")
+        return
+    }
+
+    // Start single instance server to listen for activation requests
+    singleInstanceManager = SingleInstanceManager(onActivate = ::activateWindow)
+    if (!singleInstanceManager!!.startServer()) {
+        println("Warning: Could not start single instance server. Multiple instances may be possible.")
     }
 
     initKoin()
@@ -91,6 +125,7 @@ fun main() {
         }
 
         fun shouldExit(){
+            singleInstanceManager?.close()
             exitApplication()
         }
 
@@ -101,8 +136,9 @@ fun main() {
             visible = visibleInTray,
             icon = icon,
         ) {
-            // Set AWT icon directly for better Linux taskbar support
+            // Store window reference and set AWT icon for better Linux taskbar support
             LaunchedEffect(Unit) {
+                mainWindow = window
                 appIcon?.let { window.iconImage = it }
             }
             ContentView(root)
