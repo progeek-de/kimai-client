@@ -1,10 +1,11 @@
 package de.progeek.kimai.desktop
 
-import androidx.compose.runtime.*
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.toAwtImage
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -23,9 +24,36 @@ import de.progeek.kimai.shared.ui.ContentView
 import de.progeek.kimai.shared.ui.root.RootComponent
 import dev.icerock.moko.resources.compose.painterResource
 import java.awt.Dimension
+import java.awt.Toolkit
+import javax.imageio.ImageIO
 import javax.swing.SwingUtilities
 
+// Pre-load icon from resources for AWT (before Compose initialization)
+private val appIcon by lazy {
+    try {
+        val iconStream = Thread.currentThread().contextClassLoader
+            .getResourceAsStream("kimai_logo.png")
+        iconStream?.let { ImageIO.read(it) }
+    } catch (e: Exception) {
+        null
+    }
+}
+
 fun main() {
+    // Set the application class name for Linux taskbar icon support
+    // This MUST be done before ANY AWT/Swing initialization including Toolkit.getDefaultToolkit()
+    System.setProperty("sun.awt.X11.XToolkit.awtAppClassName", "kimai")
+
+    // Also try setting via Toolkit for older Java versions
+    try {
+        val toolkit = Toolkit.getDefaultToolkit()
+        val awtAppClassNameField = toolkit.javaClass.getDeclaredField("awtAppClassName")
+        awtAppClassNameField.isAccessible = true
+        awtAppClassNameField.set(toolkit, "kimai")
+    } catch (_: Exception) {
+        // Ignore - not all JVMs support this
+    }
+
     initKoin()
 
     val root = invokeOnAwtSync {
@@ -48,14 +76,10 @@ fun main() {
     application {
         val windowState = rememberWindowState(height = 700.dp)
         var visibleInTray by remember { mutableStateOf(true) }
-        val density = LocalDensity.current
         // Window icon is set at startup - uses default Kimai branding
         // The branding setting affects the in-app logo, not the window/tray icons
-        val icon = painterResource(SharedRes.images.kimai_icon_orange).toAwtImage(
-            density,
-            LayoutDirection.Ltr,
-            Size(128f, 128f)
-        )
+        // Icon must be passed directly to Window for Linux compatibility (CMP-7194)
+        val icon: Painter = painterResource(SharedRes.images.kimai_logo)
 
         fun notMinimized() {
             windowState.isMinimized  = false
@@ -75,10 +99,11 @@ fun main() {
             state = windowState,
             title = "Kimai",
             visible = visibleInTray,
-            ) {
-            SideEffect {
-                // fix for taskbar icon resolution
-                window.iconImage = icon
+            icon = icon,
+        ) {
+            // Set AWT icon directly for better Linux taskbar support
+            LaunchedEffect(Unit) {
+                appIcon?.let { window.iconImage = it }
             }
             ContentView(root)
             TrayIcon(::notMinimized, ::shouldExit)
