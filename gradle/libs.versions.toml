@@ -23,7 +23,7 @@ moko-resources = "0.25.2"
 cryptography = "0.5.0"
 sqldelight = "2.2.1"
 
-arrow = "2.2.0"
+arrow = "2.2.1.1"
 systemTray = "4.4"
 dorkboxOs = "1.11"
 napier = "2.7.1"
