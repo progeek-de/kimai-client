@@ -106,7 +106,7 @@ arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 
 dorkbox-systemTray = { module = "com.dorkbox:SystemTray", version.ref = "systemTray" }
 dorkbox-os = { module = "com.dorkbox:OS", version.ref = "dorkboxOs" }
-compose-rules-ktlint = { module = "io.nlopez.compose.rules:ktlint", version = "0.5.2" }
+compose-rules-ktlint = { module = "io.nlopez.compose.rules:ktlint", version = "0.5.3" }
 
 # napier
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
