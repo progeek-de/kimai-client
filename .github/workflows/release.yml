@@ -162,7 +162,7 @@ jobs:
         run: ls -la artifacts/
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: kimai-${{ matrix.platform }}
           path: artifacts/*
