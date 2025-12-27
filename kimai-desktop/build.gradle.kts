@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.jetbrains.compose)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.detekt)
     id("com.codingfeline.buildkonfig")
 }
 
@@ -152,4 +153,13 @@ compose.desktop {
             }
         }
     }
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    config.setFrom(files("${rootProject.projectDir}/detekt.yml"))
+    source.setFrom("src/jvmMain/kotlin")
+    parallel = true
+    ignoreFailures = false
 }

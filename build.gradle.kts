@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.compose.compiler).apply(false)
     alias(libs.plugins.multiplatform.resources).apply(false)
     alias(libs.plugins.jlleitschuh.gradle.ktlint).apply(false)
+    alias(libs.plugins.detekt).apply(false)
 }
 
 buildscript {

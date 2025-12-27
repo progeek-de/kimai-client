@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.jlleitschuh.gradle.ktlint)
+    alias(libs.plugins.detekt)
     id("com.codingfeline.buildkonfig")
     jacoco
 }
@@ -215,6 +216,19 @@ configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
         reporter(ReporterType.HTML)
         reporter(ReporterType.PLAIN)
     }
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    config.setFrom(files("${rootProject.projectDir}/detekt.yml"))
+    source.setFrom(
+        "src/commonMain/kotlin",
+        "src/jvmMain/kotlin",
+        "src/androidMain/kotlin"
+    )
+    parallel = true
+    ignoreFailures = false
 }
 // JaCoCo test coverage configuration
 jacoco {
