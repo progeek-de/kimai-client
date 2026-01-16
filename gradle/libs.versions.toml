@@ -6,7 +6,7 @@ kotlin = "2.3.0"
 agp = "8.1.4"
 
 ktor = "3.3.3"
-compose-jetbrains = "1.9.3"
+compose-jetbrains = "1.10.0"
 coroutines = "1.10.2"
 
 decompose = "3.4.0"
