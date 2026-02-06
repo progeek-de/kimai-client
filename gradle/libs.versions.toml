@@ -2,11 +2,11 @@
 
 
 project = "1.0.0"
-kotlin = "2.3.0"
+kotlin = "2.3.10"
 agp = "8.1.4"
 
 ktor = "3.3.3"
-compose-jetbrains = "1.9.3"
+compose-jetbrains = "1.10.0"
 coroutines = "1.10.2"
 
 decompose = "3.4.0"
@@ -99,7 +99,7 @@ sqldelight-primitive-adapters = { group = "app.cash.sqldelight", name = "primiti
 
 # store5
 store-core = { group = "org.mobilenativefoundation.store", name = "store5", version = "5.0.0" }
-jetbrains-kotlinx-atomicfu = {group = "org.jetbrains.kotlinx", name = "atomicfu", version = "0.29.0"}
+jetbrains-kotlinx-atomicfu = {group = "org.jetbrains.kotlinx", name = "atomicfu", version = "0.31.0"}
 
 # arrow
 arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
