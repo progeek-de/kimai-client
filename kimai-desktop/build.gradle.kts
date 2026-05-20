@@ -21,8 +21,6 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.decompose.extensionsCompose)
                 implementation(libs.kotlinx.coroutines.swing)
-                implementation(libs.dorkbox.systemTray)
-                implementation(libs.dorkbox.os)
             }
         }
     }
@@ -78,6 +76,17 @@ buildkonfig {
 compose.desktop {
     application {
         mainClass = "de.progeek.kimai.desktop.MainKt"
+
+        // macOS: name + icon for Dock and menu-bar app menu. These must be JVM launcher args —
+        // System.setProperty from main() is too late (NSApplication is set up before main runs).
+        if (org.gradle.internal.os.OperatingSystem.current().isMacOsX) {
+            val dockIcon = project.file("src/jvmMain/resources/kimai_logo.icns").absolutePath
+            jvmArgs += listOf(
+                "-Xdock:name=Kimai",
+                "-Xdock:icon=$dockIcon",
+                "-Dapple.awt.application.name=Kimai",
+            )
+        }
 
         val projectVersion = when(project.hasProperty("projVersion")) {
             true -> project.properties["projVersion"]?.toString()

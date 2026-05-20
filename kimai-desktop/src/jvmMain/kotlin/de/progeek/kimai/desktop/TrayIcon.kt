@@ -1,101 +1,75 @@
 package de.progeek.kimai.desktop
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.toAwtImage
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.window.ApplicationScope
+import androidx.compose.ui.window.Tray
 import de.progeek.kimai.shared.SharedRes
-import de.progeek.kimai.shared.core.models.TimesheetForm
-import de.progeek.kimai.shared.core.repositories.project.ProjectRepository
-import de.progeek.kimai.shared.core.repositories.settings.SettingsRepository
 import de.progeek.kimai.shared.core.repositories.timesheet.TimesheetRepository
 import dev.icerock.moko.resources.compose.painterResource
 import dev.icerock.moko.resources.compose.stringResource
-import dorkbox.systemTray.MenuItem
-import dorkbox.systemTray.Separator
-import dorkbox.systemTray.SystemTray
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
+private class PaddedPainter(
+    private val inner: Painter,
+    private val scale: Float,
+) : Painter() {
+    override val intrinsicSize: Size get() = inner.intrinsicSize
+
+    override fun DrawScope.onDraw() {
+        val w = size.width * scale
+        val h = size.height * scale
+        val dx = (size.width - w) / 2f
+        val dy = (size.height - h) / 2f
+        translate(dx, dy) {
+            with(inner) { draw(Size(w, h)) }
+        }
+    }
+}
+
 @Composable
-fun TrayIcon(onShow: () -> Unit, shouldExit: () -> Unit) {
+fun ApplicationScope.TrayIcon(onShow: () -> Unit, shouldExit: () -> Unit) {
     val exit = stringResource(SharedRes.strings.exit)
-    val startTimer = stringResource(SharedRes.strings.start_timer)
     val showApp = stringResource(SharedRes.strings.show)
 
     val timesheetRepository = koinInject<TimesheetRepository>()
-    val projectRepository = koinInject<ProjectRepository>()
-    val settingsRepository = koinInject<SettingsRepository>()
     val scope = rememberCoroutineScope()
 
-    val density = LocalDensity.current
-    // Tray icons are set at startup - use default Kimai branding
-    // The branding setting affects the in-app logo, not the window/tray icons
-    val icon = painterResource(SharedRes.images.kimai_icon_orange).toAwtImage(
-        density,
-        LayoutDirection.Ltr,
-        Size(128f, 128f)
-    )
-    val idleIcon = painterResource(SharedRes.images.kimai_icon_white).toAwtImage(
-        density,
-        LayoutDirection.Ltr,
-        Size(128f, 128f)
-    )
+    val runningTimesheet by timesheetRepository.getRunningTimesheetStream()
+        .collectAsState(initial = null)
 
-    val tray by remember { mutableStateOf(SystemTray.get()) }
-
-    fun clearAll() {
-        tray.menu.first?.let { tray.menu.remove(it) }
-        tray.menu.first?.let { tray.menu.remove(it) }
-        tray.menu.first?.let { tray.menu.remove(it) }
+    val iconRes = if (runningTimesheet == null) {
+        SharedRes.images.kimai_icon_white
+    } else {
+        SharedRes.images.kimai_icon_orange
     }
+    val basePainter = painterResource(iconRes)
+    val icon = remember(basePainter) { PaddedPainter(basePainter, scale = 0.65f) }
 
-    fun addShow() {
-        tray.menu.add(MenuItem(showApp).apply {
-            setCallback { onShow() }
-        })
-    }
-
-    fun closeApp() {
-        tray.menu.add(Separator())
-        tray.menu.add(MenuItem(exit).apply {
-            setCallback { shouldExit(); tray.shutdown() }
-        })
-    }
-
-    fun stopTimer(timesheet: TimesheetForm) {
-        scope.launch {
-            timesheetRepository.stopTimesheet(timesheet.id!!)
-        }
-    }
-
-    scope.launch {
-        timesheetRepository.getRunningTimesheetStream().collect { timesheet: TimesheetForm? ->
-            clearAll()
-
-            if (timesheet == null) {
-                tray.setImage(idleIcon)
-                //tray.menu.add(MenuItem(startTimer).apply {
-                //    setCallback { startTimer() }
-                //})
-                addShow()
-                closeApp()
-            } else {
-                clearAll()
-                tray.setImage(icon)
-                // all required values are set -> stoppable
-                if (timesheet.id != null && timesheet.project != null && timesheet.activity != null) {
-                    tray.menu.add(MenuItem("Stop").apply {
-                        setCallback { stopTimer(timesheet) }
-                    })
-                    addShow()
-                    closeApp()
-                } else {
-                    addShow()
-                    closeApp()
-                }
+    Tray(
+        icon = icon,
+        tooltip = "Kimai",
+        onAction = onShow,
+        menu = {
+            val running = runningTimesheet
+            if (running != null && running.id != null && running.project != null && running.activity != null) {
+                Item("Stop", onClick = {
+                    scope.launch {
+                        timesheetRepository.stopTimesheet(running.id!!)
+                    }
+                })
             }
+            Item(showApp, onClick = onShow)
+            Separator()
+            Item(exit, onClick = shouldExit)
         }
-    }
+    )
 }

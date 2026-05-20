@@ -24,8 +24,6 @@ cryptography = "0.5.0"
 sqldelight = "2.2.1"
 
 arrow = "2.2.2"
-systemTray = "4.4"
-dorkboxOs = "1.11"
 napier = "2.7.1"
 
 # testing
@@ -104,8 +102,6 @@ jetbrains-kotlinx-atomicfu = {group = "org.jetbrains.kotlinx", name = "atomicfu"
 # arrow
 arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 
-dorkbox-systemTray = { module = "com.dorkbox:SystemTray", version.ref = "systemTray" }
-dorkbox-os = { module = "com.dorkbox:OS", version.ref = "dorkboxOs" }
 compose-rules-ktlint = { module = "io.nlopez.compose.rules:ktlint", version = "0.5.6" }
 
 # napier

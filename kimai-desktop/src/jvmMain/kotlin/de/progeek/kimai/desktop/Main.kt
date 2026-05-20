@@ -64,6 +64,8 @@ fun main() {
     // Set the application class name for Linux taskbar icon support
     // This MUST be done before ANY AWT/Swing initialization including Toolkit.getDefaultToolkit()
     System.setProperty("sun.awt.X11.XToolkit.awtAppClassName", "kimai")
+    // macOS app name is configured as JVM args in build.gradle.kts (apple.awt.application.name,
+    // -Xdock:name) — setting it from main() is too late for NSApplication initialization.
 
     // Also try setting via Toolkit for older Java versions
     try {
@@ -129,6 +131,8 @@ fun main() {
             exitApplication()
         }
 
+        TrayIcon(onShow = ::notMinimized, shouldExit = ::shouldExit)
+
         Window(
             onCloseRequest = :: putBottonClose,
             state = windowState,
@@ -142,7 +146,6 @@ fun main() {
                 appIcon?.let { window.iconImage = it }
             }
             ContentView(root)
-            TrayIcon(::notMinimized, ::shouldExit)
             window.minimumSize = Dimension(380,620)
         }
     }
