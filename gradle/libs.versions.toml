@@ -2,12 +2,12 @@
 
 
 project = "1.0.0"
-kotlin = "2.3.0"
+kotlin = "2.3.21"
 agp = "8.1.4"
 
 ktor = "3.4.0"
-compose-jetbrains = "1.9.3"
-coroutines = "1.10.2"
+compose-jetbrains = "1.11.0"
+coroutines = "1.11.0"
 
 decompose = "3.4.0"
 essenty = "2.5.0"
@@ -68,7 +68,7 @@ ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serializatio
 kotlin-serialization = { group =  "org.jetbrains.kotlin", name = "kotlin-serialization", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.7.1-0.6.x-compat" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = "0.8.0-0.6.x-compat" }
 
 # koin
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
@@ -97,7 +97,7 @@ sqldelight-primitive-adapters = { group = "app.cash.sqldelight", name = "primiti
 
 # store5
 store-core = { group = "org.mobilenativefoundation.store", name = "store5", version = "5.0.0" }
-jetbrains-kotlinx-atomicfu = {group = "org.jetbrains.kotlinx", name = "atomicfu", version = "0.29.0"}
+jetbrains-kotlinx-atomicfu = {group = "org.jetbrains.kotlinx", name = "atomicfu", version = "0.32.1"}
 
 # arrow
 arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
