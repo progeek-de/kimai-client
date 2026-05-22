@@ -9,9 +9,9 @@ ktor = "3.4.0"
 compose-jetbrains = "1.11.0"
 coroutines = "1.11.0"
 
-decompose = "3.4.0"
+decompose = "3.5.0"
 essenty = "2.5.0"
-mvikotlin = "4.3.0"
+mvikotlin = "4.4.0"
 
 koin = "4.1.1"
 koin-compose = "4.1.1"
