@@ -55,6 +55,18 @@ sealed class TicketCredentials {
     ) : TicketCredentials()
 
     /**
+     * Trello authentication using API key and token.
+     * Supports filtering by specific board IDs.
+     */
+    @Serializable
+    @SerialName("trello_token")
+    data class TrelloToken(
+        val apiKey: String,
+        val token: String,
+        val boardIds: List<String> = emptyList()
+    ) : TicketCredentials()
+
+    /**
      * Get the provider type for these credentials.
      */
     fun getProviderType(): TicketProvider = when (this) {
@@ -62,5 +74,6 @@ sealed class TicketCredentials {
         is JiraPersonalAccessToken -> TicketProvider.JIRA
         is GitHubToken -> TicketProvider.GITHUB
         is GitLabToken -> TicketProvider.GITLAB
+        is TrelloToken -> TicketProvider.TRELLO
     }
 }

@@ -17,8 +17,8 @@ class TicketProviderTest {
     // ============================================================
 
     @Test
-    fun `TicketProvider has exactly three values`() {
-        assertEquals(3, TicketProvider.entries.size)
+    fun `TicketProvider has exactly four values`() {
+        assertEquals(4, TicketProvider.entries.size)
     }
 
     @Test
@@ -34,6 +34,11 @@ class TicketProviderTest {
     @Test
     fun `TicketProvider contains GITLAB`() {
         assertNotNull(TicketProvider.entries.find { it == TicketProvider.GITLAB })
+    }
+
+    @Test
+    fun `TicketProvider contains TRELLO`() {
+        assertNotNull(TicketProvider.entries.find { it == TicketProvider.TRELLO })
     }
 
     // ============================================================
@@ -53,6 +58,11 @@ class TicketProviderTest {
     @Test
     fun `GITLAB displayName is GitLab Issues`() {
         assertEquals("GitLab Issues", TicketProvider.GITLAB.displayName)
+    }
+
+    @Test
+    fun `TRELLO displayName is Trello`() {
+        assertEquals("Trello", TicketProvider.TRELLO.displayName)
     }
 
     // ============================================================
@@ -75,6 +85,18 @@ class TicketProviderTest {
     fun `fromString returns GITLAB for GITLAB string`() {
         val result = TicketProvider.fromString("GITLAB")
         assertEquals(TicketProvider.GITLAB, result)
+    }
+
+    @Test
+    fun `fromString returns TRELLO for TRELLO string`() {
+        val result = TicketProvider.fromString("TRELLO")
+        assertEquals(TicketProvider.TRELLO, result)
+    }
+
+    @Test
+    fun `fromString is case insensitive for trello mixed case`() {
+        val result = TicketProvider.fromString("Trello")
+        assertEquals(TicketProvider.TRELLO, result)
     }
 
     // ============================================================
@@ -175,6 +197,11 @@ class TicketProviderTest {
     @Test
     fun `GITLAB name property is GITLAB`() {
         assertEquals("GITLAB", TicketProvider.GITLAB.name)
+    }
+
+    @Test
+    fun `TRELLO name property is TRELLO`() {
+        assertEquals("TRELLO", TicketProvider.TRELLO.name)
     }
 
     // ============================================================

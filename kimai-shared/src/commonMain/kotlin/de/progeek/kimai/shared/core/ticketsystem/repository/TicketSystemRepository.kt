@@ -34,6 +34,14 @@ class TicketSystemRepository(
     companion object {
         private const val DEFAULT_FETCH_JQL = "updated >= -30d ORDER BY updated DESC"
         private const val MAX_FETCH_RESULTS = 100
+
+        /**
+         * Matches issue-key shaped input: a plain number ("3537"), a "#"-prefixed
+         * number ("#3537"), or a Jira-style key ("PROJ-123").
+         */
+        private val ISSUE_KEY_REGEX = Regex("^#?\\d+$|^[A-Za-z][A-Za-z0-9]*-\\d+$")
+
+        fun looksLikeIssueKey(query: String): Boolean = ISSUE_KEY_REGEX.matches(query)
     }
 
     /**
@@ -112,7 +120,11 @@ class TicketSystemRepository(
 
     /**
      * Search with local-first strategy and remote fallback.
-     * First searches local cache, then queries remotes if needed.
+     *
+     * Order: local cache → if the query looks like an issue key/id, a single
+     * targeted per-provider lookup → full-text remote search. The targeted
+     * lookup keeps the regular fetch window small while still resolving a
+     * specific ticket id that isn't cached.
      */
     suspend fun searchWithFallback(query: String, limit: Int = 100): Result<List<TicketIssue>> {
         // First try local cache
@@ -121,13 +133,48 @@ class TicketSystemRepository(
             return localResult
         }
 
-        // Fallback to remote search
+        // If the query looks like an issue key/id, resolve it with one targeted
+        // request per provider instead of paging through every issue.
+        val trimmed = query.trim()
+        if (looksLikeIssueKey(trimmed)) {
+            val byKey = lookupByKey(trimmed)
+            if (byKey.getOrNull()?.isNotEmpty() == true) {
+                return byKey
+            }
+        }
+
+        // Fallback to remote full-text search
         return searchAllSources(query, limit).map { remoteIssues ->
             // Cache remote results
             if (remoteIssues.isNotEmpty()) {
                 issueDatasource.insert(remoteIssues)
             }
             remoteIssues
+        }
+    }
+
+    /**
+     * Resolve a single issue key/id across all enabled sources with one targeted
+     * request per provider (e.g. Jira "PROJ-123", GitHub/GitLab/Trello "#123").
+     * Providers that can't interpret the key simply return nothing.
+     */
+    suspend fun lookupByKey(key: String): Result<List<TicketIssue>> = coroutineScope {
+        runCatching {
+            val configs = configRepository.getEnabledConfigs().first()
+
+            val results = configs.map { config ->
+                async {
+                    runCatching {
+                        val provider = registry.getProvider(config.provider)
+                        provider?.getIssueByKey(config, key)?.getOrNull()
+                    }.getOrNull()
+                }
+            }.awaitAll().filterNotNull()
+
+            if (results.isNotEmpty()) {
+                issueDatasource.insert(results)
+            }
+            results.distinctBy { "${it.sourceId}:${it.id}" }
         }
     }
 

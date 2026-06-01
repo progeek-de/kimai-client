@@ -95,6 +95,23 @@ class TicketPickerStoreFactory(
                             return@launch
                         }
 
+                        // If the local cache is empty, fetch immediately so the picker
+                        // populates on first open instead of waiting for the periodic sync.
+                        val cachedCount = withContext(ioContext) {
+                            ticketRepository.getCachedIssueCount().getOrNull() ?: 0L
+                        }
+                        if (cachedCount == 0L) {
+                            dispatch(Msg.LoadingChanged(true))
+                            val result = withContext(ioContext) {
+                                ticketRepository.refreshAllSources()
+                            }
+                            result.onFailure {
+                                dispatch(Msg.ErrorUpdated(it.message))
+                                dispatch(Msg.OfflineChanged(true))
+                            }
+                            dispatch(Msg.LoadingChanged(false))
+                        }
+
                         ticketRepository.getAllIssues().collect { issues ->
                             dispatch(Msg.IssuesLoaded(issues))
                             dispatch(Msg.FilteredIssuesUpdated(filterIssues(issues, state().searchQuery)))

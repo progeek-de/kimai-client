@@ -138,6 +138,7 @@ private fun ProviderBadge(provider: TicketProvider) {
         TicketProvider.JIRA -> MaterialTheme.colorScheme.primary to "J"
         TicketProvider.GITHUB -> MaterialTheme.colorScheme.tertiary to "GH"
         TicketProvider.GITLAB -> MaterialTheme.colorScheme.secondary to "GL"
+        TicketProvider.TRELLO -> MaterialTheme.colorScheme.primary to "TR"
     }
 
     Surface(

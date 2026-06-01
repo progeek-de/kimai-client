@@ -60,6 +60,7 @@ private fun ProviderOption(
         TicketProvider.JIRA -> MaterialTheme.colorScheme.primary to "Atlassian Jira Cloud or Server"
         TicketProvider.GITHUB -> MaterialTheme.colorScheme.tertiary to "GitHub Issues from repositories"
         TicketProvider.GITLAB -> MaterialTheme.colorScheme.secondary to "GitLab Issues from projects"
+        TicketProvider.TRELLO -> MaterialTheme.colorScheme.primary to "Trello cards from boards"
     }
 
     Card(
@@ -91,6 +92,7 @@ private fun ProviderOption(
                             TicketProvider.JIRA -> "J"
                             TicketProvider.GITHUB -> "GH"
                             TicketProvider.GITLAB -> "GL"
+                            TicketProvider.TRELLO -> "TR"
                         },
                         style = MaterialTheme.typography.titleMedium,
                         color = color

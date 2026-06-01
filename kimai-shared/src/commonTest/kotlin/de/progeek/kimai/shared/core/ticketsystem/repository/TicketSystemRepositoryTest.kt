@@ -551,16 +551,99 @@ class TicketSystemRepositoryTest {
     private fun createMockProvider(
         type: TicketProvider,
         userName: String,
-        issues: List<TicketIssue> = emptyList()
+        issues: List<TicketIssue> = emptyList(),
+        issueByKey: TicketIssue? = null
     ): TicketSystemProvider {
         return mockk {
             every { providerType } returns type
             coEvery { testConnection(any()) } returns Result.success(userName)
             coEvery { searchIssues(any(), any(), any()) } returns Result.success(issues)
+            coEvery { getIssueByKey(any(), any()) } returns Result.success(issueByKey)
             coEvery { getProjects(any()) } returns Result.success(emptyList())
             coEvery { getCurrentUser(any()) } returns Result.success(userName)
             every { validateCredentials(any()) } returns true
             every { getErrorMessage(any(), any()) } returns "Error"
         }
+    }
+
+    // ============================================================
+    // looksLikeIssueKey() Tests
+    // ============================================================
+
+    @Test
+    fun `looksLikeIssueKey matches plain number`() {
+        assertTrue(TicketSystemRepository.looksLikeIssueKey("3537"))
+    }
+
+    @Test
+    fun `looksLikeIssueKey matches hash-prefixed number`() {
+        assertTrue(TicketSystemRepository.looksLikeIssueKey("#3537"))
+    }
+
+    @Test
+    fun `looksLikeIssueKey matches Jira-style key`() {
+        assertTrue(TicketSystemRepository.looksLikeIssueKey("PROJ-123"))
+    }
+
+    @Test
+    fun `looksLikeIssueKey rejects free text`() {
+        assertTrue(!TicketSystemRepository.looksLikeIssueKey("login bug"))
+        assertTrue(!TicketSystemRepository.looksLikeIssueKey(""))
+        assertTrue(!TicketSystemRepository.looksLikeIssueKey("PROJ"))
+    }
+
+    // ============================================================
+    // lookupByKey() / targeted key fallback Tests
+    // ============================================================
+
+    @Test
+    fun `searchWithFallback resolves issue via targeted key lookup when cache empty`() = runTest {
+        // searchIssues returns nothing, but getIssueByKey resolves the ticket.
+        val jiraProvider = createMockProvider(
+            TicketProvider.JIRA,
+            "user",
+            issues = emptyList(),
+            issueByKey = testIssue1
+        )
+        registry.register(jiraProvider)
+        every { mockConfigRepository.getEnabledConfigs() } returns flowOf(listOf(testConfig1))
+
+        val result = repository.searchWithFallback("PROJ-123", 50)
+
+        assertTrue(result.isSuccess)
+        assertEquals(1, result.getOrNull()?.size)
+        assertEquals("PROJ-123", result.getOrNull()?.first()?.key)
+    }
+
+    @Test
+    fun `searchWithFallback skips key lookup for non-key queries`() = runTest {
+        val jiraProvider = createMockProvider(
+            TicketProvider.JIRA,
+            "user",
+            issues = emptyList(),
+            issueByKey = testIssue1
+        )
+        registry.register(jiraProvider)
+        every { mockConfigRepository.getEnabledConfigs() } returns flowOf(listOf(testConfig1))
+
+        // Free text → must not be resolved via the targeted key lookup.
+        val result = repository.searchWithFallback("some description", 50)
+
+        assertTrue(result.isSuccess)
+        assertTrue(result.getOrNull()?.isEmpty() == true)
+    }
+
+    @Test
+    fun `lookupByKey aggregates and caches matches across providers`() = runTest {
+        val jiraProvider = createMockProvider(TicketProvider.JIRA, "user", issueByKey = testIssue1)
+        registry.register(jiraProvider)
+        every { mockConfigRepository.getEnabledConfigs() } returns flowOf(listOf(testConfig1))
+
+        val result = repository.lookupByKey("PROJ-123")
+
+        assertTrue(result.isSuccess)
+        assertEquals(1, result.getOrNull()?.size)
+        // Resolved issue is cached for subsequent local lookups.
+        assertTrue(repository.getCachedIssueCount().getOrNull()!! >= 1)
     }
 }

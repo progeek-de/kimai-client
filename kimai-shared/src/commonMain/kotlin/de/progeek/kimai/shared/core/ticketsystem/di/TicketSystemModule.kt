@@ -6,6 +6,7 @@ import de.progeek.kimai.shared.core.ticketsystem.datasource.TicketIssueDatasourc
 import de.progeek.kimai.shared.core.ticketsystem.providers.github.GitHubTicketProvider
 import de.progeek.kimai.shared.core.ticketsystem.providers.gitlab.GitLabTicketProvider
 import de.progeek.kimai.shared.core.ticketsystem.providers.jira.JiraTicketProvider
+import de.progeek.kimai.shared.core.ticketsystem.providers.trello.TrelloTicketProvider
 import de.progeek.kimai.shared.core.ticketsystem.repository.TicketConfigRepository
 import de.progeek.kimai.shared.core.ticketsystem.repository.TicketSystemRepository
 import de.progeek.kimai.shared.core.ticketsystem.sync.TicketSyncScheduler
@@ -23,6 +24,7 @@ val ticketSystemModule: () -> Module get() = {
                 register(JiraTicketProvider())
                 register(GitHubTicketProvider())
                 register(GitLabTicketProvider())
+                register(TrelloTicketProvider())
             }
         }
 

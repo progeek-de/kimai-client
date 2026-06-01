@@ -10,6 +10,7 @@ import de.progeek.kimai.shared.core.ticketsystem.repository.TicketConfigReposito
 import de.progeek.kimai.shared.core.ticketsystem.repository.TicketSystemRepository
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -117,6 +118,7 @@ class TicketPickerStoreTest {
 
         // Default mock setup
         coEvery { mockTicketRepository.hasEnabledSources() } returns true
+        coEvery { mockTicketRepository.getCachedIssueCount() } returns Result.success(2L)
         coEvery { mockTicketRepository.getAllIssues() } returns flowOf(listOf(testIssue1, testIssue2))
         every { mockConfigRepository.getAllConfigs() } returns flowOf(listOf(testConfig1, testConfig2))
 
@@ -194,6 +196,33 @@ class TicketPickerStoreTest {
         val store = createStore()
         advanceUntilIdle()
 
+        assertEquals(2, store.state.allIssues.size)
+    }
+
+    @Test
+    fun `bootstrap triggers refresh when local cache is empty`() = runTest(testDispatcher) {
+        coEvery { mockTicketRepository.hasEnabledSources() } returns true
+        coEvery { mockTicketRepository.getCachedIssueCount() } returns Result.success(0L)
+        coEvery { mockTicketRepository.refreshAllSources() } returns Result.success(Unit)
+        coEvery { mockTicketRepository.getAllIssues() } returns flowOf(listOf(testIssue1))
+
+        val store = createStore()
+        advanceUntilIdle()
+
+        coVerify { mockTicketRepository.refreshAllSources() }
+        assertEquals(1, store.state.allIssues.size)
+    }
+
+    @Test
+    fun `bootstrap does not refresh when local cache is populated`() = runTest(testDispatcher) {
+        coEvery { mockTicketRepository.hasEnabledSources() } returns true
+        coEvery { mockTicketRepository.getCachedIssueCount() } returns Result.success(5L)
+        coEvery { mockTicketRepository.getAllIssues() } returns flowOf(listOf(testIssue1, testIssue2))
+
+        val store = createStore()
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { mockTicketRepository.refreshAllSources() }
         assertEquals(2, store.state.allIssues.size)
     }
 

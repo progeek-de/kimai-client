@@ -6,7 +6,8 @@ package de.progeek.kimai.shared.core.ticketsystem.models
 enum class TicketProvider(val displayName: String) {
     JIRA("Jira"),
     GITHUB("GitHub Issues"),
-    GITLAB("GitLab Issues");
+    GITLAB("GitLab Issues"),
+    TRELLO("Trello");
 
     companion object {
         fun fromString(value: String): TicketProvider? =

@@ -61,6 +61,11 @@ fun TicketSystemConfigDialog(
     var gitlabToken by remember { mutableStateOf("") }
     var gitlabProjectIds by remember { mutableStateOf("") }
 
+    // Trello fields
+    var trelloApiKey by remember { mutableStateOf("") }
+    var trelloToken by remember { mutableStateOf("") }
+    var trelloBoardIds by remember { mutableStateOf("") }
+
     // UI state
     var showToken by remember { mutableStateOf(false) }
     var isTesting by remember { mutableStateOf(false) }
@@ -88,6 +93,11 @@ fun TicketSystemConfigDialog(
                 is TicketCredentials.GitLabToken -> {
                     gitlabToken = creds.token
                     gitlabProjectIds = creds.projectIds.joinToString(", ")
+                }
+                is TicketCredentials.TrelloToken -> {
+                    trelloApiKey = creds.apiKey
+                    trelloToken = creds.token
+                    trelloBoardIds = creds.boardIds.joinToString(", ")
                 }
             }
         }
@@ -161,6 +171,16 @@ fun TicketSystemConfigDialog(
                         showToken = showToken,
                         onShowTokenChange = { showToken = it }
                     )
+                    TicketProvider.TRELLO -> TrelloCredentialFields(
+                        apiKey = trelloApiKey,
+                        onApiKeyChange = { trelloApiKey = it },
+                        token = trelloToken,
+                        onTokenChange = { trelloToken = it },
+                        boardIds = trelloBoardIds,
+                        onBoardIdsChange = { trelloBoardIds = it },
+                        showToken = showToken,
+                        onShowTokenChange = { showToken = it }
+                    )
                 }
 
                 // Sync Interval
@@ -204,6 +224,9 @@ fun TicketSystemConfigDialog(
                                     githubRepos = githubRepos,
                                     gitlabToken = gitlabToken,
                                     gitlabProjectIds = gitlabProjectIds,
+                                    trelloApiKey = trelloApiKey,
+                                    trelloToken = trelloToken,
+                                    trelloBoardIds = trelloBoardIds,
                                     issueFormat = issueFormat,
                                     existingConfig = existingConfig
                                 )
@@ -269,6 +292,9 @@ fun TicketSystemConfigDialog(
                         githubRepos = githubRepos,
                         gitlabToken = gitlabToken,
                         gitlabProjectIds = gitlabProjectIds,
+                        trelloApiKey = trelloApiKey,
+                        trelloToken = trelloToken,
+                        trelloBoardIds = trelloBoardIds,
                         issueFormat = issueFormat,
                         existingConfig = existingConfig
                     )
@@ -462,6 +488,61 @@ private fun GitLabCredentialFields(
 }
 
 @Composable
+private fun TrelloCredentialFields(
+    apiKey: String,
+    onApiKeyChange: (String) -> Unit,
+    token: String,
+    onTokenChange: (String) -> Unit,
+    boardIds: String,
+    onBoardIdsChange: (String) -> Unit,
+    showToken: Boolean,
+    onShowTokenChange: (Boolean) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedTextField(
+            value = apiKey,
+            onValueChange = onApiKeyChange,
+            label = { Text("API Key") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = token,
+            onValueChange = onTokenChange,
+            label = { Text("Token") },
+            singleLine = true,
+            visualTransformation = if (showToken) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { onShowTokenChange(!showToken) }) {
+                    Icon(
+                        if (showToken) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                        contentDescription = "Toggle visibility"
+                    )
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = boardIds,
+            onValueChange = onBoardIdsChange,
+            label = { Text("Board IDs (optional)") },
+            placeholder = { Text("e.g., 5f2a..., 6b3c...") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Text(
+            "Generate an API key and token at https://trello.com/power-ups/admin. " +
+                "Leave board IDs empty to search all accessible boards.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
 private fun IssueFormatField(
     value: String,
     onValueChange: (String) -> Unit
@@ -496,12 +577,14 @@ private fun getDefaultBaseUrl(provider: TicketProvider): String = when (provider
     TicketProvider.JIRA -> ""
     TicketProvider.GITHUB -> "https://api.github.com"
     TicketProvider.GITLAB -> "https://gitlab.com"
+    TicketProvider.TRELLO -> "https://api.trello.com/1"
 }
 
 private fun getUrlPlaceholder(provider: TicketProvider): String = when (provider) {
     TicketProvider.JIRA -> "https://your-domain.atlassian.net"
     TicketProvider.GITHUB -> "https://api.github.com"
     TicketProvider.GITLAB -> "https://gitlab.com"
+    TicketProvider.TRELLO -> "https://api.trello.com/1"
 }
 
 private fun buildConfig(
@@ -518,6 +601,9 @@ private fun buildConfig(
     githubRepos: String,
     gitlabToken: String,
     gitlabProjectIds: String,
+    trelloApiKey: String,
+    trelloToken: String,
+    trelloBoardIds: String,
     issueFormat: String,
     existingConfig: TicketSystemConfig?
 ): TicketSystemConfig? {
@@ -544,6 +630,14 @@ private fun buildConfig(
             TicketCredentials.GitLabToken(
                 token = gitlabToken,
                 projectIds = gitlabProjectIds.split(",").map { it.trim() }.filter { it.isNotBlank() }
+            )
+        }
+        TicketProvider.TRELLO -> {
+            if (trelloApiKey.isBlank() || trelloToken.isBlank()) return null
+            TicketCredentials.TrelloToken(
+                apiKey = trelloApiKey,
+                token = trelloToken,
+                boardIds = trelloBoardIds.split(",").map { it.trim() }.filter { it.isNotBlank() }
             )
         }
     }

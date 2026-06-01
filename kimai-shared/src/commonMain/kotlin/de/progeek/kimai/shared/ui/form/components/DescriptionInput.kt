@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -56,7 +57,8 @@ private fun Input(description: String, onDescriptionChange: (String) -> Unit) {
                 interactionSource = interactionSource,
                 maxLines = 3,
                 minLines = 3,
-                textStyle = TextStyle(color = MaterialTheme.colorScheme.surfaceTint)
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.surfaceTint),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.onPrimaryContainer)
             ) { innerTextField ->
                 TextFieldDefaults.DecorationBox(
                     value = description,
