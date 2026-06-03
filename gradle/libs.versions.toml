@@ -102,7 +102,7 @@ jetbrains-kotlinx-atomicfu = {group = "org.jetbrains.kotlinx", name = "atomicfu"
 # arrow
 arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 
-compose-rules-ktlint = { module = "io.nlopez.compose.rules:ktlint", version = "0.5.6" }
+compose-rules-ktlint = { module = "io.nlopez.compose.rules:ktlint", version = "0.5.9" }
 
 # napier
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
