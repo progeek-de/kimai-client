@@ -13,8 +13,8 @@ decompose = "3.4.0"
 essenty = "2.5.0"
 mvikotlin = "4.3.0"
 
-koin = "4.1.1"
-koin-compose = "4.1.1"
+koin = "4.2.1"
+koin-compose = "4.2.1"
 
 buildkonfigGradlePlugin = "0.17.1"
 
