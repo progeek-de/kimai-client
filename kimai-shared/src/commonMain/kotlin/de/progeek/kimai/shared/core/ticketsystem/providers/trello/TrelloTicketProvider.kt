@@ -14,11 +14,13 @@ import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
  *
  * Cards are mapped to issues, the card's list to the status, and the board to the project.
  */
-class TrelloTicketProvider : TicketSystemProvider {
+class TrelloTicketProvider internal constructor(
+    private val client: TrelloTicketClient
+) : TicketSystemProvider {
+
+    constructor() : this(TrelloTicketClient())
 
     override val providerType: TicketProvider = TicketProvider.TRELLO
-
-    private val client = TrelloTicketClient()
 
     override suspend fun testConnection(config: TicketSystemConfig): Result<String> {
         validateConfig(config)

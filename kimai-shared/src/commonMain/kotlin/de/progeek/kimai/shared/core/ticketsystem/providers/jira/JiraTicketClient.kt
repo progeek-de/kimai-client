@@ -7,6 +7,7 @@ import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
 import io.github.aakira.napier.Napier
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.engine.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -17,8 +18,11 @@ import kotlinx.serialization.json.Json
 
 /**
  * HTTP client for Jira REST API v3.
+ *
+ * @param engine optional Ktor engine override. Production uses the default engine;
+ * tests inject a [io.ktor.client.engine.mock.MockEngine] to exercise HTTP logic.
  */
-internal class JiraTicketClient {
+internal class JiraTicketClient(engine: HttpClientEngine? = null) {
 
     companion object {
         private const val TAG = "JiraTicketClient"
@@ -29,7 +33,7 @@ internal class JiraTicketClient {
         private const val DEFAULT_JQL = "updated >= -30d ORDER BY updated DESC"
     }
 
-    private val httpClient = HttpClient {
+    private fun HttpClientConfig<*>.configure() {
         install(ContentNegotiation) {
             json(
                 Json {
@@ -43,6 +47,9 @@ internal class JiraTicketClient {
             connectTimeoutMillis = CONNECT_TIMEOUT_MS
         }
     }
+
+    private val httpClient =
+        if (engine != null) HttpClient(engine) { configure() } else HttpClient { configure() }
 
     /**
      * Test connection to Jira.
