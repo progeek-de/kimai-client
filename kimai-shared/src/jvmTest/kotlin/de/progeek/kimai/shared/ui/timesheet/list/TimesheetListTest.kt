@@ -13,12 +13,16 @@ import de.progeek.kimai.shared.testutils.createTestComponentContext
 import de.progeek.kimai.shared.testutils.createTestDispatchers
 import de.progeek.kimai.shared.testutils.createTestStoreFactory
 import de.progeek.kimai.shared.ui.timesheet.list.components.TimesheetList
+import dev.icerock.moko.resources.desc.StringDesc
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import java.util.Locale
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class, ExperimentalCoroutinesApi::class)
@@ -32,6 +36,9 @@ class TimesheetListTest {
     fun setUp() {
         outputCallback = { output -> outputReceived = output }
         inputFlow = MutableSharedFlow(extraBufferCapacity = Int.MAX_VALUE)
+        // Pin locale to English so stringResource() assertions are deterministic.
+        StringDesc.localeType = StringDesc.LocaleType.Custom("en")
+        Locale.setDefault(Locale.ENGLISH)
         TestKoinModule.startTestKoin()
     }
 
@@ -39,6 +46,8 @@ class TimesheetListTest {
     fun tearDown() {
         TestKoinModule.stopTestKoin()
         outputReceived = null
+        StringDesc.localeType = StringDesc.LocaleType.Custom("en")
+        Locale.setDefault(Locale.ENGLISH)
     }
 
     private fun createTimesheetListComponent(): TimesheetListComponent {
@@ -260,5 +269,131 @@ class TimesheetListTest {
         // Exported timesheet should be displayed
         onNodeWithText("Code review for PR #123", substring = true).assertExists()
         // The visual distinction depends on UI implementation
+    }
+
+    @Test
+    fun `timesheet header shows total label`() = runComposeUiTest {
+        val timesheetRepository = TestKoinModule.createMockTimesheetRepository(
+            timesheets = TestData.timesheets
+        )
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(timesheetRepository = timesheetRepository)
+
+        val component = createTimesheetListComponent()
+
+        setContent {
+            TestTheme {
+                TimesheetList(component)
+            }
+        }
+
+        waitForIdle()
+
+        // The grouped header renders the "Total:" label (covers TimesheetHeader).
+        onAllNodesWithText("Total", substring = true).onFirst().assertExists()
+    }
+
+    @Test
+    fun `empty timesheet list does not render any item descriptions`() = runComposeUiTest {
+        val timesheetRepository = TestKoinModule.createMockTimesheetRepository(
+            timesheets = emptyList()
+        )
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(timesheetRepository = timesheetRepository)
+
+        val component = createTimesheetListComponent()
+
+        setContent {
+            TestTheme {
+                TimesheetList(component)
+            }
+        }
+
+        waitForIdle()
+
+        // No grouped headers or item rows should be present when the list is empty.
+        onNodeWithText("Implemented new feature", substring = true).assertDoesNotExist()
+        onNodeWithText("Total", substring = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun `clicking exported timesheet does not trigger edit output`() = runComposeUiTest {
+        val timesheetRepository = TestKoinModule.createMockTimesheetRepository(
+            timesheets = listOf(TestData.timesheet3) // exported == true
+        )
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(timesheetRepository = timesheetRepository)
+
+        val component = createTimesheetListComponent()
+
+        setContent {
+            TestTheme {
+                TimesheetList(component)
+            }
+        }
+
+        waitForIdle()
+
+        // Clicking an exported entry takes the snackbar branch instead of the edit branch.
+        onNodeWithText("Code review for PR #123", substring = true).performClick()
+
+        waitForIdle()
+
+        // Edit output must NOT have been produced for an exported entry.
+        assertNull(outputReceived)
+    }
+
+    @Test
+    fun `clicking exported timesheet shows already invoiced snackbar`() = runComposeUiTest {
+        val timesheetRepository = TestKoinModule.createMockTimesheetRepository(
+            timesheets = listOf(TestData.timesheet3) // exported == true
+        )
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(timesheetRepository = timesheetRepository)
+
+        val component = createTimesheetListComponent()
+
+        setContent {
+            TestTheme {
+                TimesheetList(component)
+            }
+        }
+
+        waitForIdle()
+
+        onNodeWithText("Code review for PR #123", substring = true).performClick()
+
+        waitForIdle()
+
+        // The snackbar text from the exported branch should be displayed.
+        onNodeWithText("already been invoiced", substring = true).assertExists()
+    }
+
+    @Test
+    fun `clicking non-exported timesheet triggers edit output with that item`() = runComposeUiTest {
+        val timesheetRepository = TestKoinModule.createMockTimesheetRepository(
+            timesheets = listOf(TestData.timesheet1) // exported == false
+        )
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(timesheetRepository = timesheetRepository)
+
+        val component = createTimesheetListComponent()
+
+        setContent {
+            TestTheme {
+                TimesheetList(component)
+            }
+        }
+
+        waitForIdle()
+
+        onNodeWithText("Implemented new feature", substring = true).performClick()
+
+        waitForIdle()
+
+        val output = outputReceived
+        assertNotNull(output)
+        val editOutput = assertIs<TimesheetListComponent.Output.Edit>(output)
+        assertTrue(editOutput.timesheet.id == TestData.timesheet1.id)
     }
 }

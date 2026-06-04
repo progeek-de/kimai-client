@@ -9,6 +9,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runComposeUiTest
 import de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat
@@ -238,5 +239,150 @@ class TicketSystemConfigDialogTest {
         onNodeWithText("Test Connection").performClick()
         waitForIdle()
         onNodeWithText("Connected as tester").assertExists()
+    }
+
+    @Test
+    fun `test connection shows failure message`() = runComposeUiTest {
+        val failing: TicketSystemRepository = mockk(relaxed = true) {
+            coEvery { testConnection(any()) } returns Result.failure(IllegalStateException("nope: 401"))
+        }
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(ticketSystemRepository = failing)
+
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(null, TicketProvider.GITHUB, onSave = {}, onDismiss = {})
+            }
+        }
+        waitForIdle()
+        onNodeWithText("Personal Access Token").performTextInput("ghp_token")
+        onNodeWithText("Owner/Organization").performTextInput("octocat")
+        onNodeWithText("Test Connection").performClick()
+        waitForIdle()
+        onNodeWithText("nope: 401").assertExists()
+    }
+
+    @Test
+    fun `edit Jira API token prefills email and re-saves JiraApiToken`() = runComposeUiTest {
+        var saved: TicketSystemConfig? = null
+        val existing = TicketSystemConfig(
+            id = "cfg-jira",
+            displayName = "Jira",
+            provider = TicketProvider.JIRA,
+            enabled = true,
+            baseUrl = "https://x.atlassian.net",
+            credentials = TicketCredentials.JiraApiToken("user@example.com", "tok"),
+            syncIntervalMinutes = 15,
+            issueFormat = IssueInsertFormat.DEFAULT_FORMAT
+        )
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(existing, TicketProvider.JIRA, onSave = { saved = it }, onDismiss = {})
+            }
+        }
+        waitForIdle()
+        // LaunchedEffect populates the email from existing credentials.
+        onNodeWithText("user@example.com").assertExists()
+        onNodeWithText("Save").performClick()
+        waitForIdle()
+        assertTrue(requireNotNull(saved).credentials is TicketCredentials.JiraApiToken)
+    }
+
+    @Test
+    fun `edit Jira PAT config prefills PAT mode`() = runComposeUiTest {
+        var saved: TicketSystemConfig? = null
+        val existing = TicketSystemConfig(
+            id = "cfg-jira-pat",
+            displayName = "Jira Server",
+            provider = TicketProvider.JIRA,
+            enabled = true,
+            baseUrl = "https://jira.local",
+            credentials = TicketCredentials.JiraPersonalAccessToken("pat"),
+            syncIntervalMinutes = 15,
+            issueFormat = IssueInsertFormat.DEFAULT_FORMAT
+        )
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(existing, TicketProvider.JIRA, onSave = { saved = it }, onDismiss = {})
+            }
+        }
+        waitForIdle()
+        // PAT mode hides the email field.
+        onNodeWithText("Email").assertDoesNotExist()
+        onNodeWithText("Save").performClick()
+        waitForIdle()
+        assertTrue(requireNotNull(saved).credentials is TicketCredentials.JiraPersonalAccessToken)
+    }
+
+    @Test
+    fun `edit GitLab config prefills token and project ids`() = runComposeUiTest {
+        var saved: TicketSystemConfig? = null
+        val existing = TicketSystemConfig(
+            id = "cfg-gl",
+            displayName = "GL",
+            provider = TicketProvider.GITLAB,
+            enabled = true,
+            baseUrl = "https://gitlab.com",
+            credentials = TicketCredentials.GitLabToken("glpat", listOf("123", "group/p")),
+            syncIntervalMinutes = 15,
+            issueFormat = IssueInsertFormat.DEFAULT_FORMAT
+        )
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(existing, TicketProvider.GITLAB, onSave = { saved = it }, onDismiss = {})
+            }
+        }
+        waitForIdle()
+        onNodeWithText("123, group/p").assertExists()
+        onNodeWithText("Save").performClick()
+        waitForIdle()
+        assertEquals(
+            listOf("123", "group/p"),
+            (requireNotNull(saved).credentials as TicketCredentials.GitLabToken).projectIds
+        )
+    }
+
+    @Test
+    fun `edit Trello config prefills api key and board ids`() = runComposeUiTest {
+        var saved: TicketSystemConfig? = null
+        val existing = TicketSystemConfig(
+            id = "cfg-tr",
+            displayName = "Trello",
+            provider = TicketProvider.TRELLO,
+            enabled = true,
+            baseUrl = "https://api.trello.com/1",
+            credentials = TicketCredentials.TrelloToken("apikey", "tok", listOf("b1")),
+            syncIntervalMinutes = 15,
+            issueFormat = IssueInsertFormat.DEFAULT_FORMAT
+        )
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(existing, TicketProvider.TRELLO, onSave = { saved = it }, onDismiss = {})
+            }
+        }
+        waitForIdle()
+        onNodeWithText("apikey").assertExists()
+        onNodeWithText("Save").performClick()
+        waitForIdle()
+        assertTrue(requireNotNull(saved).credentials is TicketCredentials.TrelloToken)
+    }
+
+    @Test
+    fun `editing sync interval filters non digits`() = runComposeUiTest {
+        var saved: TicketSystemConfig? = null
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(null, TicketProvider.GITLAB, onSave = { saved = it }, onDismiss = {})
+            }
+        }
+        waitForIdle()
+        onNodeWithText("Display Name").performTextInput("GL")
+        onNodeWithText("Personal Access Token").performTextInput("glpat")
+        onNodeWithText("Sync Interval (minutes)").performTextClearance()
+        onNodeWithText("Sync Interval (minutes)").performTextInput("a3b0")
+        onNodeWithText("Save").performClick()
+        waitForIdle()
+        // Non-digits are filtered, leaving "30".
+        assertEquals(30, requireNotNull(saved).syncIntervalMinutes)
     }
 }

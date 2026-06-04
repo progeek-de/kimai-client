@@ -3,6 +3,7 @@
 package de.progeek.kimai.shared.ui.ticketsystem.picker
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -305,5 +306,105 @@ class TicketPickerDialogTest {
         // No selection happened, refresh keeps the list populated.
         assertNull(output)
         onNodeWithText("PROJ-123").assertExists()
+    }
+
+    @Test
+    fun `successful load shows last sync time in status bar`() = runComposeUiTest {
+        val component = createComponent {}
+        setContent {
+            TestTheme {
+                TicketPickerDialog(component = component, onDismiss = {})
+            }
+        }
+        waitForIdle()
+
+        // Issues loaded successfully -> the store records a sync time, surfaced as "Last sync:".
+        onNodeWithText("Last sync:", substring = true).assertExists()
+    }
+
+    @Test
+    fun `offline mode marker is shown when refresh fails but sources exist`() = runComposeUiTest {
+        TestKoinModule.stopTestKoin()
+        // Empty cache forces an immediate refresh during bootstrap, which fails.
+        // hasSources stays true, so the status bar shows "Offline Mode" rather than "No Sources".
+        startKoin(hasSources = true, cachedCount = 0L, issues = emptyList())
+        coEvery { ticketRepository.refreshAllSources() } returns
+            Result.failure(Exception("Network unreachable"))
+
+        val component = createComponent {}
+        setContent {
+            TestTheme {
+                TicketPickerDialog(component = component, onDismiss = {})
+            }
+        }
+        waitForIdle()
+
+        onNodeWithText("Offline Mode").assertExists()
+        onNodeWithText("No Sources").assertDoesNotExist()
+    }
+
+    @Test
+    fun `refresh button is disabled when there are no sources`() = runComposeUiTest {
+        TestKoinModule.stopTestKoin()
+        startKoin(hasSources = false, issues = emptyList(), configs = emptyList())
+
+        val component = createComponent {}
+        setContent {
+            TestTheme {
+                TicketPickerDialog(component = component, onDismiss = {})
+            }
+        }
+        waitForIdle()
+
+        onNodeWithContentDescription("Refresh").assertIsNotEnabled()
+    }
+
+    @Test
+    fun `issue with assignee renders the assignee name`() = runComposeUiTest {
+        // issueLogin has assignee "john.doe", issueExport has none.
+        val component = createComponent {}
+        setContent {
+            TestTheme {
+                TicketPickerDialog(component = component, onDismiss = {})
+            }
+        }
+        waitForIdle()
+
+        onNodeWithText("john.doe").assertExists()
+    }
+
+    @Test
+    fun `provider badges render for jira github and gitlab issues`() = runComposeUiTest {
+        TestKoinModule.stopTestKoin()
+        val githubIssue = issueLogin.copy(
+            id = "gh-1",
+            key = "GH-1",
+            summary = "GitHub issue",
+            provider = TicketProvider.GITHUB
+        )
+        val gitlabIssue = issueExport.copy(
+            id = "gl-1",
+            key = "GL-1",
+            summary = "GitLab issue",
+            provider = TicketProvider.GITLAB
+        )
+        startKoin(
+            hasSources = true,
+            cachedCount = 3L,
+            issues = listOf(issueLogin, githubIssue, gitlabIssue)
+        )
+
+        val component = createComponent {}
+        setContent {
+            TestTheme {
+                TicketPickerDialog(component = component, onDismiss = {})
+            }
+        }
+        waitForIdle()
+
+        // One badge per provider in the rendered issue list.
+        onNodeWithText("Jira").assertExists()
+        onNodeWithText("GitHub").assertExists()
+        onNodeWithText("GitLab").assertExists()
     }
 }

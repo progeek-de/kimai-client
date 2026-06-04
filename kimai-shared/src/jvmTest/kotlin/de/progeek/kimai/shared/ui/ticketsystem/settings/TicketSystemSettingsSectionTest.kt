@@ -3,6 +3,7 @@
 package de.progeek.kimai.shared.ui.ticketsystem.settings
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
@@ -78,6 +79,36 @@ class TicketSystemSettingsSectionTest {
         baseUrl = "https://example.atlassian.net",
         credentials = TicketCredentials.JiraApiToken("user@example.com", "token"),
         syncIntervalMinutes = 30,
+        issueFormat = IssueInsertFormat.DEFAULT_FORMAT
+    )
+
+    private fun gitlabConfig(
+        id: String = "cfg-gitlab",
+        displayName: String = "Company GitLab",
+        enabled: Boolean = true
+    ) = TicketSystemConfig(
+        id = id,
+        displayName = displayName,
+        provider = TicketProvider.GITLAB,
+        enabled = enabled,
+        baseUrl = "https://gitlab.example.com",
+        credentials = TicketCredentials.GitLabToken("glpat-x", listOf("42")),
+        syncIntervalMinutes = 20,
+        issueFormat = IssueInsertFormat.DEFAULT_FORMAT
+    )
+
+    private fun trelloConfig(
+        id: String = "cfg-trello",
+        displayName: String = "Team Trello",
+        enabled: Boolean = true
+    ) = TicketSystemConfig(
+        id = id,
+        displayName = displayName,
+        provider = TicketProvider.TRELLO,
+        enabled = enabled,
+        baseUrl = "https://api.trello.com",
+        credentials = TicketCredentials.TrelloToken("key", "token", listOf("board1")),
+        syncIntervalMinutes = 10,
         issueFormat = IssueInsertFormat.DEFAULT_FORMAT
     )
 
@@ -314,5 +345,114 @@ class TicketSystemSettingsSectionTest {
         // Provider badges: "GH" for GitHub, "J" for Jira.
         onNodeWithText("GH").assertExists()
         onNodeWithText("J").assertExists()
+    }
+
+    @Test
+    fun `gitlab and trello configs render their provider indicators`() = runComposeUiTest {
+        every { configRepository.getAllConfigs() } returns flowOf(
+            listOf(gitlabConfig(), trelloConfig())
+        )
+        startKoin()
+
+        setContent {
+            TestTheme {
+                TicketSystemSettingsSection()
+            }
+        }
+        waitForIdle()
+
+        onNodeWithText("Company GitLab").assertExists()
+        onNodeWithText("Team Trello").assertExists()
+        // Provider badges: "GL" for GitLab, "TR" for Trello.
+        onNodeWithText("GL").assertExists()
+        onNodeWithText("TR").assertExists()
+    }
+
+    @Test
+    fun `disabled config renders switch in off state`() = runComposeUiTest {
+        every { configRepository.getAllConfigs() } returns flowOf(listOf(jiraConfig(enabled = false)))
+        startKoin()
+
+        setContent {
+            TestTheme {
+                TicketSystemSettingsSection()
+            }
+        }
+        waitForIdle()
+
+        onNode(isToggleable()).assertIsOff()
+    }
+
+    @Test
+    fun `toggling an enabled config off calls setEnabled with false`() = runComposeUiTest {
+        val config = githubConfig(enabled = true)
+        every { configRepository.getAllConfigs() } returns flowOf(listOf(config))
+        startKoin()
+
+        setContent {
+            TestTheme {
+                TicketSystemSettingsSection()
+            }
+        }
+        waitForIdle()
+
+        onNode(isToggleable()).performClick()
+        waitForIdle()
+
+        coVerify { configRepository.setEnabled(config.id, false) }
+    }
+
+    @Test
+    fun `cancelling delete confirmation keeps the config and does not delete`() = runComposeUiTest {
+        val config = githubConfig()
+        every { configRepository.getAllConfigs() } returns flowOf(listOf(config))
+        startKoin()
+
+        setContent {
+            TestTheme {
+                TicketSystemSettingsSection()
+            }
+        }
+        waitForIdle()
+
+        // Open edit dialog, then trigger the delete confirmation.
+        onNodeWithText("Work GitHub").performClick()
+        waitForIdle()
+        onNodeWithText("Delete").performClick()
+        waitForIdle()
+        onNodeWithText("Delete Configuration").assertExists()
+
+        // Cancel the confirmation dialog.
+        onNodeWithText("Cancel").performClick()
+        waitForIdle()
+
+        // Confirmation is gone, the config row remains and nothing was deleted.
+        onNodeWithText("Delete Configuration").assertDoesNotExist()
+        onNodeWithText("Work GitHub").assertExists()
+        coVerify(exactly = 0) { configRepository.deleteConfig(config.id) }
+    }
+
+    @Test
+    fun `config dialog can be dismissed via cancel without saving`() = runComposeUiTest {
+        val config = githubConfig()
+        every { configRepository.getAllConfigs() } returns flowOf(listOf(config))
+        startKoin()
+
+        setContent {
+            TestTheme {
+                TicketSystemSettingsSection()
+            }
+        }
+        waitForIdle()
+
+        onNodeWithText("Work GitHub").performClick()
+        waitForIdle()
+        onNodeWithText("Edit GitHub Issues").assertExists()
+
+        onNodeWithText("Cancel").performClick()
+        waitForIdle()
+
+        onNodeWithText("Edit GitHub Issues").assertDoesNotExist()
+        coVerify(exactly = 0) { configRepository.saveConfig(any()) }
     }
 }

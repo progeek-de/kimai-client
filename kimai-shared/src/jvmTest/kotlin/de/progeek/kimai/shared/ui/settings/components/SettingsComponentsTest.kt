@@ -20,7 +20,9 @@ import de.progeek.kimai.shared.ui.settings.SettingsComponent
 import de.progeek.kimai.shared.ui.theme.ThemeEnum
 import dev.icerock.moko.resources.desc.StringDesc
 import io.mockk.coVerify
+import io.mockk.every
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -248,6 +250,92 @@ class SettingsComponentsTest {
         coVerify(timeout = 2000) {
             settingsRepository.saveDefaultProject(match { it.id == TestData.project1.id })
         }
+    }
+
+    @Test
+    fun `default project section shows current selection when one is set`() = runComposeUiTest {
+        startKoin(defaultProjectId = TestData.project1.id)
+        val component = createComponent()
+
+        setContent {
+            TestTheme {
+                DefaultProjectSection(component)
+            }
+        }
+        waitForIdle()
+
+        // With a default set, the trigger shows the project name rather than the placeholder.
+        onNodeWithText(TestData.project1.name).assertIsDisplayed()
+        onNodeWithText("Select default project").assertDoesNotExist()
+    }
+
+    @Test
+    fun `switching to a different project persists the new selection`() = runComposeUiTest {
+        startKoin(defaultProjectId = TestData.project1.id)
+        val component = createComponent()
+
+        setContent {
+            TestTheme {
+                DefaultProjectSection(component)
+            }
+        }
+        waitForIdle()
+
+        // Open the dropdown via the currently selected project name.
+        onNodeWithText(TestData.project1.name).performClick()
+        waitForIdle()
+
+        // Choose a different project from the open menu.
+        onNodeWithText(TestData.project2.name).performClick()
+        waitForIdle()
+
+        coVerify(timeout = 2000) {
+            settingsRepository.saveDefaultProject(match { it.id == TestData.project2.id })
+        }
+    }
+
+    @Test
+    fun `delete entry only appears when a default project is set`() = runComposeUiTest {
+        startKoin(defaultProjectId = null)
+        val component = createComponent()
+
+        setContent {
+            TestTheme {
+                DefaultProjectSection(component)
+            }
+        }
+        waitForIdle()
+
+        // Open the dropdown via the placeholder (no default selected).
+        onNodeWithText("Select default project").performClick()
+        waitForIdle()
+
+        // Project items render, but the clear/delete entry must not, since nothing is selected.
+        onNodeWithText(TestData.project1.name).assertExists()
+        onNodeWithText("Delete").assertDoesNotExist()
+    }
+
+    @Test
+    fun `default project section renders placeholder with empty project list`() = runComposeUiTest {
+        projectRepository = TestKoinModule.createMockProjectRepository()
+        every { projectRepository.getProjects() } returns flowOf(emptyList())
+        settingsRepository = TestKoinModule.createMockSettingsRepository(defaultProjectId = null)
+        TestKoinModule.startTestKoin(
+            settingsRepository = settingsRepository,
+            projectRepository = projectRepository
+        )
+        val component = createComponent()
+
+        setContent {
+            TestTheme {
+                DefaultProjectSection(component)
+            }
+        }
+        waitForIdle()
+
+        // An empty (non-null) project list still renders the field with the placeholder.
+        onNodeWithText("Default project").assertExists()
+        onNodeWithText("Select default project").assertIsDisplayed()
     }
 
     @Test
