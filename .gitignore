@@ -66,3 +66,6 @@ venv
 ./src
 ./pkg
 ./kimai-1.*
+# BMAD tooling and planning output (local only)
+_bmad/
+_bmad-output/
