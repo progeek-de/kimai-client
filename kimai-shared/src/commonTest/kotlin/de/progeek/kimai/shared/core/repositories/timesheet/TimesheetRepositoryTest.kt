@@ -9,6 +9,7 @@ import de.progeek.kimai.shared.core.models.Project
 import de.progeek.kimai.shared.core.models.Timesheet
 import de.progeek.kimai.shared.core.models.TimesheetForm
 import de.progeek.kimai.shared.core.network.client.TimesheetsClient
+import de.progeek.kimai.shared.utils.fromISOTime
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -24,6 +25,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -148,6 +150,40 @@ class TimesheetRepositoryTest {
         user = 1
     )
 
+    private fun createActiveTimesheet(
+        id: Long = 1L,
+        begin: String = "2025-01-15T09:00:00+0000"
+    ) = de.progeek.kimai.openapi.models.TimesheetCollectionExpanded(
+        id = id.toInt(),
+        begin = begin,
+        exported = false,
+        billable = true,
+        activity = de.progeek.kimai.openapi.models.ActivityExpanded(
+            id = 1,
+            name = "Development",
+            visible = true,
+            billable = true
+        ),
+        project = de.progeek.kimai.openapi.models.ProjectExpanded(
+            id = 1,
+            name = "Test Project",
+            visible = true,
+            billable = true,
+            globalActivities = true,
+            customer = de.progeek.kimai.openapi.models.Customer(
+                id = 1,
+                name = "Test Customer",
+                visible = true,
+                billable = true
+            )
+        ),
+        user = de.progeek.kimai.openapi.models.User(
+            id = 1,
+            username = "testuser",
+            alias = "Test User"
+        )
+    )
+
     // ============================================================
     // timesheetsStream() Tests
     // ============================================================
@@ -241,6 +277,45 @@ class TimesheetRepositoryTest {
         // Then
         assertTrue(result.isFailure)
         assertEquals("Network error", result.exceptionOrNull()?.message)
+        // flatMap short-circuits, so nothing is inserted
+        coVerify(exactly = 0) { mockDatasource.insert(any<List<TimesheetEntity>>()) }
+    }
+
+    @Test
+    fun `loadNewTimesheets propagates datasource insert failure`() = runTest {
+        // Given
+        val apiTimesheets = listOf(createApiTimesheetCollection(id = 1))
+        coEvery { mockClient.getTimeSheets(any(), any()) } returns Result.success(apiTimesheets)
+        coEvery { mockDatasource.insert(any<List<TimesheetEntity>>()) } returns
+            Result.failure(Exception("Database error"))
+
+        // When / Then
+        // loadNewTimesheets calls insert().getOrThrow() inside the flatMap lambda and is
+        // NOT wrapped in runCatching, so a failing insert propagates as a thrown exception.
+        val thrown = assertFailsWith<Exception> {
+            repository.loadNewTimesheets(testInstant, 10)
+        }
+        assertEquals("Database error", thrown.message)
+        coVerify { mockDatasource.insert(any<List<TimesheetEntity>>()) }
+    }
+
+    @Test
+    fun `loadNewTimesheets uses begin of last item as lastPage`() = runTest {
+        // Given
+        val lastBegin = "2025-01-10T08:00:00+0000"
+        val apiTimesheets = listOf(
+            createApiTimesheetCollection(id = 1, begin = "2025-01-15T09:00:00+0000"),
+            createApiTimesheetCollection(id = 2, begin = lastBegin)
+        )
+        coEvery { mockClient.getTimeSheets(any(), any()) } returns Result.success(apiTimesheets)
+        coEvery { mockDatasource.insert(any<List<TimesheetEntity>>()) } returns Result.success(Unit)
+
+        // When
+        val result = repository.loadNewTimesheets(testInstant, 10)
+
+        // Then
+        assertTrue(result.isSuccess)
+        assertEquals(lastBegin.fromISOTime(), result.getOrNull())
     }
 
     // ============================================================
@@ -336,6 +411,44 @@ class TimesheetRepositoryTest {
         coVerify { mockClient.updateTimesheet(form) }
         coVerify { mockDatasource.getById(123) }
         coVerify { mockDatasource.update(any()) }
+    }
+
+    @Test
+    fun `updateTimesheet does not call client when datasource reload returns cached value`() = runTest {
+        // Given - after a successful client update, loadTimesheetById finds a cached value,
+        // so it must NOT trigger a second network fetch via getTimesheetById
+        val form = createTestTimesheetForm(id = 123)
+        val updatedApiEntity = createApiTimesheetEntity(id = 123)
+        val cachedTimesheet = createTestTimesheet(id = 123)
+
+        coEvery { mockClient.updateTimesheet(form) } returns Result.success(updatedApiEntity)
+        coEvery { mockDatasource.getById(123) } returns Result.success(cachedTimesheet)
+        coEvery { mockDatasource.update(any()) } returns Result.success(cachedTimesheet)
+
+        // When
+        val result = repository.updateTimesheet(form)
+
+        // Then
+        assertTrue(result.isSuccess)
+        coVerify(exactly = 0) { mockClient.getTimesheetById(any()) }
+        coVerify { mockDatasource.update(any()) }
+    }
+
+    @Test
+    fun `updateTimesheet propagates failure from loadTimesheetById`() = runTest {
+        // Given - client update succeeds but the subsequent reload fails
+        val form = createTestTimesheetForm(id = 123)
+        val updatedApiEntity = createApiTimesheetEntity(id = 123)
+        coEvery { mockClient.updateTimesheet(form) } returns Result.success(updatedApiEntity)
+        coEvery { mockDatasource.getById(123) } returns Result.failure(Exception("Database error"))
+
+        // When
+        val result = repository.updateTimesheet(form)
+
+        // Then
+        assertTrue(result.isFailure)
+        assertEquals("Database error", result.exceptionOrNull()?.message)
+        coVerify(exactly = 0) { mockDatasource.update(any()) }
     }
 
     @Test
@@ -437,6 +550,22 @@ class TimesheetRepositoryTest {
         assertEquals("Network error", result.exceptionOrNull()?.message)
     }
 
+    @Test
+    fun `restartTimesheet propagates datasource insert failure`() = runTest {
+        // Given
+        val restartedEntity = createApiTimesheetEntity(id = 124)
+        coEvery { mockClient.restartTimesheet(123) } returns Result.success(restartedEntity)
+        coEvery { mockDatasource.insert(any<TimesheetEntity>()) } returns Result.failure(Exception("Database error"))
+
+        // When
+        val result = repository.restartTimesheet(123)
+
+        // Then
+        assertTrue(result.isFailure)
+        assertEquals("Database error", result.exceptionOrNull()?.message)
+        coVerify { mockDatasource.insert(any<TimesheetEntity>()) }
+    }
+
     // ============================================================
     // stopTimesheet() Tests
     // ============================================================
@@ -472,6 +601,22 @@ class TimesheetRepositoryTest {
         // Then
         assertTrue(result.isFailure)
         assertEquals("Network error", result.exceptionOrNull()?.message)
+    }
+
+    @Test
+    fun `stopTimesheet propagates datasource insert failure`() = runTest {
+        // Given
+        val stoppedEntity = createApiTimesheetEntity(id = 123, end = "2025-01-15T17:00:00+0000")
+        coEvery { mockClient.stopTimesheet(123) } returns Result.success(stoppedEntity)
+        coEvery { mockDatasource.insert(any<TimesheetEntity>()) } returns Result.failure(Exception("Database error"))
+
+        // When
+        val result = repository.stopTimesheet(123)
+
+        // Then
+        assertTrue(result.isFailure)
+        assertEquals("Database error", result.exceptionOrNull()?.message)
+        coVerify { mockDatasource.insert(any<TimesheetEntity>()) }
     }
 
     // ============================================================
@@ -513,6 +658,23 @@ class TimesheetRepositoryTest {
         coVerify(exactly = 0) { mockDatasource.insert(any<TimesheetEntity>()) }
     }
 
+    @Test
+    fun `addTimesheet propagates datasource insert failure`() = runTest {
+        // Given
+        val form = createTestTimesheetForm()
+        val createdEntity = createApiTimesheetEntity(id = 125)
+        coEvery { mockClient.createTimesheet(form) } returns Result.success(createdEntity)
+        coEvery { mockDatasource.insert(any<TimesheetEntity>()) } returns Result.failure(Exception("Database error"))
+
+        // When
+        val result = repository.addTimesheet(form)
+
+        // Then
+        assertTrue(result.isFailure)
+        assertEquals("Database error", result.exceptionOrNull()?.message)
+        coVerify { mockDatasource.insert(any<TimesheetEntity>()) }
+    }
+
     // ============================================================
     // createTimesheet() Tests
     // ============================================================
@@ -527,39 +689,9 @@ class TimesheetRepositoryTest {
         coEvery { mockDatasource.insert(any<TimesheetEntity>()) } returns Result.success(createdTimesheet)
 
         // Mock getActiveTimesheets to return a form
-        val activeTimesheets = listOf(
-            de.progeek.kimai.openapi.models.TimesheetCollectionExpanded(
-                id = 125,
-                begin = "2025-01-15T09:00:00+0000",
-                exported = false,
-                billable = true,
-                activity = de.progeek.kimai.openapi.models.ActivityExpanded(
-                    id = 1,
-                    name = "Development",
-                    visible = true,
-                    billable = true
-                ),
-                project = de.progeek.kimai.openapi.models.ProjectExpanded(
-                    id = 1,
-                    name = "Test Project",
-                    visible = true,
-                    billable = true,
-                    globalActivities = true,
-                    customer = de.progeek.kimai.openapi.models.Customer(
-                        id = 1,
-                        name = "Test Customer",
-                        visible = true,
-                        billable = true
-                    )
-                ),
-                user = de.progeek.kimai.openapi.models.User(
-                    id = 1,
-                    username = "testuser",
-                    alias = "Test User"
-                )
-            )
+        coEvery { mockClient.getActiveTimesheets() } returns Result.success(
+            listOf(createActiveTimesheet(id = 125))
         )
-        coEvery { mockClient.getActiveTimesheets() } returns Result.success(activeTimesheets)
 
         // When
         val result = repository.createTimesheet(form)
@@ -569,6 +701,62 @@ class TimesheetRepositoryTest {
         assertNotNull(result.getOrNull())
         coVerify { mockClient.createTimesheet(form) }
         coVerify { mockClient.getActiveTimesheets() }
+    }
+
+    @Test
+    fun `createTimesheet inserts created entity into datasource`() = runTest {
+        // Given
+        val form = createTestTimesheetForm()
+        val createdEntity = createApiTimesheetEntity(id = 125)
+        val createdTimesheet = createTestTimesheet(id = 125)
+        coEvery { mockClient.createTimesheet(form) } returns Result.success(createdEntity)
+        coEvery { mockDatasource.insert(any<TimesheetEntity>()) } returns Result.success(createdTimesheet)
+        coEvery { mockClient.getActiveTimesheets() } returns Result.success(
+            listOf(createActiveTimesheet(id = 125))
+        )
+
+        // When
+        val result = repository.createTimesheet(form)
+
+        // Then
+        assertTrue(result.isSuccess)
+        assertEquals(125L, result.getOrNull()?.id)
+        coVerify { mockDatasource.insert(any<TimesheetEntity>()) }
+    }
+
+    @Test
+    fun `createTimesheet fails when active timesheets list is empty`() = runTest {
+        // Given - create succeeds but no active timesheet is returned, so first() throws
+        val form = createTestTimesheetForm()
+        val createdEntity = createApiTimesheetEntity(id = 125)
+        val createdTimesheet = createTestTimesheet(id = 125)
+        coEvery { mockClient.createTimesheet(form) } returns Result.success(createdEntity)
+        coEvery { mockDatasource.insert(any<TimesheetEntity>()) } returns Result.success(createdTimesheet)
+        coEvery { mockClient.getActiveTimesheets() } returns Result.success(emptyList())
+
+        // When
+        val result = repository.createTimesheet(form)
+
+        // Then
+        assertTrue(result.isFailure)
+    }
+
+    @Test
+    fun `createTimesheet fails when getActiveTimesheets fails`() = runTest {
+        // Given - getActiveTimesheets().getOrThrow() throws, runCatching wraps to failure
+        val form = createTestTimesheetForm()
+        val createdEntity = createApiTimesheetEntity(id = 125)
+        val createdTimesheet = createTestTimesheet(id = 125)
+        coEvery { mockClient.createTimesheet(form) } returns Result.success(createdEntity)
+        coEvery { mockDatasource.insert(any<TimesheetEntity>()) } returns Result.success(createdTimesheet)
+        coEvery { mockClient.getActiveTimesheets() } returns Result.failure(Exception("Active error"))
+
+        // When
+        val result = repository.createTimesheet(form)
+
+        // Then
+        assertTrue(result.isFailure)
+        assertEquals("Active error", result.exceptionOrNull()?.message)
     }
 
     @Test
