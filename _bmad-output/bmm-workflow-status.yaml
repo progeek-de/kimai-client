@@ -1,0 +1,164 @@
+# Workflow Status - kimai-client
+# BMad Method - Brownfield Track
+# Generated: 2025-12-26
+
+# This tracks progress through BMM methodology phases.
+# Implementation phase is tracked separately in sprint-status.yaml
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met
+#
+# Completion Status:
+#   - {file-path}: File created/found
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2025-12-26"
+project: "kimai-client"
+project_type: "desktop-app-with-plugin-system"
+selected_track: "method"
+field_type: "brownfield"
+workflow_path: "method-brownfield.yaml"
+
+# User description captured during init
+user_vision: |
+  Plugin-System für bezahlte Features (separate Repository)
+  Multi-Platform: Desktop, iOS & Android (App Store Releases)
+  Monetarisierung via Plugin-Aktivierung
+  Universeller Time Tracker - unabhängig von Kimai, kompatibel mit anderen Backends
+
+workflow_status:
+  # Prerequisite - Required for brownfield
+  prerequisite:
+    - id: "document-project"
+      name: "Document Project"
+      status: "docs/index.md"
+      agent: "analyst"
+      command: "/bmad:bmm:workflows:document-project"
+      purpose: "Understand existing codebase before planning"
+      completed_at: "2025-12-26"
+      outputs:
+        - "docs/index.md"
+        - "docs/architecture.md"
+        - "docs/development-guide.md"
+        - "docs/state-management.md"
+        - "docs/component-inventory.md"
+        - "docs/source-tree-analysis.md"
+        - "docs/project-overview.md"
+
+  # Phase 0: Discovery (User selected: all) - COMPLETED
+  phase_0_discovery:
+    - id: "brainstorm"
+      name: "Brainstorm"
+      status: "_bmad-output/analysis/brainstorming-session-2025-12-26.md"
+      agent: "analyst"
+      command: "/bmad:core:workflows:brainstorming"
+      purpose: "Creative exploration for plugin concepts, monetization models"
+      completed_at: "2025-12-26"
+      outputs:
+        - "_bmad-output/analysis/brainstorming-session-2025-12-26.md"
+      key_decisions:
+        - "Plugin-System Architektur zuerst (Fundament)"
+        - "Pilot-Plugin: Task Integration (Jira/GitHub/GitLab)"
+        - "Monetarisierung: License Key basiert"
+        - "Go-to-Market: KMU first"
+
+    - id: "research"
+      name: "Research"
+      status: "_bmad-output/project-planning-artifacts/research/"
+      agent: "analyst"
+      command: "/bmad:bmm:workflows:research"
+      purpose: "Technical analysis: plugin architectures, payment providers, time-tracker APIs"
+      completed_at: "2025-12-26"
+      outputs:
+        - "_bmad-output/project-planning-artifacts/research/technical-plugin-architecture-research-2025-12-26.md"
+        - "_bmad-output/project-planning-artifacts/research/market-time-tracking-research-2025-12-26.md"
+      key_findings:
+        technical:
+          - "PF4J recommended for plugin loading"
+          - "ServiceLoader + ClassLoader pattern"
+          - "ED25519/ECDSA for license keys"
+          - "Hexagonal Architecture for plugins"
+        market:
+          - "Market size: $3-8B, 13-18% CAGR"
+          - "Pricing: €5-8/user/mo for Pro tier"
+          - "USP: Privacy-First + Universal Backend"
+
+  # Phase 1: Planning - COMPLETED
+  phase_1_planning:
+    - id: "prd"
+      name: "Product Requirements Document"
+      status: "_bmad-output/prd.md"
+      agent: "pm"
+      command: "/bmad:bmm:workflows:create-prd"
+      purpose: "Define product requirements for plugin system and multi-platform expansion"
+      completed_at: "2025-12-27"
+      outputs:
+        - "_bmad-output/prd.md"
+      key_contents:
+        - "72 Functional Requirements across 9 categories"
+        - "38 Non-Functional Requirements (Performance, Security, Reliability)"
+        - "10 User Journeys (Freelancer, KMU Employee, IT Admin, etc.)"
+        - "3 MVP Phases: Plugin Foundation → Task Integration → Mobile"
+        - "Success Criteria: 1,000 paying users, €5-8/user/month"
+
+    - id: "create-ux-design"
+      name: "UX Design"
+      status: "conditional:if_has_ui"
+      agent: "ux-designer"
+      command: "/bmad:bmm:workflows:create-ux-design"
+      purpose: "Design user experience for plugin management, settings, payments"
+
+  # Phase 2: Solutioning - IN PROGRESS
+  phase_2_solutioning:
+    - id: "create-architecture"
+      name: "Architecture"
+      status: "_bmad-output/architecture.md"
+      agent: "architect"
+      command: "/bmad:bmm:workflows:create-architecture"
+      purpose: "Integration architecture - plugin system, multi-backend abstraction"
+      completed_at: "2025-12-27"
+      outputs:
+        - "_bmad-output/architecture.md"
+      key_decisions:
+        - "Open Core Model: AGPLv3 core + proprietary plugins"
+        - "PF4J for plugin loading (Post-MVP dynamic)"
+        - "ED25519 for license validation"
+        - "Separate SQLite database per plugin"
+        - "MVIKotlin Stores for plugin-core communication"
+        - "Build-time plugin integration for MVP"
+        - "Claude Skills documented for AI agents"
+
+    - id: "create-epics-and-stories"
+      name: "Epics & Stories"
+      status: "required"
+      agent: "pm"
+      command: "/bmad:bmm:workflows:create-epics-and-stories"
+      purpose: "Break down PRD into implementable epics and stories"
+
+    - id: "test-design"
+      name: "Test Design"
+      status: "recommended"
+      agent: "tea"
+      command: "/bmad:bmm:workflows:testarch-test-design"
+      purpose: "System-level testability review"
+
+    - id: "implementation-readiness"
+      name: "Implementation Readiness Check"
+      status: "required"
+      agent: "architect"
+      command: "/bmad:bmm:workflows:check-implementation-readiness"
+      purpose: "Validates PRD + Architecture + Epics before implementation"
+
+  # Phase 3: Implementation
+  phase_3_implementation:
+    - id: "sprint-planning"
+      name: "Sprint Planning"
+      status: "required"
+      agent: "sm"
+      command: "/bmad:bmm:workflows:sprint-planning"
+      purpose: "Create sprint plan with prioritized stories"

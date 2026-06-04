@@ -7,6 +7,7 @@ import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
 import io.github.aakira.napier.Napier
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.engine.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -17,8 +18,11 @@ import kotlinx.serialization.json.Json
 
 /**
  * HTTP client for GitHub REST API v3.
+ *
+ * @param engine optional Ktor engine override. Production uses the default engine;
+ * tests inject a [io.ktor.client.engine.mock.MockEngine] to exercise HTTP logic.
  */
-internal class GitHubTicketClient {
+internal class GitHubTicketClient(engine: HttpClientEngine? = null) {
 
     companion object {
         private const val TAG = "GitHubTicketClient"
@@ -27,7 +31,7 @@ internal class GitHubTicketClient {
         private const val GITHUB_API_VERSION = "2022-11-28"
     }
 
-    private val httpClient = HttpClient {
+    private fun HttpClientConfig<*>.configure() {
         install(ContentNegotiation) {
             json(
                 Json {
@@ -41,6 +45,9 @@ internal class GitHubTicketClient {
             connectTimeoutMillis = CONNECT_TIMEOUT_MS
         }
     }
+
+    private val httpClient =
+        if (engine != null) HttpClient(engine) { configure() } else HttpClient { configure() }
 
     /**
      * Test connection to GitHub.

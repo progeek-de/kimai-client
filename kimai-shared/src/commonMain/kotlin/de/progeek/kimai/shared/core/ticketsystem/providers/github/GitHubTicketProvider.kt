@@ -12,11 +12,13 @@ import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
 /**
  * GitHub implementation of TicketSystemProvider.
  */
-class GitHubTicketProvider : TicketSystemProvider {
+class GitHubTicketProvider internal constructor(
+    private val client: GitHubTicketClient
+) : TicketSystemProvider {
+
+    constructor() : this(GitHubTicketClient())
 
     override val providerType: TicketProvider = TicketProvider.GITHUB
-
-    private val client = GitHubTicketClient()
 
     override suspend fun testConnection(config: TicketSystemConfig): Result<String> {
         validateConfig(config)

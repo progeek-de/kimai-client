@@ -114,6 +114,9 @@ kotlin {
                 implementation(libs.turbine)
                 implementation(libs.kotlinx.coroutines.test)
 
+                // Ktor mock engine for HTTP client tests
+                implementation(libs.ktor.client.mock)
+
                 // sqldelight in-memory driver for testing
                 implementation(libs.sqldelight.sqlite.driver)
 
@@ -221,6 +224,23 @@ jacoco {
     toolVersion = "0.8.11"
 }
 
+// Classes excluded from coverage analysis: generated code plus declarative
+// wiring / branding that carries no meaningful logic to test.
+val coverageExclusions = listOf(
+    "**/database/**", // SQLDelight generated code
+    "**/buildkonfig/**", // BuildKonfig generated code
+    "**/di/**", // Koin DI modules (declarative wiring only)
+    "**/ui/theme/progeek/**", // Brand theme: ThemeKt / ColorKt declarations
+    "**/ui/theme/kimai/KimaiColors*", // Brand color palette declarations
+    "**/*\$*" // Inner / lambda / anonymous classes
+)
+
+fun coverageClassDirectories() = files(
+    fileTree("${layout.buildDirectory.get()}/classes/kotlin/jvm/main") {
+        exclude(coverageExclusions)
+    }
+)
+
 tasks.register<JacocoReport>("jacocoTestReport") {
     dependsOn(tasks.named("jvmTest"))
     group = "verification"
@@ -232,17 +252,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         csv.required.set(false)
     }
 
-    classDirectories.setFrom(
-        files(
-            fileTree("${layout.buildDirectory.get()}/classes/kotlin/jvm/main") {
-                exclude(
-                    "**/database/**", // Exclude SQLDelight generated code
-                    "**/buildkonfig/**", // Exclude BuildKonfig generated code
-                    "**/*\$*" // Exclude inner classes
-                )
-            }
-        )
-    )
+    classDirectories.setFrom(coverageClassDirectories())
 
     sourceDirectories.setFrom(files("src/commonMain/kotlin"))
     executionData.setFrom(files("${layout.buildDirectory.get()}/jacoco/jvmTest.exec"))
@@ -260,22 +270,12 @@ tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
     violationRules {
         rule {
             limit {
-                minimum = "0.60".toBigDecimal() // 60% minimum coverage
+                minimum = "0.90".toBigDecimal() // 90% minimum instruction coverage
             }
         }
     }
 
-    classDirectories.setFrom(
-        files(
-            fileTree("${layout.buildDirectory.get()}/classes/kotlin/jvm/main") {
-                exclude(
-                    "**/database/**",
-                    "**/buildkonfig/**",
-                    "**/*\$*"
-                )
-            }
-        )
-    )
+    classDirectories.setFrom(coverageClassDirectories())
 
     executionData.setFrom(files("${layout.buildDirectory.get()}/jacoco/jvmTest.exec"))
 }
