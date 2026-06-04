@@ -1,0 +1,242 @@
+@file:OptIn(ExperimentalTestApi::class, kotlin.time.ExperimentalTime::class)
+
+package de.progeek.kimai.shared.ui.ticketsystem.settings
+
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.runComposeUiTest
+import de.progeek.kimai.shared.core.ticketsystem.models.IssueInsertFormat
+import de.progeek.kimai.shared.core.ticketsystem.models.TicketCredentials
+import de.progeek.kimai.shared.core.ticketsystem.models.TicketProvider
+import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
+import de.progeek.kimai.shared.core.ticketsystem.repository.TicketSystemRepository
+import de.progeek.kimai.shared.testutils.TestKoinModule
+import de.progeek.kimai.shared.testutils.TestTheme
+import io.mockk.coEvery
+import io.mockk.mockk
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+class TicketSystemConfigDialogTest {
+
+    private lateinit var ticketRepository: TicketSystemRepository
+
+    @Before
+    fun setUp() {
+        ticketRepository = mockk(relaxed = true) {
+            coEvery { testConnection(any()) } returns Result.success("Connected as tester")
+        }
+        TestKoinModule.startTestKoin(ticketSystemRepository = ticketRepository)
+    }
+
+    @After
+    fun tearDown() {
+        TestKoinModule.stopTestKoin()
+    }
+
+    private fun githubConfig() = TicketSystemConfig(
+        id = "cfg-gh",
+        displayName = "Work GitHub",
+        provider = TicketProvider.GITHUB,
+        enabled = true,
+        baseUrl = "https://api.github.com",
+        credentials = TicketCredentials.GitHubToken("ghp_x", "octocat", listOf("a", "b")),
+        syncIntervalMinutes = 15,
+        issueFormat = IssueInsertFormat.DEFAULT_FORMAT
+    )
+
+    @Test
+    fun `add GitHub builds GitHubToken config on save`() = runComposeUiTest {
+        var saved: TicketSystemConfig? = null
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(
+                    existingConfig = null,
+                    provider = TicketProvider.GITHUB,
+                    onSave = { saved = it },
+                    onDismiss = {}
+                )
+            }
+        }
+        waitForIdle()
+        onNodeWithText("Add GitHub Issues").assertExists()
+        onNodeWithText("Display Name").performTextInput("My GH")
+        onNodeWithText("Personal Access Token").performTextInput("ghp_token")
+        onNodeWithText("Owner/Organization").performTextInput("octocat")
+        onNodeWithText("Repositories (optional)").performTextInput("repo1, repo2")
+        onNodeWithText("Save").performClick()
+        waitForIdle()
+
+        val config = requireNotNull(saved)
+        assertEquals(TicketProvider.GITHUB, config.provider)
+        val creds = config.credentials as TicketCredentials.GitHubToken
+        assertEquals("octocat", creds.owner)
+        assertEquals(listOf("repo1", "repo2"), creds.repositories)
+    }
+
+    @Test
+    fun `add Jira with API token builds JiraApiToken`() = runComposeUiTest {
+        var saved: TicketSystemConfig? = null
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(null, TicketProvider.JIRA, onSave = { saved = it }, onDismiss = {})
+            }
+        }
+        waitForIdle()
+        onNodeWithText("Display Name").performTextInput("Jira Cloud")
+        onNodeWithText("Base URL").performTextInput("https://x.atlassian.net")
+        onNodeWithText("Email").performTextInput("user@example.com")
+        // "API Token" also labels a FilterChip, so target the editable field explicitly
+        onNode(hasSetTextAction() and hasText("API Token")).performTextInput("api-token")
+        onNodeWithText("Save").performClick()
+        waitForIdle()
+
+        val creds = requireNotNull(saved).credentials
+        assertTrue(creds is TicketCredentials.JiraApiToken)
+        assertEquals("user@example.com", creds.email)
+    }
+
+    @Test
+    fun `Jira PAT chip hides email and builds JiraPersonalAccessToken`() = runComposeUiTest {
+        var saved: TicketSystemConfig? = null
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(null, TicketProvider.JIRA, onSave = { saved = it }, onDismiss = {})
+            }
+        }
+        waitForIdle()
+        onNodeWithText("Display Name").performTextInput("Jira Server")
+        onNodeWithText("Base URL").performTextInput("https://jira.local")
+        onNodeWithText("PAT").performClick()
+        waitForIdle()
+        onNodeWithText("Email").assertDoesNotExist()
+        onNodeWithText("Personal Access Token").performTextInput("pat-token")
+        onNodeWithText("Save").performClick()
+        waitForIdle()
+
+        assertTrue(requireNotNull(saved).credentials is TicketCredentials.JiraPersonalAccessToken)
+    }
+
+    @Test
+    fun `add GitLab builds GitLabToken`() = runComposeUiTest {
+        var saved: TicketSystemConfig? = null
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(null, TicketProvider.GITLAB, onSave = { saved = it }, onDismiss = {})
+            }
+        }
+        waitForIdle()
+        onNodeWithText("Display Name").performTextInput("GL")
+        onNodeWithText("Personal Access Token").performTextInput("glpat")
+        onNodeWithText("Project IDs or Paths (optional)").performTextInput("123, group/p")
+        onNodeWithText("Save").performClick()
+        waitForIdle()
+
+        val creds = requireNotNull(saved).credentials as TicketCredentials.GitLabToken
+        assertEquals(listOf("123", "group/p"), creds.projectIds)
+    }
+
+    @Test
+    fun `add Trello builds TrelloToken`() = runComposeUiTest {
+        var saved: TicketSystemConfig? = null
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(null, TicketProvider.TRELLO, onSave = { saved = it }, onDismiss = {})
+            }
+        }
+        waitForIdle()
+        onNodeWithText("Display Name").performTextInput("Trello")
+        onNodeWithText("API Key").performTextInput("key")
+        onNodeWithText("Token").performTextInput("tok")
+        onNodeWithText("Save").performClick()
+        waitForIdle()
+
+        assertTrue(requireNotNull(saved).credentials is TicketCredentials.TrelloToken)
+    }
+
+    @Test
+    fun `save is disabled when display name blank`() = runComposeUiTest {
+        var saved: TicketSystemConfig? = null
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(null, TicketProvider.GITLAB, onSave = { saved = it }, onDismiss = {})
+            }
+        }
+        waitForIdle()
+        // displayName left blank -> Save disabled (baseUrl has a default for GitLab)
+        onNodeWithText("Save").assertIsNotEnabled()
+        assertNull(saved)
+    }
+
+    @Test
+    fun `edit mode shows Edit title, prefilled fields and Delete`() = runComposeUiTest {
+        var deleted = false
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(
+                    existingConfig = githubConfig(),
+                    provider = TicketProvider.GITHUB,
+                    onSave = {},
+                    onDelete = { deleted = true },
+                    onDismiss = {}
+                )
+            }
+        }
+        waitForIdle()
+        onNodeWithText("Edit GitHub Issues").assertExists()
+        onNodeWithText("octocat").assertExists() // owner prefilled from LaunchedEffect
+        onNodeWithText("Delete").performClick()
+        assertTrue(deleted)
+    }
+
+    @Test
+    fun `cancel invokes onDismiss`() = runComposeUiTest {
+        var dismissed = false
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(null, TicketProvider.GITHUB, onSave = {}, onDismiss = { dismissed = true })
+            }
+        }
+        waitForIdle()
+        onNodeWithText("Cancel").performClick()
+        assertTrue(dismissed)
+    }
+
+    @Test
+    fun `toggle token visibility`() = runComposeUiTest {
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(null, TicketProvider.GITHUB, onSave = {}, onDismiss = {})
+            }
+        }
+        waitForIdle()
+        onNodeWithContentDescription("Toggle visibility").performClick()
+        waitForIdle()
+        onNodeWithContentDescription("Toggle visibility").assertExists()
+    }
+
+    @Test
+    fun `test connection shows result`() = runComposeUiTest {
+        setContent {
+            TestTheme {
+                TicketSystemConfigDialog(null, TicketProvider.GITHUB, onSave = {}, onDismiss = {})
+            }
+        }
+        waitForIdle()
+        onNodeWithText("Personal Access Token").performTextInput("ghp_token")
+        onNodeWithText("Owner/Organization").performTextInput("octocat")
+        onNodeWithText("Test Connection").performClick()
+        waitForIdle()
+        onNodeWithText("Connected as tester").assertExists()
+    }
+}
