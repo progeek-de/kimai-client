@@ -10,11 +10,13 @@ import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
 /**
  * GitLab implementation of TicketSystemProvider.
  */
-class GitLabTicketProvider : TicketSystemProvider {
+class GitLabTicketProvider internal constructor(
+    private val client: GitLabTicketClient
+) : TicketSystemProvider {
+
+    constructor() : this(GitLabTicketClient())
 
     override val providerType: TicketProvider = TicketProvider.GITLAB
-
-    private val client = GitLabTicketClient()
 
     override suspend fun testConnection(config: TicketSystemConfig): Result<String> {
         validateConfig(config)

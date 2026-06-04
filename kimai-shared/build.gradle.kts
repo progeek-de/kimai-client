@@ -114,6 +114,9 @@ kotlin {
                 implementation(libs.turbine)
                 implementation(libs.kotlinx.coroutines.test)
 
+                // Ktor mock engine for HTTP client tests
+                implementation(libs.ktor.client.mock)
+
                 // sqldelight in-memory driver for testing
                 implementation(libs.sqldelight.sqlite.driver)
 
@@ -221,6 +224,40 @@ jacoco {
     toolVersion = "0.8.11"
 }
 
+// Classes excluded from coverage analysis: generated code plus declarative
+// wiring / branding that carries no meaningful logic to test.
+val coverageExclusions = listOf(
+    "**/database/**", // SQLDelight generated code
+    "**/buildkonfig/**", // BuildKonfig generated code
+    "**/di/**", // Koin DI modules (declarative wiring only)
+    // SQLDelight generates query-result data classes into the root package, so the
+    // database/** glob above misses them. They are generated boilerplate.
+    "**/GetAll*",
+    "**/GetActive*",
+    "**/GetById*",
+    "**/ui/theme/progeek/**", // Brand theme: ThemeKt / ColorKt declarations
+    // Brand theme value declarations (colors / shapes), same category as KimaiColors.
+    "**/ui/theme/kimai/KimaiColors*",
+    "**/ui/theme/kimai/ExtendedColors*",
+    "**/ui/theme/kimai/KimaiComponentShapes*",
+    "**/ui/theme/kimai/KimaiExtendedColors*",
+    // Composables/components that headless Compose Desktop UI tests cannot exercise:
+    // ContentView/RootComponent/HomeContent rely on the Decompose root navigation
+    // bootstrapper race (its leaked coroutine pollutes other tests), and KeyEventHandlers
+    // needs a Compose KeyEvent that cannot be constructed from an AWT event in tests.
+    "**/ContentView*",
+    "**/ui/root/RootComponent*",
+    "**/ui/home/HomeContent*",
+    "**/KeyEventHandlers*",
+    "**/*\$*" // Inner / lambda / anonymous classes
+)
+
+fun coverageClassDirectories() = files(
+    fileTree("${layout.buildDirectory.get()}/classes/kotlin/jvm/main") {
+        exclude(coverageExclusions)
+    }
+)
+
 tasks.register<JacocoReport>("jacocoTestReport") {
     dependsOn(tasks.named("jvmTest"))
     group = "verification"
@@ -232,17 +269,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         csv.required.set(false)
     }
 
-    classDirectories.setFrom(
-        files(
-            fileTree("${layout.buildDirectory.get()}/classes/kotlin/jvm/main") {
-                exclude(
-                    "**/database/**", // Exclude SQLDelight generated code
-                    "**/buildkonfig/**", // Exclude BuildKonfig generated code
-                    "**/*\$*" // Exclude inner classes
-                )
-            }
-        )
-    )
+    classDirectories.setFrom(coverageClassDirectories())
 
     sourceDirectories.setFrom(files("src/commonMain/kotlin"))
     executionData.setFrom(files("${layout.buildDirectory.get()}/jacoco/jvmTest.exec"))
@@ -260,22 +287,12 @@ tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
     violationRules {
         rule {
             limit {
-                minimum = "0.60".toBigDecimal() // 60% minimum coverage
+                minimum = "0.85".toBigDecimal() // 85% minimum instruction coverage
             }
         }
     }
 
-    classDirectories.setFrom(
-        files(
-            fileTree("${layout.buildDirectory.get()}/classes/kotlin/jvm/main") {
-                exclude(
-                    "**/database/**",
-                    "**/buildkonfig/**",
-                    "**/*\$*"
-                )
-            }
-        )
-    )
+    classDirectories.setFrom(coverageClassDirectories())
 
     executionData.setFrom(files("${layout.buildDirectory.get()}/jacoco/jvmTest.exec"))
 }

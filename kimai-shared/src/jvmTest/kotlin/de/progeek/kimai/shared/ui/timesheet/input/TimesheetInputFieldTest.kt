@@ -1,6 +1,9 @@
 package de.progeek.kimai.shared.ui.timesheet.input
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runComposeUiTest
 import de.progeek.kimai.shared.core.mapper.toTimesheetForm
 import de.progeek.kimai.shared.testutils.TestData
@@ -173,6 +176,13 @@ class TimesheetInputFieldTest {
 
     @Test(timeout = 30000)
     fun `description updates when text is entered`() = runComposeUiTest {
+        val timesheetRepository = TestKoinModule.createMockTimesheetRepository(
+            timesheets = TestData.timesheets,
+            runningTimesheet = null
+        )
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(timesheetRepository = timesheetRepository)
+
         val component = createTimesheetInputComponent()
 
         setContent {
@@ -183,7 +193,33 @@ class TimesheetInputFieldTest {
 
         waitForIdle()
 
-        // Enter text in the description field
-        // The state should update accordingly
+        // Enter text in the description field; the field reflects the typed value.
+        onNode(hasSetTextAction()).performTextInput("My task")
+        waitForIdle()
+
+        onNodeWithText("My task").assertExists()
+    }
+
+    @Test(timeout = 30000)
+    fun `start button is rendered alongside the input field`() = runComposeUiTest {
+        val timesheetRepository = TestKoinModule.createMockTimesheetRepository(
+            timesheets = TestData.timesheets,
+            runningTimesheet = null
+        )
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(timesheetRepository = timesheetRepository)
+
+        val component = createTimesheetInputComponent()
+
+        setContent {
+            TestTheme {
+                TimesheetInputField(component)
+            }
+        }
+
+        waitForIdle()
+
+        // The default entry mode is TIMER with no running timesheet -> Start button.
+        onNodeWithText("Start").assertExists()
     }
 }

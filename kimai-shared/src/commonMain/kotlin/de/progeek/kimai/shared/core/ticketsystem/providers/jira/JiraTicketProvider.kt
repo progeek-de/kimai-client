@@ -11,11 +11,13 @@ import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
  * Jira implementation of TicketSystemProvider.
  * Supports both Jira Cloud (API Token) and Jira Server/Data Center (PAT).
  */
-class JiraTicketProvider : TicketSystemProvider {
+class JiraTicketProvider internal constructor(
+    private val client: JiraTicketClient
+) : TicketSystemProvider {
+
+    constructor() : this(JiraTicketClient())
 
     override val providerType: TicketProvider = TicketProvider.JIRA
-
-    private val client = JiraTicketClient()
 
     override suspend fun testConnection(config: TicketSystemConfig): Result<String> {
         validateConfig(config)

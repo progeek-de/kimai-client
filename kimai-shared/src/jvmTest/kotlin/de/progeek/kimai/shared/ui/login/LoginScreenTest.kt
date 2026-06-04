@@ -3,6 +3,7 @@ package de.progeek.kimai.shared.ui.login
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -14,12 +15,14 @@ import de.progeek.kimai.shared.testutils.TestTheme
 import de.progeek.kimai.shared.testutils.createTestComponentContext
 import de.progeek.kimai.shared.testutils.createTestDispatchers
 import de.progeek.kimai.shared.testutils.createTestStoreFactory
+import dev.icerock.moko.resources.desc.StringDesc
 import io.mockk.coEvery
 import io.mockk.coVerify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import java.util.Locale
 
 @OptIn(ExperimentalTestApi::class, ExperimentalCoroutinesApi::class)
 class LoginScreenTest {
@@ -30,6 +33,9 @@ class LoginScreenTest {
     @Before
     fun setUp() {
         outputCallback = { output -> outputReceived = output }
+        // Pin locale to English so stringResource() assertions are deterministic.
+        StringDesc.localeType = StringDesc.LocaleType.Custom("en")
+        Locale.setDefault(Locale.ENGLISH)
         TestKoinModule.startTestKoin()
     }
 
@@ -37,6 +43,8 @@ class LoginScreenTest {
     fun tearDown() {
         TestKoinModule.stopTestKoin()
         outputReceived = null
+        StringDesc.localeType = StringDesc.LocaleType.Custom("en")
+        Locale.setDefault(Locale.ENGLISH)
     }
 
     private fun createLoginComponent(): LoginComponent {
@@ -288,5 +296,116 @@ class LoginScreenTest {
         // Dialog should be closed - Host field should not exist
         waitForIdle()
         onNodeWithText("Host", ignoreCase = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun `failed login shows invalid login error text`() = runComposeUiTest {
+        val authRepository = TestKoinModule.createMockAuthRepository(loginSuccess = false)
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(authRepository = authRepository)
+
+        val component = createLoginComponent()
+
+        setContent {
+            TestTheme {
+                LoginScreen(component)
+            }
+        }
+
+        // Drive the login intent directly so the failure path is exercised reliably
+        // (clicking would also work, but driving avoids relying on the enabled-state timing).
+        component.onLoginClick("test@example.com", "wrongpassword")
+
+        waitForIdle()
+
+        // The error branch (state.isError) should render the invalid login message.
+        onNodeWithTag("login_error_text").assertExists()
+        onNodeWithText("Invalid login or password").assertExists()
+    }
+
+    @Test
+    fun `successful login does not show error text`() = runComposeUiTest {
+        val authRepository = TestKoinModule.createMockAuthRepository(loginSuccess = true)
+        TestKoinModule.stopTestKoin()
+        TestKoinModule.startTestKoin(authRepository = authRepository)
+
+        val component = createLoginComponent()
+
+        setContent {
+            TestTheme {
+                LoginScreen(component)
+            }
+        }
+
+        component.onLoginClick("test@example.com", "password123")
+
+        waitForIdle()
+
+        // No error message on success.
+        onNodeWithTag("login_error_text").assertDoesNotExist()
+    }
+
+    @Test
+    fun `password is masked by default and toggle reveals it`() = runComposeUiTest {
+        val component = createLoginComponent()
+
+        setContent {
+            TestTheme {
+                LoginScreen(component)
+            }
+        }
+
+        // Default: visibility toggle offers to "Show password".
+        onNode(hasContentDescription("Show password")).assertExists()
+        onNode(hasContentDescription("Hide password")).assertDoesNotExist()
+
+        // Click the trailing visibility toggle.
+        onNode(hasContentDescription("Show password")).performClick()
+        waitForIdle()
+
+        // Now it offers to "Hide password" (password is revealed).
+        onNode(hasContentDescription("Hide password")).assertExists()
+        onNode(hasContentDescription("Show password")).assertDoesNotExist()
+    }
+
+    @Test
+    fun `changing base url updates host button label`() = runComposeUiTest {
+        val component = createLoginComponent()
+
+        setContent {
+            TestTheme {
+                LoginScreen(component)
+            }
+        }
+
+        // Drive a base-url change directly; the host button strips the scheme.
+        component.changedBaseUrl("https://my.custom-host.example")
+
+        waitForIdle()
+
+        onNodeWithText("my.custom-host.example", substring = true).assertExists()
+    }
+
+    @Test
+    fun `server dialog ok button is disabled and shows error for invalid url`() = runComposeUiTest {
+        val component = createLoginComponent()
+
+        setContent {
+            TestTheme {
+                LoginScreen(component)
+            }
+        }
+
+        // Open the change-server dialog.
+        onNodeWithText("kimai.cloud", substring = true).performClick()
+        waitForIdle()
+
+        // Enter an invalid URL into the host field; OK should be disabled and the
+        // invalid-url supporting text should show.
+        onNodeWithTag("dialog_host_input").performTextInput("not a url")
+        waitForIdle()
+
+        onNodeWithText("OK").assertIsNotEnabled()
+        onNodeWithText("Invalid URL", substring = true).assertExists()
     }
 }

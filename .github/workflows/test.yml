@@ -40,7 +40,6 @@ jobs:
 
       - name: Verify coverage threshold
         run: ./gradlew :kimai-shared:jacocoTestCoverageVerification --no-daemon
-        continue-on-error: true
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v7

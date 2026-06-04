@@ -7,6 +7,7 @@ import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
 import io.github.aakira.napier.Napier
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.engine.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -20,8 +21,11 @@ import kotlinx.serialization.json.Json
  *
  * Authentication is performed via the `key` and `token` query parameters appended
  * to every request.
+ *
+ * @param engine optional Ktor engine override. Production uses the default engine;
+ * tests inject a [io.ktor.client.engine.mock.MockEngine] to exercise HTTP logic.
  */
-internal class TrelloTicketClient {
+internal class TrelloTicketClient(engine: HttpClientEngine? = null) {
 
     companion object {
         private const val TAG = "TrelloTicketClient"
@@ -30,7 +34,7 @@ internal class TrelloTicketClient {
         private const val CARD_FIELDS = "idShort,name,shortUrl,idBoard,idList,dateLastActivity,labels,idMembers"
     }
 
-    private val httpClient = HttpClient {
+    private fun HttpClientConfig<*>.configure() {
         install(ContentNegotiation) {
             json(
                 Json {
@@ -44,6 +48,9 @@ internal class TrelloTicketClient {
             connectTimeoutMillis = CONNECT_TIMEOUT_MS
         }
     }
+
+    private val httpClient =
+        if (engine != null) HttpClient(engine) { configure() } else HttpClient { configure() }
 
     /**
      * Test connection to Trello.

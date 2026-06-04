@@ -9,6 +9,7 @@ import de.progeek.kimai.shared.core.ticketsystem.models.TicketSystemConfig
 import io.github.aakira.napier.Napier
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.engine.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -19,8 +20,11 @@ import kotlinx.serialization.json.Json
 
 /**
  * HTTP client for GitLab REST API v4.
+ *
+ * @param engine optional Ktor engine override. Production uses the default engine;
+ * tests inject a [io.ktor.client.engine.mock.MockEngine] to exercise HTTP logic.
  */
-internal class GitLabTicketClient {
+internal class GitLabTicketClient(engine: HttpClientEngine? = null) {
 
     companion object {
         private const val TAG = "GitLabTicketClient"
@@ -28,7 +32,7 @@ internal class GitLabTicketClient {
         private const val CONNECT_TIMEOUT_MS = 10_000L
     }
 
-    private val httpClient = HttpClient {
+    private fun HttpClientConfig<*>.configure() {
         install(ContentNegotiation) {
             json(
                 Json {
@@ -42,6 +46,9 @@ internal class GitLabTicketClient {
             connectTimeoutMillis = CONNECT_TIMEOUT_MS
         }
     }
+
+    private val httpClient =
+        if (engine != null) HttpClient(engine) { configure() } else HttpClient { configure() }
 
     /**
      * Test connection to GitLab.
