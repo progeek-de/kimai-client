@@ -23,7 +23,7 @@ moko-resources = "0.26.4"
 cryptography = "0.6.0"
 sqldelight = "2.3.2"
 
-arrow = "2.2.2.1"
+arrow = "2.2.3"
 napier = "2.7.1"
 
 # testing
